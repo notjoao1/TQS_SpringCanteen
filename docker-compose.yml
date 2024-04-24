@@ -1,0 +1,56 @@
+version: "3.8"
+services:
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: springcanteen
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_file:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d springcanteen"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+    networks:
+      - backend
+
+  backend:
+    build: ./backend/springcanteen
+    restart: on-failure
+    ports:
+      - 8080:8080
+    volumes:
+      - ./backend/springcanteen:/app
+      - backend_data:/app/data
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/springcanteen
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
+      interval: 2s
+      timeout: 30s
+      retries: 200
+      start_period: 10s
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  db_file:
+  backend_data:
+
+networks:
+  backend:
+  frontend:
