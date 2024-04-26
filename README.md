@@ -20,3 +20,12 @@ TQS Project UA 2023/2024 - Spring Canteen
 ### Project Backlog
 
 https://springcanteen.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog
+
+
+### Project specification report
+
+https://uapt33090-my.sharepoint.com/:w:/g/personal/vitor_mtsantos_ua_pt/EUG5IsPt8vBOj96jJ5s9pnIBJ4QMXVGwoPZtpx56Rn2-Qg?e=tQFoO1
+
+### Project QA Manual
+
+https://uapt33090-my.sharepoint.com/:w:/g/personal/vitor_mtsantos_ua_pt/EVt86ZoggC9Li2d0tWOtDv8BEoIh2DbAfDN6OF3PTO74zA?e=JjDXb5
