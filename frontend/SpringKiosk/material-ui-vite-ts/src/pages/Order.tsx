@@ -5,12 +5,13 @@ import Chip from "@mui/material/Chip";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import { FormatListNumberedOutlined } from "@mui/icons-material";
+import { Check, FormatListNumberedOutlined } from "@mui/icons-material";
 import { IMenu } from "../types/MenuTypes";
 import OrderMenuCard from "../components/order_page/OrderMenuCard";
 import { BottomNavigation, BottomNavigationAction, Paper, Snackbar } from "@mui/material";
 import MenuDetailsModal from "../components/order_page/MenuDetailsModal";
 import OrderDrawer from "../components/order_page/OrderDrawer";
+import { useNavigate } from "react-router-dom";
 
 
 export const menus: IMenu[] = [
@@ -157,6 +158,8 @@ export const menus: IMenu[] = [
 ];
 
 export default function Order() {
+  const navigate = useNavigate();
+
   const [selectedMenu, setSelectedMenu] = React.useState<IMenu | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(false);
@@ -280,13 +283,14 @@ export default function Order() {
         >
              <Box
               display={"flex"}
-              width={"100%"}
+              width={"50%"}
               justifyContent={"flex-start"}
               alignItems={"center"}
             >
               You currently have two items in your order.
             </Box>
-            <BottomNavigationAction sx={{float: "right"}} label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
+            <BottomNavigationAction label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
+            <BottomNavigationAction sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={() => navigate("/order/customize")} />
           </BottomNavigation>
         </Paper>
         <OrderDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}/>
