@@ -1,6 +1,6 @@
 import { Box, Divider, Drawer, Link, Typography } from "@mui/material";
 import OrderDrawerItem from "./OrderDrawerItem";
-import { menus } from "../pages/Order";
+import { menus } from "../../pages/Order";
 
 interface OrderDrawerProps {
     isOpen: boolean;

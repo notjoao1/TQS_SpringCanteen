@@ -7,7 +7,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { IMenu } from "../types/MenuTypes";
+import { IMenu } from "../../types/MenuTypes";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from '@mui/icons-material/Info';
 

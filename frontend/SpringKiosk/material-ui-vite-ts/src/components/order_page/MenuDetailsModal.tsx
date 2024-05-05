@@ -1,5 +1,5 @@
 import { Box, Modal, Typography } from "@mui/material";
-import { IMenu } from "../types/MenuTypes";
+import { IMenu } from "../../types/MenuTypes";
 
 interface MenuDetailsModalProps {
   menu: IMenu | undefined;

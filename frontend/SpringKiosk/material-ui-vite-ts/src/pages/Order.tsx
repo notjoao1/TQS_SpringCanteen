@@ -7,10 +7,10 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { FormatListNumberedOutlined } from "@mui/icons-material";
 import { IMenu } from "../types/MenuTypes";
-import OrderMenuCard from "../components/OrderMenuCard";
+import OrderMenuCard from "../components/order_page/OrderMenuCard";
 import { BottomNavigation, BottomNavigationAction, Paper, Snackbar } from "@mui/material";
-import MenuDetailsModal from "../components/MenuDetailsModal";
-import OrderDrawer from "../components/OrderDrawer";
+import MenuDetailsModal from "../components/order_page/MenuDetailsModal";
+import OrderDrawer from "../components/order_page/OrderDrawer";
 
 
 export const menus: IMenu[] = [

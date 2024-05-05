@@ -1,5 +1,5 @@
 import { Box, Link, Typography } from "@mui/material";
-import { IMenu } from "../types/MenuTypes";
+import { IMenu } from "../../types/MenuTypes";
 
 interface OrderDrawerItemProps {
   menu: IMenu;
