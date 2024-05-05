@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Checkbox,
   Container,
   Divider,
@@ -30,18 +31,23 @@ const OrderCustomize = () => {
             <FormGroup>
               <Tooltip title="Donate to the SpringCanteen foundation!">
                 <FormControlLabel
-                  control={<Checkbox defaultChecked />}
+                  control={<Checkbox />}
                   label="Priority Queue (+0.30€)"
                 />
               </Tooltip>
             </FormGroup>
             <Typography ml={"auto"} mr={0} pt={2} variant="h5">
-              Total: <span style={{fontWeight: "bold"}}>24.90€</span>
+              Total: <span style={{ fontWeight: "bold" }}>24.90€</span>
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12} md={4}>
           <OrderPaymentCustomer />
+          <Box component={Button} variant="outlined">
+            <Typography color="text.primary" variant="body2" fontWeight="bold">
+              Confirm order
+            </Typography>
+          </Box>
         </Grid>
       </Grid>
     </Container>

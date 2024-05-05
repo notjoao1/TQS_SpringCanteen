@@ -25,7 +25,7 @@ const OrderCustomizeMenu = () => {
         <Typography variant="overline">
             (+0.40€) {/* extra cost from adding extra ingredients on the order */}
         </Typography>
-        <Link component={"button"}>Remove</Link>
+        <Box component={Button}>Remove</Box>
       </Box>
     </Box>
   );
