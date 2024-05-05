@@ -6,6 +6,7 @@ import TopBar from './components/TopBar';
 import getLPTheme from './getLPTheme';
 import { CssBaseline, PaletteMode } from '@mui/material';
 import Order from './pages/Order';
+import OrderCustomize from './pages/OrderCustomize';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -21,6 +22,7 @@ export default function App() {
         <Routes>
           <Route path="/" Component={Home}/>
           <Route path="/order" Component={Order}/>
+          <Route path="/order/customize" Component={OrderCustomize}/>
           <Route path="/restaurants" Component={Home}/>
           <Route path="/menu" Component={Home}/>
         </Routes>
