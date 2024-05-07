@@ -8,6 +8,8 @@ import { CssBaseline, PaletteMode } from '@mui/material';
 import Order from './pages/Order';
 import OrderCustomize from './pages/OrderCustomize';
 import OrderFinish from './pages/OrderFinish';
+import SignUp from './pages/SignUp';
+import SignIn from './pages/SignIn';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -21,12 +23,15 @@ export default function App() {
       <TopBar mode={mode} />
       <BrowserRouter>
         <Routes>
-          <Route path="/" Component={Home}/>
-          <Route path="/order" Component={Order}/>
-          <Route path="/order/customize" Component={OrderCustomize}/>
-          <Route path="/order/finish" Component={OrderFinish}/>
-          <Route path="/restaurants" Component={Home}/>
-          <Route path="/menu" Component={Home}/>
+          <Route path="/" Component={Home} />
+          <Route path="/order" Component={Order} />
+          <Route path="/order/customize" Component={OrderCustomize} />
+          <Route path="/order/finish" Component={OrderFinish} />
+          <Route path="/signup" Component={SignUp} />
+          <Route path="/signin" Component={SignIn} />
+          <Route path="/employee/orders" Component={Home} />
+          <Route path="/employee/kitchen" Component={Home} />
+          <Route path="/menu" Component={Home} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
