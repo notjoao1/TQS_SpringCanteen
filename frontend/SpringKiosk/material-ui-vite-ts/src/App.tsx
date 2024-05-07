@@ -10,6 +10,8 @@ import OrderCustomize from './pages/OrderCustomize';
 import OrderFinish from './pages/OrderFinish';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
+import EmployeeOrders from './pages/EmployeeOrders';
+import EmployeeKitchen from './pages/EmployeeKitchen';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -29,8 +31,8 @@ export default function App() {
           <Route path="/order/finish" Component={OrderFinish} />
           <Route path="/signup" Component={SignUp} />
           <Route path="/signin" Component={SignIn} />
-          <Route path="/employee/orders" Component={Home} />
-          <Route path="/employee/kitchen" Component={Home} />
+          <Route path="/employee/orders" Component={EmployeeOrders} />
+          <Route path="/employee/kitchen" Component={EmployeeKitchen} />
           <Route path="/menu" Component={Home} />
         </Routes>
       </BrowserRouter>
