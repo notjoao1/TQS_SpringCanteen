@@ -11,7 +11,7 @@ import OrderFinish from './pages/OrderFinish';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import EmployeeOrders from './pages/EmployeeOrders';
-import EmployeeKitchen from './pages/EmployeeKitchen';
+import EmployeePayments from './pages/EmployeePayments';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -32,7 +32,7 @@ export default function App() {
           <Route path="/signup" Component={SignUp} />
           <Route path="/signin" Component={SignIn} />
           <Route path="/employee/orders" Component={EmployeeOrders} />
-          <Route path="/employee/kitchen" Component={EmployeeKitchen} />
+          <Route path="/employee/payments" Component={EmployeePayments} />
           <Route path="/menu" Component={Home} />
         </Routes>
       </BrowserRouter>

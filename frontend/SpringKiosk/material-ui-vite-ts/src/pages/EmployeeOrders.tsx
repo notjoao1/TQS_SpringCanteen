@@ -1,9 +1,9 @@
 import { Box, Container, Grid, Paper, Typography } from "@mui/material";
-import OrderCard from "../components/employee_pages/OrderCard";
+import OrderCard from "../components/employee_orders_page/OrderCard";
 import { IOrder, OrderStatus } from "../types/OrderTypes";
 import { menus } from "./Order";
 
-const mockOrders: IOrder[] = [
+export const mockOrders: IOrder[] = [
   {
       id: 1,
       kiosk_id: 101,
