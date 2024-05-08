@@ -16,6 +16,8 @@
 	<properties>
 		<java.version>17</java.version>
 		<junit-jupiter.version>5.10.2</junit-jupiter.version>
+		  <sonar.organization>notjoao1</sonar.organization>
+		  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <selenium-java.version>4.8.1</selenium-java.version>
         <selenium-jupiter.version>4.3.3</selenium-jupiter.version>
