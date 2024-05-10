@@ -23,6 +23,9 @@ public class Menu {
     @NotNull
     private float price;
 
+    @OneToMany(mappedBy = "menu")
+    private Set<OrderMenu> menuOrders;
+
     @ManyToMany
     @JoinTable(
         name = "menu_items",

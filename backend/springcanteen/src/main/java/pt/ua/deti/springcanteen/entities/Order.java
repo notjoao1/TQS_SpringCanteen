@@ -33,12 +33,7 @@ public class Order {
     @JoinColumn(name = "kiosk_id", nullable = false)
     private KioskTerminal kioskTerminal;
 
-    @ManyToMany
-    @JoinTable(
-        name = "order_menus",
-        joinColumns = @JoinColumn(name = "order_id"),
-        inverseJoinColumns = @JoinColumn(name = "menu_id")
-    )
-    private Set<Menu> orderMenus;
+    @OneToMany(mappedBy = "order")
+    private Set<OrderMenu> orderMenus;
 
 }
