@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -28,10 +29,18 @@ public class Menu {
 
     @ManyToMany
     @JoinTable(
-        name = "menu_items",
+        name = "menu_drinks",
         joinColumns = @JoinColumn(name = "menu_id"),
         inverseJoinColumns = @JoinColumn(name = "item_id")
     )
-    private Set<Item> menuItems;
+    private Set<Drink> drinkOptions;
+
+    @ManyToMany
+    @JoinTable(
+            name = "menu_main_dishes",
+            joinColumns = @JoinColumn(name = "menu_id"),
+            inverseJoinColumns = @JoinColumn(name = "item_id")
+    )
+    private Set<MainDish> mainDishOptions;
 
 }
