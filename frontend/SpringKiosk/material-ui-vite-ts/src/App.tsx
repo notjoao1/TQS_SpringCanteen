@@ -12,6 +12,7 @@ import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import EmployeeOrders from './pages/EmployeeOrders';
 import EmployeePayments from './pages/EmployeePayments';
+import Customize from './pages/Customize';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/" Component={Home} />
           <Route path="/order" Component={Order} />
           <Route path="/order/customize" Component={OrderCustomize} />
+          <Route path="/order/customize/menu/:id" Component={Customize} />
           <Route path="/order/finish" Component={OrderFinish} />
           <Route path="/signup" Component={SignUp} />
           <Route path="/signin" Component={SignIn} />

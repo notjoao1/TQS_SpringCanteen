@@ -1,6 +1,10 @@
 import { Avatar, Box, Button, Link, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const OrderCustomizeMenu = () => {
+  const navigate = useNavigate();
+  const navigateToCustomize = () => navigate("/order/customize/menu/1");
+
   return (
     <Box display={"flex"} sx={{ minHeight: 150 }} py={1} alignItems={"center"}>
       <Box sx={{ width: "20%", height: "100%" }}>
@@ -10,7 +14,7 @@ const OrderCustomizeMenu = () => {
         <Typography variant="h5">Breakfast Menu</Typography>
         <Typography>20 kcal</Typography>
       </Box>
-      <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }}>
+      <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }} onClick={navigateToCustomize}>
             <Typography variant="subtitle2">customize</Typography>
         </Box>
       <Box
