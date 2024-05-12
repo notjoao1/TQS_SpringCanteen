@@ -1,7 +1,7 @@
 import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import OrderCard from "../components/employee_orders_page/OrderCard";
 import { IOrder, OrderStatus } from "../types/OrderTypes";
-import { menus } from "./Order";
+import { mockMenus } from "./Order";
 
 export const mockOrders: IOrder[] = [
   {
@@ -9,7 +9,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 101,
       order_status: OrderStatus.IDLE,
       isPaid: true,
-      menus: [menus[0]],
+      menus: [mockMenus[0]],
       nif: "123456789"
   },
   {
@@ -17,7 +17,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 102,
       order_status: OrderStatus.PREPARING,
       isPaid: false,
-      menus: [menus[0], menus[1]],
+      menus: [mockMenus[0], mockMenus[1]],
       nif: "987654321"
   },
   {
@@ -25,7 +25,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 103,
       order_status: OrderStatus.READY,
       isPaid: true,
-      menus: [menus[0]],
+      menus: [mockMenus[0]],
       nif: "456789123"
   },
   {
@@ -33,7 +33,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 104,
       order_status: OrderStatus.PICKED_UP,
       isPaid: false,
-      menus: [menus[0], menus[1]],
+      menus: [mockMenus[0], mockMenus[1]],
       nif: "789123456"
   },
   {
@@ -41,7 +41,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 105,
       order_status: OrderStatus.IDLE,
       isPaid: true,
-      menus: [menus[0], menus[1]],
+      menus: [mockMenus[0], mockMenus[1]],
       nif: "321654987"
   },
   {
@@ -49,7 +49,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 106,
       order_status: OrderStatus.PREPARING,
       isPaid: false,
-      menus: [menus[0]],
+      menus: [mockMenus[0]],
       nif: "654987321"
   },
   {
@@ -57,7 +57,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 107,
       order_status: OrderStatus.READY,
       isPaid: true,
-      menus: [menus[0], menus[1]],
+      menus: [mockMenus[0], mockMenus[1]],
       nif: "987321654"
   },
   {
@@ -65,7 +65,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 108,
       order_status: OrderStatus.PICKED_UP,
       isPaid: false,
-      menus: [menus[0]],
+      menus: [mockMenus[0]],
       nif: "159263478"
   },
   {
@@ -73,7 +73,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 109,
       order_status: OrderStatus.IDLE,
       isPaid: true,
-      menus: [menus[0]],
+      menus: [mockMenus[0]],
       nif: "852741963"
   },
   {
@@ -81,7 +81,7 @@ export const mockOrders: IOrder[] = [
       kiosk_id: 110,
       order_status: OrderStatus.PREPARING,
       isPaid: false,
-      menus: [menus[0], menus[1]],
+      menus: [mockMenus[0], mockMenus[1]],
       nif: "369852147"
   }
 ];

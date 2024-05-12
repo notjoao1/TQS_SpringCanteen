@@ -5,6 +5,7 @@ export interface IMenu {
     image: string;
     items: IItem[];
 }
+
   
 export interface IItem {
     id: number;

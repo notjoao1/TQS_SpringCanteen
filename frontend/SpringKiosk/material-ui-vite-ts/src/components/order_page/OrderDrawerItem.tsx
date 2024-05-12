@@ -1,25 +1,29 @@
-import { Box, Link, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { IMenu } from "../../types/MenuTypes";
+import { useContext } from "react";
+import { NewOrderContext } from "../../context/NewOrderContext";
+import { getTotalCalories } from "../../utils/menu_utils";
 
 interface OrderDrawerItemProps {
   menu: IMenu;
+  index: number;
 }
 
-const OrderDrawerItem = ({ menu }: OrderDrawerItemProps) => {
-  const getTotalCalories = (menu: IMenu): number => {
-    return menu.items.reduce(
-      (totalCalories, item) =>
-        totalCalories +
-        item.ingredients.reduce(
-          (itemCalories, ingredient) => itemCalories + ingredient.calories,
-          0
-        ),
-      0
-    );
-  };
+const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
+  const {order, setOrder} = useContext(NewOrderContext);
+
+  const removeMenuFromOrder = () => {
+    setOrder((prevOrder) => {
+      return {
+        ...prevOrder,
+        menus: prevOrder.menus.filter((_, idx) => idx != index)
+      }
+    })
+  }
 
   return (
     <Box
+      key={index}
       p={2}
       display={"flex"}
       sx={{ height: "100px" }}
@@ -43,7 +47,7 @@ const OrderDrawerItem = ({ menu }: OrderDrawerItemProps) => {
         textAlign={"center"}
       >
         <Typography variant="h6">{menu.price}€</Typography>
-        <Link component={"button"}>Remove from order</Link>
+        <Button onClick={removeMenuFromOrder}>Remove from order</Button>
       </Box>
     </Box>
   );

@@ -12,6 +12,7 @@ import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import EmployeeOrders from './pages/EmployeeOrders';
 import EmployeePayments from './pages/EmployeePayments';
+import { NewOrderContextProvider } from './context/NewOrderContext';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -24,17 +25,19 @@ export default function App() {
       <CssBaseline />
       <TopBar mode={mode} />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" Component={Home} />
-          <Route path="/order" Component={Order} />
-          <Route path="/order/customize" Component={OrderCustomize} />
-          <Route path="/order/finish" Component={OrderFinish} />
-          <Route path="/signup" Component={SignUp} />
-          <Route path="/signin" Component={SignIn} />
-          <Route path="/employee/orders" Component={EmployeeOrders} />
-          <Route path="/employee/payments" Component={EmployeePayments} />
-          <Route path="/menu" Component={Home} />
-        </Routes>
+        <NewOrderContextProvider>
+          <Routes>
+            <Route path="/" Component={Home} />
+            <Route path="/order" Component={Order} />
+            <Route path="/order/customize" Component={OrderCustomize} />
+            <Route path="/order/finish" Component={OrderFinish} />
+            <Route path="/signup" Component={SignUp} />
+            <Route path="/signin" Component={SignIn} />
+            <Route path="/employee/orders" Component={EmployeeOrders} />
+            <Route path="/employee/payments" Component={EmployeePayments} />
+            <Route path="/menu" Component={Home} />
+          </Routes>
+        </NewOrderContextProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

@@ -1,6 +1,8 @@
 import { Box, Divider, Drawer, Link, Typography } from "@mui/material";
 import OrderDrawerItem from "./OrderDrawerItem";
-import { menus } from "../../pages/Order";
+import { mockMenus } from "../../pages/Order";
+import { useContext } from "react";
+import { NewOrderContext } from "../../context/NewOrderContext";
 
 interface OrderDrawerProps {
     isOpen: boolean;
@@ -8,6 +10,8 @@ interface OrderDrawerProps {
 }
 
 const OrderDrawer = ({ isOpen, onClose }: OrderDrawerProps) => {
+    const {order, setOrder, getOrderTotalCost} = useContext(NewOrderContext);
+
     return (
         <Drawer
             anchor={"bottom"}
@@ -20,14 +24,16 @@ const OrderDrawer = ({ isOpen, onClose }: OrderDrawerProps) => {
             >
                 <Box display={"flex"} textAlign={"center"} justifyItems={"center"} sx={{height: "15%", position: "sticky", top: "0"}}>
                     <Typography variant="h4">Current order</Typography>
-                    <Typography variant="h6" mr={1} ml={"auto"}>Total: 40.30€</Typography>
-                    <Divider sx={{
+                    <Typography variant="h6" mr={1} ml={"auto"}>Total: {Number(getOrderTotalCost()).toFixed(2)}€</Typography>
+                    
+                </Box>
+                <Divider sx={{
                         background: "black",
                     }}/>
-                </Box>
                 <Box display={"flex"} flexDirection={"column"} sx={{minHeight: "85%"}} p={2} overflow={"auto"} gap={2}>
-                    <OrderDrawerItem menu={menus[0]}/>
-                    <OrderDrawerItem menu={menus[1]}/>
+                    {order.menus.map((menuInOrder, index) => (
+                        <OrderDrawerItem menu={menuInOrder} index={index} key={index}/>
+                    ))}
                 </Box>
             </Box>
         </Drawer>
