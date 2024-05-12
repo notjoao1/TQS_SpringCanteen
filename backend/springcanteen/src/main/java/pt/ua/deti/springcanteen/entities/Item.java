@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Entity
 @Table(name = "items")
 @AllArgsConstructor

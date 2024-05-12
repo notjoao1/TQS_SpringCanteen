@@ -3,12 +3,15 @@ package pt.ua.deti.springcanteen.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.List;
 import java.util.Set;
 
 @Entity
+@Setter
+@Getter
 @Table(name = "menus")
 @AllArgsConstructor
 @NoArgsConstructor
