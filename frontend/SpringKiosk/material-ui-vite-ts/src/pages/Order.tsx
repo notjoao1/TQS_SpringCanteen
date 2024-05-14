@@ -13,6 +13,7 @@ import MenuDetailsModal from "../components/order_page/MenuDetailsModal";
 import OrderDrawer from "../components/order_page/OrderDrawer";
 import { useNavigate } from "react-router-dom";
 import { NewOrderContext } from "../context/NewOrderContext";
+import { fetchAllMenus } from "../api/menu.service";
 
 
 export const mockMenus: IMenu[] = [
@@ -159,6 +160,8 @@ export const mockMenus: IMenu[] = [
 ];
 
 export default function Order() {
+  const menus = fetchAllMenus();
+  console.log("bomboclat")
   const {order, setOrder} = React.useContext(NewOrderContext);
 
   const navigate = useNavigate();
