@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import pt.ua.deti.springcanteen.dto.MenuResponseDTO;
+import pt.ua.deti.springcanteen.dto.mappers.MenuResponseDTOMapper;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.repositories.MenuRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
@@ -16,27 +17,19 @@ import pt.ua.deti.springcanteen.service.MenuService;
 public class IMenuService implements MenuService {
     private static final Logger logger = LoggerFactory.getLogger(IMenuService.class);
     private MenuRepository menuRepository;
+    private MenuResponseDTOMapper mapper;
 
     @Autowired
-    public IMenuService(MenuRepository menuRepository) {
+    public IMenuService(MenuRepository menuRepository, MenuResponseDTOMapper mapper) {
         this.menuRepository = menuRepository;
+        this.mapper = mapper;
     }
 
     @Override
     public List<MenuResponseDTO> getAvailableMenus() {
         logger.info("Getting all menus...");
         List<Menu> menusDb = menuRepository.findAll();
-        
-        return menusDb.stream().map(menu -> {
-            var menuDTO = new MenuResponseDTO();
-            menuDTO.setId(menu.getId());
-            menuDTO.setName(menu.getName());
-            menuDTO.setPrice(menu.getPrice());
-            menuDTO.setDrinkOptions(menu.getDrinkOptions());
-            menuDTO.setMainDishOptions(menu.getMainDishOptions());
-            return menuDTO;
-        }).toList();
+
+        return menusDb.stream().map(mapper::toDTO).toList();
     }
-
-
 }
