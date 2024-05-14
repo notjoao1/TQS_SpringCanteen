@@ -26,7 +26,7 @@ public class IMenuService implements MenuService {
     public List<MenuResponseDTO> getAvailableMenus() {
         logger.info("Getting all menus...");
         List<Menu> menusDb = menuRepository.findAll();
-
+        
         return menusDb.stream().map(menu -> {
             var menuDTO = new MenuResponseDTO();
             menuDTO.setId(menu.getId());
