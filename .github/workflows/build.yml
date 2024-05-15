@@ -46,4 +46,4 @@ jobs:
           password: ${{ secrets.client_secret }}
           testFormat: "junit"
           testPaths: "**/surefire-reports/*.xml"
-          projectKey: "CALC"
+          projectKey: "SCRUM"
