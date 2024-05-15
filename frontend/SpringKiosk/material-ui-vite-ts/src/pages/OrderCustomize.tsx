@@ -12,8 +12,11 @@ import {
 } from "@mui/material";
 import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymentCustomer";
 import OrderCustomizeMenu from "../components/customize_order_page/OrderCustomizeMenu";
+import { useContext } from "react";
+import { NewOrderContext } from "../context/NewOrderContext";
 
 const OrderCustomize = () => {
+  const {order, setOrder} = useContext(NewOrderContext);
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
       <Typography component="h2" variant="h4" color="text.primary">
@@ -21,12 +24,12 @@ const OrderCustomize = () => {
       </Typography>
       <Grid container spacing={6} py={4}>
         <Grid item xs={12} md={8}>
-          <OrderCustomizeMenu />
-          <Divider />
-          <OrderCustomizeMenu />
-          <Divider />
-          <OrderCustomizeMenu />
-          <Divider />
+          {order.menus.map((menu, index) => (
+            <>
+              <OrderCustomizeMenu menu={menu} key={index}/>
+              <Divider key={index} />
+            </>
+          ))}
           <Box pt={4} display={"flex"} mx={2}>
             <FormGroup>
               <Tooltip title="Donate to the SpringCanteen foundation!">

@@ -1,25 +1,29 @@
-import { Box, Link, Typography } from "@mui/material";
-import { IMenu } from "../../types/MenuTypes";
+import { Box, Button, Typography } from "@mui/material";
+import { ICreateMenu, IMenu } from "../../types/MenuTypes";
+import { useContext } from "react";
+import { NewOrderContext } from "../../context/NewOrderContext";
+import { getTotalCalories } from "../../utils/menu_utils";
 
 interface OrderDrawerItemProps {
-  menu: IMenu;
+  menu: ICreateMenu;
+  index: number;
 }
 
-const OrderDrawerItem = ({ menu }: OrderDrawerItemProps) => {
-  const getTotalCalories = (menu: IMenu): number => {
-    return menu.items.reduce(
-      (totalCalories, item) =>
-        totalCalories +
-        item.ingredients.reduce(
-          (itemCalories, ingredient) => itemCalories + ingredient.calories,
-          0
-        ),
-      0
-    );
-  };
+const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
+  const {order, setOrder} = useContext(NewOrderContext);
+
+  const removeMenuFromOrder = () => {
+    setOrder((prevOrder) => {
+      return {
+        ...prevOrder,
+        menus: prevOrder.menus.filter((_, idx) => idx != index)
+      }
+    })
+  }
 
   return (
     <Box
+      key={index}
       p={2}
       display={"flex"}
       sx={{ height: "100px" }}
@@ -29,11 +33,11 @@ const OrderDrawerItem = ({ menu }: OrderDrawerItemProps) => {
       <Box sx={{ width: "20%", height: "100%" }}>
         <img
           style={{ maxWidth: "100%", maxHeight: "100%" }}
-          src={menu.image}
+          src={menu.selectedMenu.imageLink}
         />
       </Box>
       <Box sx={{ width: "70%", height: "100%" }}>
-        <Typography variant="h5">{menu.name}</Typography>
+        <Typography variant="h5">{menu.selectedMenu.name}</Typography>
         <Typography>{getTotalCalories(menu)} kcal</Typography>
       </Box>
       <Box
@@ -42,8 +46,8 @@ const OrderDrawerItem = ({ menu }: OrderDrawerItemProps) => {
         flexDirection={"column"}
         textAlign={"center"}
       >
-        <Typography variant="h6">{menu.price}€</Typography>
-        <Link component={"button"}>Remove from order</Link>
+        <Typography variant="h6">{menu.selectedMenu.price}€</Typography>
+        <Button onClick={removeMenuFromOrder}>Remove from order</Button>
       </Box>
     </Box>
   );
