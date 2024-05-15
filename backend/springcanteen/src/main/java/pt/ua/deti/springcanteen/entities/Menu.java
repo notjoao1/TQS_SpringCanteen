@@ -26,6 +26,9 @@ public class Menu {
     @NotNull
     private float price;
 
+    @NotNull
+    private String imageLink;
+
     @OneToMany(mappedBy = "menu")
     private Set<OrderMenu> menuOrders;
 

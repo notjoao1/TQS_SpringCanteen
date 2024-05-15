@@ -46,7 +46,8 @@ CREATE TABLE maindish_ingredients(
 CREATE TABLE menus (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name varchar(31) not null,
-    price numeric(5, 2) not null
+    price numeric(5, 2) not null,
+    image_link varchar(512) not null
 );
 
 CREATE TABLE menu_drinks(
@@ -141,12 +142,12 @@ INSERT INTO maindish_ingredients (item_id, ingredient_id, quantity) VALUES
     (6, 12, 1),
     (6, 13, 1);
 
-INSERT INTO menus (name, price) VALUES
-    ('Sandwich & Drink', 5.0),
-    ('Russian Salad & Water', 6.0),
-    ('Yogurt with banana', 5.4),
-    ('Veggie Wrap', 8.0),
-    ('Chicken Salad & Drink', 9.0);
+INSERT INTO menus (name, price, image_link) VALUES
+    ('Sandwich & Drink', 5.0, 'https://cdn.pixabay.com/photo/2015/10/13/21/05/sandwich-986784_960_720.jpg'),
+    ('Russian Salad & Water', 6.0, 'https://cdn.pixabay.com/photo/2014/12/15/14/05/salad-569156_960_720.jpg'),
+    ('Yogurt with banana', 5.4, 'https://cdn.pixabay.com/photo/2023/04/14/14/30/oatmeal-7925232_960_720.jpg'),
+    ('Veggie Wrap', 8.0, 'https://cdn.pixabay.com/photo/2023/09/27/12/11/wine-8279458_960_720.jpg'),
+    ('Chicken Salad & Drink', 9.0, 'https://cdn.pixabay.com/photo/2019/03/14/19/03/chicken-4055653_960_720.jpg');
 
 INSERT INTO menu_main_dishes (menu_id, item_id) VALUES
     (1, 1),

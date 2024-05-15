@@ -12,6 +12,7 @@ public class MenuResponseDTOMapper {
         menuDTO.setId(menu.getId());
         menuDTO.setName(menu.getName());
         menuDTO.setPrice(menu.getPrice());
+        menuDTO.setImageLink(menu.getImageLink());
         menuDTO.setDrinkOptions(menu.getDrinkOptions());
         menuDTO.setMainDishOptions(menu.getMainDishOptions());
         return menuDTO;

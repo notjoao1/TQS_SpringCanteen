@@ -11,6 +11,7 @@ public class MenuResponseDTO {
     private Long id;
     private String name;
     private float price;
+    private String imageLink;
     private Set<Drink> drinkOptions;
     private Set<MainDish> mainDishOptions;
 }
