@@ -19,6 +19,7 @@ import org.hibernate.type.SqlTypes;
 public class OrderMenu {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -33,4 +34,9 @@ public class OrderMenu {
     @NotNull
     private String customization;
 
+    public OrderMenu(Order order, Menu menu, String customization) {
+        this.order = order;
+        this.menu = menu;
+        this.customization = customization;
+    }
 }

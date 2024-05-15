@@ -40,4 +40,16 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private Set<OrderMenu> orderMenus;
 
+    public Order(OrderStatus orderStatus, boolean isPaid, boolean isPriority, String nif, KioskTerminal kioskTerminal) {
+        this.orderStatus = orderStatus;
+        this.isPaid = isPaid;
+        this.isPriority = isPriority;
+        this.nif = nif;
+        this.kioskTerminal = kioskTerminal;
+    }
+
+    public float getPrice() {
+        return 1.0f;
+    }
+
 }

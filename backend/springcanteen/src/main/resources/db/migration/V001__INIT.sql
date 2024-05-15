@@ -1,5 +1,8 @@
 CREATE TYPE Employee_role AS ENUM('COOK', 'DESK_PAYMENTS', 'DESK_ORDERS');
 CREATE TYPE Order_status AS ENUM('IDLE', 'PREPARING', 'READY', 'PICKED_UP');
+CREATE CAST (CHARACTER VARYING as Employee_role) WITH INOUT AS IMPLICIT;
+CREATE CAST (CHARACTER VARYING as Order_status) WITH INOUT AS IMPLICIT;
+
 
 CREATE TABLE employees (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -72,7 +75,7 @@ CREATE TABLE orders (
 );
 
 CREATE TABLE order_menus(
-    id integer PRIMARY KEY,
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     order_id integer references orders(id),
     menu_id integer references menus(id),
     customization pg_catalog.jsonb not null
@@ -176,7 +179,7 @@ INSERT INTO orders (order_status, is_paid, is_priority, nif, kiosk_id) VALUES
     ('PICKED_UP', true, false, '123456489', 5),
     ('PICKED_UP', true, false, '123456389', 6);
 
-INSERT INTO order_menus (id, menu_id, customization) VALUES
+INSERT INTO order_menus (order_id, menu_id, customization) VALUES
     (1, 1, to_json('{' ||
            'menuId: 1,' ||
            'customizeDrink: {' ||
