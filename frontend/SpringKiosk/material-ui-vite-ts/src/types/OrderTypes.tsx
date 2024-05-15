@@ -1,4 +1,4 @@
-import { IMenu } from "./MenuTypes";
+import { ICreateMenu, IMenu } from "./MenuTypes";
 
 export interface IOrder {
     id: number;
@@ -20,6 +20,6 @@ export enum OrderStatus {
 
 // for creating new orders
 export interface ICreateOrder {
-    menus: IMenu[]
+    menus: ICreateMenu[]
     nif?: string;
 }

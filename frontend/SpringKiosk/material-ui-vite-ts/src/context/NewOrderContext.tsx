@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import { ICreateOrder, IOrder } from "../types/OrderTypes";
+import { ICreateOrder } from "../types/OrderTypes";
 
 interface NewOrderContextType {
   order: ICreateOrder;
@@ -27,7 +27,7 @@ export const NewOrderContextProvider: React.FC<{
 
   const getOrderTotalCost = (): number => {
     if (order.menus.length == 0) return 0;
-    return order.menus.reduce((acc, currMenu) => acc + currMenu.price, 0)
+    return order.menus.reduce((acc, currMenu) => acc + currMenu.selectedMenu.price, 0)
   }
 
   return (

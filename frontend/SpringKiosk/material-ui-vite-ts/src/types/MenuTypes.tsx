@@ -7,6 +7,14 @@ export interface IMenu {
     mainDishOptions: IMainDish[];
 }
 
+// keeps track of what main dish and drink a user selected
+// for a particular menu
+export interface ICreateMenu {
+    selectedMenu: IMenu;
+    selectedDrink: IDrink;
+    selectedMainDish: IMainDish;
+}
+
 export interface IDrink extends IItem {}
 
 export interface IMainDish extends IItem {

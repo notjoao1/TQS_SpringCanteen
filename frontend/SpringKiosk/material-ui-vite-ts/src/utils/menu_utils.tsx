@@ -1,13 +1,10 @@
-import { IMenu } from "../types/MenuTypes";
+import { ICreateMenu } from "../types/MenuTypes";
 
-export const getTotalCalories = (menu: IMenu): number => {
-  return menu.items.reduce(
-    (totalCalories, item) =>
-      totalCalories +
-      item.ingredients.reduce(
-        (itemCalories, ingredient) => itemCalories + ingredient.calories,
-        0
-      ),
-    0
+export const getTotalCalories = (menu: ICreateMenu): number => {
+  const mainDishCalories = menu.selectedMainDish.mainDishIngredients.reduce(
+    (totalCalories, mainDishIngredient) => 
+      totalCalories + mainDishIngredient.ingredient.calories, 0
   );
+
+  return mainDishCalories;
 };

@@ -1,11 +1,11 @@
 import { Box, Button, Typography } from "@mui/material";
-import { IMenu } from "../../types/MenuTypes";
+import { ICreateMenu, IMenu } from "../../types/MenuTypes";
 import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { getTotalCalories } from "../../utils/menu_utils";
 
 interface OrderDrawerItemProps {
-  menu: IMenu;
+  menu: ICreateMenu;
   index: number;
 }
 
@@ -33,11 +33,11 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
       <Box sx={{ width: "20%", height: "100%" }}>
         <img
           style={{ maxWidth: "100%", maxHeight: "100%" }}
-          src={menu.image}
+          src={menu.selectedMenu.imageLink}
         />
       </Box>
       <Box sx={{ width: "70%", height: "100%" }}>
-        <Typography variant="h5">{menu.name}</Typography>
+        <Typography variant="h5">{menu.selectedMenu.name}</Typography>
         <Typography>{getTotalCalories(menu)} kcal</Typography>
       </Box>
       <Box
@@ -46,7 +46,7 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
         flexDirection={"column"}
         textAlign={"center"}
       >
-        <Typography variant="h6">{menu.price}€</Typography>
+        <Typography variant="h6">{menu.selectedMenu.price}€</Typography>
         <Button onClick={removeMenuFromOrder}>Remove from order</Button>
       </Box>
     </Box>

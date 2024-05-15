@@ -30,8 +30,8 @@ const OrderDrawer = ({ isOpen, onClose }: OrderDrawerProps) => {
                         background: "black",
                     }}/>
                 <Box display={"flex"} flexDirection={"column"} sx={{minHeight: "85%"}} p={2} overflow={"auto"} gap={2}>
-                    {order.menus.map((menuInOrder, index) => (
-                        <OrderDrawerItem menu={menuInOrder} index={index} key={index}/>
+                    {order.menus.map((createdMenu, index) => (
+                        <OrderDrawerItem menu={createdMenu} index={index} key={index}/>
                     ))}
                 </Box>
             </Box>
