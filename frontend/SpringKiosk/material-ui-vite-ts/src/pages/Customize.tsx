@@ -12,7 +12,14 @@ import {
   } from "@mui/material";
   import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymentCustomer";
   import OrderCustomizeItem from "../components/customize_order_page/OrderCustomizeItem";
-  
+  import {
+    Unstable_NumberInput as BaseNumberInput,
+    NumberInputProps,
+  } from '@mui/base/Unstable_NumberInput';
+  import { styled } from '@mui/system';
+  import RemoveIcon from '@mui/icons-material/Remove';
+  import AddIcon from '@mui/icons-material/Add';
+    
   const Customize = () => {
     return (
       <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
@@ -40,4 +47,3 @@ import {
   };
   
 export default Customize;
-  
