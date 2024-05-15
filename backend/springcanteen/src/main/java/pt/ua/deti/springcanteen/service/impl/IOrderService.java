@@ -33,9 +33,6 @@ public class IOrderService implements OrderService {
         Set<OrderMenu> orderMenus = order.getOrderMenus();
         for (OrderMenu orderMenu : orderMenus) {
             orderMenu.setOrder(order);
-            System.out.println(orderMenu.getOrder().getId());
-            System.out.println(orderMenu.getMenu().getId());
-            System.out.println(orderMenu.getCustomization());
         }
         orderMenuRepository.saveAll(orderMenus);
         return Optional.of(order);
