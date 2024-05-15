@@ -1,23 +1,23 @@
 import { Avatar, Box, Button, Link, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { IMenu } from "../../types/MenuTypes";
+import { ICreateMenu } from "../../types/MenuTypes";
 import { getTotalCalories } from "../../utils/menu_utils";
 
 interface OrderCustomizeMenuProps {
-  menu: IMenu
+  menu: ICreateMenu
 }
 
-const OrderCustomizeMenu = () => {
+const OrderCustomizeMenu = ({ menu }: OrderCustomizeMenuProps) => {
   const navigate = useNavigate();
   const navigateToCustomize = () => navigate("/order/customize/menu/1");
 
   return (
     <Box display={"flex"} sx={{ minHeight: 150 }} py={1} alignItems={"center"}>
       <Box sx={{ width: "20%", height: "100%" }}>
-        <Avatar style={{ maxWidth: "100%", maxHeight: "100%", minHeight: "100px", minWidth: "100px" }} src={menu.image} />
+        <Avatar style={{ maxWidth: "100%", maxHeight: "100%", minHeight: "100px", minWidth: "100px" }} src={menu.selectedMenu.imageLink} />
       </Box>
       <Box sx={{ width: "45%", height: "100%" }}>
-        <Typography variant="h5">{menu.name}</Typography>
+        <Typography variant="h5">{menu.selectedMenu.name}</Typography>
         <Typography>{getTotalCalories(menu)} kcal</Typography>
       </Box>
       <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }} onClick={navigateToCustomize}>
@@ -30,7 +30,7 @@ const OrderCustomizeMenu = () => {
         textAlign={"center"}
       >
         <Typography variant="h6">
-            {menu.price}€
+            {menu.selectedMenu.price}€
         </Typography>
         <Typography variant="overline">
             (+0.40€) {/* extra cost from adding extra ingredients on the order */}
