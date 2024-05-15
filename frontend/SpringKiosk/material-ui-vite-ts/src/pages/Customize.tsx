@@ -1,24 +1,11 @@
 import {
     Box,
-    Button,
-    Checkbox,
     Container,
     Divider,
-    FormControlLabel,
-    FormGroup,
     Grid,
-    Tooltip,
     Typography,
   } from "@mui/material";
-  import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymentCustomer";
   import OrderCustomizeItem from "../components/customize_order_page/OrderCustomizeItem";
-  import {
-    Unstable_NumberInput as BaseNumberInput,
-    NumberInputProps,
-  } from '@mui/base/Unstable_NumberInput';
-  import { styled } from '@mui/system';
-  import RemoveIcon from '@mui/icons-material/Remove';
-  import AddIcon from '@mui/icons-material/Add';
   import { useState } from "react";
     
   const Customize = () => {
