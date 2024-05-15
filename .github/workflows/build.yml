@@ -39,3 +39,11 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=notjoao1_TQS_SpringCanteen
         working-directory: ./backend/springcanteen
+      - name: Submit results to Xray
+        uses: mikepenz/xray-action@v2.4.5
+        with:
+          username: ${{ secrets.client_id }}
+          password: ${{ secrets.client_secret }}
+          testFormat: "junit"
+          testPaths: "**/surefire-reports/*.xml"
+          projectKey: "SCRUM"

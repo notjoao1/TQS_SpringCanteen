@@ -13,6 +13,6 @@ export default defineConfig({
   port: 5050,
   strictPort: true,
   host: true,
-  origin: "http://0.0.0.0:50503",
+  origin: "http://0.0.0.0:5050",
  },
 })

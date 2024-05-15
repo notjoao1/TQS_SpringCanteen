@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { IOrder } from "../../types/OrderTypes";
-import { Cancel, Check } from "@mui/icons-material";
+import { Check } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
 const style = {

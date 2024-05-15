@@ -35,14 +35,13 @@ const OrderMenuCard = ({
       <CardMedia
         component="img"
         height="194"
-        image={menu.image}
+        image={menu.imageLink}
         alt={menu.name}
       />
       <CardContent>
         <Typography variant="body2" color="text.secondary">
-          This impressive paella is a perfect party dish and a fun meal to cook
-          together with your guests. Add 1 cup of frozen peas along with the
-          mussels, if you like.
+          It's delicious and healthy! Cooked to perfection by the greatest cooks in SpringCanteen kitchen, with decades of 
+          experience making amazing food.
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
