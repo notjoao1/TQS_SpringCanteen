@@ -1,7 +1,7 @@
 package pt.ua.deti.springcanteen.controller;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +23,7 @@ import pt.ua.deti.springcanteen.dto.mappers.MenuResponseDTOMapper;
 import pt.ua.deti.springcanteen.entities.Drink;
 import pt.ua.deti.springcanteen.entities.Ingredient;
 import pt.ua.deti.springcanteen.entities.MainDish;
+import pt.ua.deti.springcanteen.entities.MainDishIngredients;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.service.impl.IMenuService;
 
@@ -99,6 +100,16 @@ class MenuControllerTest {
         mainDish2.setName("Beefy rice");
         mainDish2.setPrice(2.0f);
 
+        Set<MainDishIngredients> mainDishIngredients1 = new HashSet<>();
+        mainDishIngredients1.add(new MainDishIngredients(1L, mainDish1, ingredient1, 2));
+
+        Set<MainDishIngredients> mainDishIngredients2 = new HashSet<>();
+        mainDishIngredients2.add(new MainDishIngredients(2L, mainDish2, ingredient1, 3));
+        mainDishIngredients2.add(new MainDishIngredients(3L, mainDish2, ingredient2, 1));
+
+        mainDish1.setMainDishIngredients(mainDishIngredients1);
+        mainDish2.setMainDishIngredients(mainDishIngredients2);
+
         Set<MainDish> mainDishMenu1 = new HashSet<>();
         mainDishMenu1.add(mainDish1);
         mainDishMenu1.add(mainDish2);
@@ -126,5 +137,7 @@ class MenuControllerTest {
                 statusCode(HttpStatus.SC_OK).
                 body("size()", is(2)).
                 body("[0].drinkOptions.name", hasItems(drink1.getName(), drink2.getName())).
-                body("[1].drinkOptions.name", hasItems(drink1.getName(), drink3.getName()));    }
+                body("[1].drinkOptions.name", hasItems(drink1.getName(), drink3.getName())).
+                body("[0].mainDishOptions.mainDishIngredients.quantity", notNullValue()); // check if ingredients was loaded
+    }
 }

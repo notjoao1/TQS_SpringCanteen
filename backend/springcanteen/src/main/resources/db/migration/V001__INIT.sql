@@ -37,10 +37,10 @@ CREATE TABLE main_dishes (
 );
 
 CREATE TABLE maindish_ingredients(
+    id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     item_id integer references main_dishes(id),
     ingredient_id integer references ingredients(id),
-    quantity integer not null,
-    PRIMARY KEY (item_id, ingredient_id)
+    quantity integer not null
 );
 
 CREATE TABLE menus (

@@ -1,12 +1,18 @@
 package pt.ua.deti.springcanteen.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "item_ingredients")
+@Getter
+@Setter
+@Table(name = "maindish_ingredients")
 @AllArgsConstructor
 @NoArgsConstructor
 public class MainDishIngredients {
@@ -16,6 +22,7 @@ public class MainDishIngredients {
 
     @ManyToOne
     @JoinColumn(name = "item_id")
+    @JsonIgnore
     private MainDish mainDish;
 
     @ManyToOne

@@ -2,10 +2,15 @@ package pt.ua.deti.springcanteen.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Set;
 
 @Entity
+@Setter
+@Getter
 @Table(name = "kiosk_terminals")
 @AllArgsConstructor
 @NoArgsConstructor
