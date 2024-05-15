@@ -3,6 +3,7 @@ import { ICreateMenu, IMenu } from "../../types/MenuTypes";
 import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { getTotalCalories } from "../../utils/menu_utils";
+import { getTotalMenuPrice } from "../../utils/order_utils";
 
 interface OrderDrawerItemProps {
   menu: ICreateMenu;
@@ -46,7 +47,7 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
         flexDirection={"column"}
         textAlign={"center"}
       >
-        <Typography variant="h6">{menu.selectedMenu.price}€</Typography>
+        <Typography variant="h6">{getTotalMenuPrice(menu).toFixed(2)}€</Typography>
         <Button onClick={removeMenuFromOrder}>Remove from order</Button>
       </Box>
     </Box>
