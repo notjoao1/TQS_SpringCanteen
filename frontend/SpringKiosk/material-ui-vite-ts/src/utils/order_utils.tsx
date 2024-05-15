@@ -1,23 +1,23 @@
+import { ICreateMenu, IMainDish } from "../types/MenuTypes";
 import { ICreateOrder } from "../types/OrderTypes"
 
 // calculates total price of an order (excluding +0.30€ from priority queue)
 // based on selected main dish, selected drink, and extra ingredients added
-//      - if ingredients are removed, they don't affect the price
-//      - the minimum price of a mainDish is always the base price of that mainDish. it can only increase
 export const getTotalPrice = (order: ICreateOrder) => {
-    let totalPrice = 0;
+    return order.menus.reduce((acc, currMenu) => acc + getTotalMenuPrice(currMenu), 0)
+}
 
-    order.menus.forEach((menu) => {
-        // add price of the drink
-        totalPrice += menu.selectedDrink.price;
-        
-        const mainDishPrice = menu.selectedMainDish.mainDishIngredients.reduce(
-            (acc, currMainDishIngredient) => acc + currMainDishIngredient.quantity * currMainDishIngredient.ingredient.price, 0
-        )
+export const getTotalMenuPrice = (menu: ICreateMenu) => {
+    return menu.selectedDrink.price + getMainDishPrice(menu.selectedMainDish);
+}
 
-        // add price of the main dish -> never below base price, but can be higher if extra ingredients are added
-        totalPrice += mainDishPrice < menu.selectedMainDish.price ? menu.selectedMainDish.price : mainDishPrice;
-    })
+// gets total price of mainDish based on the ingredients, with the following requirements:
+//   - if ingredients are removed, they don't affect the price
+//   - the minimum price of a mainDish is always the base price of that mainDish. it can only increase
+export const getMainDishPrice = (mainDish: IMainDish) => {
+    const priceWithIngredients = mainDish.mainDishIngredients.reduce(
+        (acc, currMainDishIngredient) => acc + currMainDishIngredient.quantity * currMainDishIngredient.ingredient.price, 0
+    );
 
-    return totalPrice;
+    return priceWithIngredients < mainDish.price ? mainDish.price : priceWithIngredients;
 }

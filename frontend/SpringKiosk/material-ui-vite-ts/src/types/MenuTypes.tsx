@@ -1,7 +1,6 @@
 export interface IMenu {
     id: number;
     name: string;
-    price: number;
     imageLink: string;
     drinkOptions: IDrink[];
     mainDishOptions: IMainDish[];

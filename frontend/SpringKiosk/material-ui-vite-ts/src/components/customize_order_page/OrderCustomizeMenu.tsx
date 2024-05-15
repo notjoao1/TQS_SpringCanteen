@@ -2,6 +2,7 @@ import { Avatar, Box, Button, Link, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ICreateMenu } from "../../types/MenuTypes";
 import { getTotalCalories } from "../../utils/menu_utils";
+import { getTotalMenuPrice } from "../../utils/order_utils";
 
 interface OrderCustomizeMenuProps {
   menu: ICreateMenu,
@@ -31,7 +32,7 @@ const OrderCustomizeMenu = ({ menu, index }: OrderCustomizeMenuProps) => {
         textAlign={"center"}
       >
         <Typography variant="h6">
-            {menu.selectedMenu.price}€
+            {getTotalMenuPrice(menu).toFixed(2)}€
         </Typography>
         <Typography variant="overline">
             (+0.40€) {/* extra cost from adding extra ingredients on the order */}

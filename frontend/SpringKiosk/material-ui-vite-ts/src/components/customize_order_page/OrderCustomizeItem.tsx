@@ -15,10 +15,9 @@ interface OrderCustomizeItemProps {
     mainDishIngredient: IMainDishIngredient;
     ingredientIndex: number;
     menuIndex: number;
-    onChange?: (value: number, name: string) => void;
 }
 
-const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex, onChange }: OrderCustomizeItemProps) => {
+const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex }: OrderCustomizeItemProps) => {
 
   const CompactNumberInput = React.forwardRef(function CompactNumberInput(
     props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> &
@@ -168,6 +167,7 @@ const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex, on
       <Box sx={{ width: "65%", height: "100%" }}>
         <Typography variant="h5">{ mainDishIngredient.ingredient.name }</Typography>
         <Typography>{ mainDishIngredient.ingredient.calories * mainDishIngredient.quantity } kcal</Typography>
+        <Typography variant="caption">{mainDishIngredient.ingredient.calories} kcal/item</Typography>
       </Box>
       <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }}>
         </Box>
@@ -179,8 +179,9 @@ const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex, on
         alignItems={"end"}
       >
         <Typography variant="h6">
-            { mainDishIngredient.ingredient.price * mainDishIngredient.quantity }€
+            {(mainDishIngredient.ingredient.price * mainDishIngredient.quantity).toFixed(2)}€
         </Typography>
+        <Typography variant="caption">({mainDishIngredient.ingredient.price.toFixed(2)}€/item)</Typography>
 
         <Layout style={{ 'marginTop': '15px'}}>
           <Pre>Quantity: {mainDishIngredient.quantity ?? ' '}</Pre>

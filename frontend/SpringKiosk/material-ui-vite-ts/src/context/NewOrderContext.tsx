@@ -4,7 +4,6 @@ import { ICreateOrder } from "../types/OrderTypes";
 interface NewOrderContextType {
   order: ICreateOrder;
   setOrder: React.Dispatch<React.SetStateAction<ICreateOrder>>;
-  getOrderTotalCost: () => number;
 }
 
 const defaultContextState: NewOrderContextType = {
@@ -12,7 +11,6 @@ const defaultContextState: NewOrderContextType = {
     menus: []
   },
   setOrder: () => {},
-  getOrderTotalCost: () => 1,
 };
 
 export const NewOrderContext =
@@ -25,17 +23,12 @@ export const NewOrderContextProvider: React.FC<{
     menus: []
   });
 
-  const getOrderTotalCost = (): number => {
-    if (order.menus.length == 0) return 0;
-    return order.menus.reduce((acc, currMenu) => acc + currMenu.selectedMenu.price, 0)
-  }
 
   return (
     <NewOrderContext.Provider
       value={{
         order,
         setOrder,
-        getOrderTotalCost
       }}
     >
       {children}

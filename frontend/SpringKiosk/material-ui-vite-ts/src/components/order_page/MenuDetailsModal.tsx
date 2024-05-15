@@ -39,7 +39,7 @@ const MenuDetailsModal = ({ isOpen, menu, onClose }: MenuDetailsModalProps) => {
               <Divider />
               {menu.mainDishOptions.map((mainDish) => (
                 <div key={mainDish.id}>
-                  <Typography><span style={{fontWeight: "bold"}}>{mainDish.name}</span> - {mainDish.price}€</Typography>
+                  <Typography><span style={{fontWeight: "bold"}}>{mainDish.name}</span> - {mainDish.price.toFixed(2)}€</Typography>
                   <Typography pt={1}>Ingredients:</Typography>
                   <List dense={true}>
                   {mainDish.mainDishIngredients.map((mainDishIngredient) => (
@@ -53,7 +53,7 @@ const MenuDetailsModal = ({ isOpen, menu, onClose }: MenuDetailsModalProps) => {
               <Typography variant="subtitle2">Drink Options:</Typography>
               <Divider />
               {menu.drinkOptions.map((drink) => (
-                <Typography key={drink.id}>{drink.name} - {drink.price}€</Typography>
+                <Typography key={drink.id}>{drink.name} - {drink.price.toFixed(2)}€</Typography>
               ))}
             </Box>
           </Box>

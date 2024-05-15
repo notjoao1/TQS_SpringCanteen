@@ -14,6 +14,7 @@ import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymen
 import OrderCustomizeMenu from "../components/customize_order_page/OrderCustomizeMenu";
 import { useContext } from "react";
 import { NewOrderContext } from "../context/NewOrderContext";
+import { getTotalPrice } from "../utils/order_utils";
 
 const OrderCustomize = () => {
   const {order, setOrder} = useContext(NewOrderContext);
@@ -40,7 +41,7 @@ const OrderCustomize = () => {
               </Tooltip>
             </FormGroup>
             <Typography ml={"auto"} mr={0} pt={2} variant="h5">
-              Total: <span style={{ fontWeight: "bold" }}>24.90€</span>
+              Total: <span style={{ fontWeight: "bold" }}>{getTotalPrice(order).toFixed(2)}€</span>
             </Typography>
           </Box>
         </Grid>

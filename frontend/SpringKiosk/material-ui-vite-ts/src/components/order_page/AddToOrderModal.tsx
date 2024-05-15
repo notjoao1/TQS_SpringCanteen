@@ -90,7 +90,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 >
                     {menu.mainDishOptions.map((mainDish) => (
                     <MenuItem value={mainDish.id}>
-                        {mainDish.name} - {mainDish.price}€
+                        {mainDish.name} - {mainDish.price.toFixed(2)}€
                     </MenuItem>
                     ))}
                 </Select>
@@ -108,7 +108,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 >
                     {menu.drinkOptions.map((drink) => (
                     <MenuItem value={drink.id}>
-                        {drink.name} - {drink.price}€
+                        {drink.name} - {drink.price.toFixed(2)}€
                     </MenuItem>
                     ))}
                 </Select>
