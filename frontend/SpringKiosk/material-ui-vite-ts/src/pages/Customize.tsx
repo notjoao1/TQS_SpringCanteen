@@ -23,9 +23,9 @@ import { NewOrderContext } from "../context/NewOrderContext";
     
     const urlParams = useParams();
     // url parameter used to get the menu to show on the page
-    const menuId = urlParams.id;
+    const menuIdString = urlParams.id;
 
-    if (!menuId || isNaN(parseInt(menuId))) {
+    if (!menuIdString || isNaN(parseInt(menuIdString))) {
       return (
         <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
           <Box display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"column"} gap={2}>
@@ -38,9 +38,23 @@ import { NewOrderContext } from "../context/NewOrderContext";
         
       )
     }
+    
+    const menuId = parseInt(menuIdString);
 
-    const selectedMenu = order.menus.find((menu, index) => parseInt(menuId) == index);
-    console.log(selectedMenu);
+    const menuToCustomize = order.menus.find((menu, index) => menuId === index);
+    if (!menuToCustomize) {
+      return (
+        <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
+          <Box display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"column"} gap={2}>
+            <Typography variant="h2">
+              Invalid menu.
+            </Typography>
+            <Button variant="contained" onClick={() => navigate("/order/customize")}>Go back to your order</Button>
+          </Box>
+        </Container>
+        
+      )
+    }
     const price = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     const [finalPrice, setFinalPrice] = useState(price);
@@ -62,14 +76,17 @@ import { NewOrderContext } from "../context/NewOrderContext";
     return (
       <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
         <Typography component="h2" variant="h4" color="text.primary">
-          Breakfast Menu
+          {menuToCustomize.selectedMenu.name}
+        </Typography>
+        <Typography variant="subtitle1">
+          Customize the ingredients included in this dish. Keep in mind, adding more ingredients increases the cost!
         </Typography>
         <Grid container spacing={6} py={4}>
           <Grid item xs={12} md={12}>
 
-            {items.map((item, index) => (
+            {menuToCustomize.selectedMainDish.mainDishIngredients.map((mainDishIngredient, index) => (
               <div key={index}>
-                <OrderCustomizeItem key={index} name={item.name} kcal={item.kcal} price={item.price} image={item.image} onChange={handleValueChange} />
+                <OrderCustomizeItem key={index} menuIndex={menuId} ingredientIndex={index} mainDishIngredient={mainDishIngredient} onChange={handleValueChange} />
                 <Divider/>
               </div>
             ))  

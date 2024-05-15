@@ -4,12 +4,13 @@ import { ICreateMenu } from "../../types/MenuTypes";
 import { getTotalCalories } from "../../utils/menu_utils";
 
 interface OrderCustomizeMenuProps {
-  menu: ICreateMenu
+  menu: ICreateMenu,
+  index: number,
 }
 
-const OrderCustomizeMenu = ({ menu }: OrderCustomizeMenuProps) => {
+const OrderCustomizeMenu = ({ menu, index }: OrderCustomizeMenuProps) => {
   const navigate = useNavigate();
-  const navigateToCustomize = () => navigate("/order/customize/menu/1");
+  const navigateToCustomize = () => navigate(`/order/customize/menu/${index}`);
 
   return (
     <Box display={"flex"} sx={{ minHeight: 150 }} py={1} alignItems={"center"}>

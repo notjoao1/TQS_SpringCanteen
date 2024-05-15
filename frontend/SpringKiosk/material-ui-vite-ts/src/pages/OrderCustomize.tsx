@@ -25,10 +25,10 @@ const OrderCustomize = () => {
       <Grid container spacing={6} py={4}>
         <Grid item xs={12} md={8}>
           {order.menus.map((menu, index) => (
-            <>
-              <OrderCustomizeMenu menu={menu} key={index}/>
-              <Divider key={index} />
-            </>
+            <div key={index}>
+              <OrderCustomizeMenu menu={menu} index={index}/>
+              <Divider />
+            </div>
           ))}
           <Box pt={4} display={"flex"} mx={2}>
             <FormGroup>

@@ -8,16 +8,17 @@ import { styled } from '@mui/system';
 import { unstable_useForkRef as useForkRef } from '@mui/utils';
 import ArrowDropUpRoundedIcon from '@mui/icons-material/ArrowDropUpRounded';
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
+import { IMainDishIngredient } from "../../types/MenuTypes";
+import { NewOrderContext } from "../../context/NewOrderContext";
 
 interface OrderCustomizeItemProps {
-    name: string;
-    kcal: number;
-    price: number;
-    image?: string;
+    mainDishIngredient: IMainDishIngredient;
+    ingredientIndex: number;
+    menuIndex: number;
     onChange?: (value: number, name: string) => void;
 }
 
-const OrderCustomizeItem = ({ name, kcal, price, image, onChange }: OrderCustomizeItemProps) => {
+const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex, onChange }: OrderCustomizeItemProps) => {
 
   const CompactNumberInput = React.forwardRef(function CompactNumberInput(
     props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> &
@@ -141,31 +142,32 @@ const OrderCustomizeItem = ({ name, kcal, price, image, onChange }: OrderCustomi
     font-size: 0.75rem;
   `;
 
-  const [value, setValue] = React.useState<number | null>(1);
-  const [finalPrice, setFinalPrice] = React.useState<number | null>(price);
-  const [finalKcal, setFinalKcal] = React.useState<number | null>(kcal);
+  const {setOrder} = React.useContext(NewOrderContext);
 
+  // Called when ingredients number is increased/decreased
+  //    val -> new quantity
   const handleChange = (val: number | null) => {
+    // update the value of this particular ingredient inside of the main dish of the given menu
     if (val != null && val >= 0 && val <= 9) {
-      setValue(val);
-      onChange && onChange(val, name);
-      const new_price = price * val;
-      setFinalPrice(Math.round(new_price * 100) / 100);
-
-      const new_kcal = kcal * val;
-      // round to 0 decimal places
-      setFinalKcal(Math.round(new_kcal * 100) / 100);
+      setOrder((prevOrder) => {
+        const menuToUpdate = prevOrder.menus.find((menu, idx) => idx === menuIndex);
+        if (!menuToUpdate) return prevOrder; // don't update if menu doesn't exist (shouldnt happen)
+        const newOrderMenus = [...prevOrder.menus]
+        menuToUpdate.selectedMainDish.mainDishIngredients[ingredientIndex].quantity = val;
+        newOrderMenus[menuIndex] = menuToUpdate;
+        return { menus: newOrderMenus };
+      })
     }
-  };
+  }
 
   return (
     <Box display={"flex"} sx={{ minHeight: 150 }} py={1} alignItems={"center"}>
-      <Box sx={{ width: "20%", height: "100%" }}>
+      {/* <Box sx={{ width: "20%", height: "100%" }}>
         <Avatar style={{ maxWidth: "100%", maxHeight: "100%", minHeight: "100px", minWidth: "100px" }} src={ image } />
-      </Box>
-      <Box sx={{ width: "45%", height: "100%" }}>
-        <Typography variant="h5">{ name }</Typography>
-        <Typography>{ finalKcal } kcal</Typography>
+      </Box> */}
+      <Box sx={{ width: "65%", height: "100%" }}>
+        <Typography variant="h5">{ mainDishIngredient.ingredient.name }</Typography>
+        <Typography>{ mainDishIngredient.ingredient.calories * mainDishIngredient.quantity } kcal</Typography>
       </Box>
       <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }}>
         </Box>
@@ -174,20 +176,21 @@ const OrderCustomizeItem = ({ name, kcal, price, image, onChange }: OrderCustomi
         display={"flex"}
         flexDirection={"column"}
         textAlign={"center"}
+        alignItems={"end"}
       >
         <Typography variant="h6">
-            { finalPrice }€
+            { mainDishIngredient.ingredient.price * mainDishIngredient.quantity }€
         </Typography>
 
         <Layout style={{ 'marginTop': '15px'}}>
-          <Pre>Quantity: {value ?? ' '}</Pre>
+          <Pre>Quantity: {mainDishIngredient.quantity ?? ' '}</Pre>
 
 
           <CompactNumberInput
             aria-label="Compact number input"
             placeholder="Type a number…"
             readOnly
-            value={value}
+            value={mainDishIngredient.quantity}
             onChange={(event, val) => handleChange(val)}
           />
         </Layout>
