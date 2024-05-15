@@ -14,9 +14,10 @@ interface OrderCustomizeItemProps {
     kcal: number;
     price: number;
     image?: string;
+    onChange?: (value: number, name: string) => void;
 }
 
-const OrderCustomizeItem = ({ name, kcal, price, image }: OrderCustomizeItemProps) => {
+const OrderCustomizeItem = ({ name, kcal, price, image, onChange }: OrderCustomizeItemProps) => {
 
   const CompactNumberInput = React.forwardRef(function CompactNumberInput(
     props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> &
@@ -147,6 +148,7 @@ const OrderCustomizeItem = ({ name, kcal, price, image }: OrderCustomizeItemProp
   const handleChange = (val: number | null) => {
     if (val != null && val >= 0 && val <= 9) {
       setValue(val);
+      onChange && onChange(val, name);
       const new_price = price * val;
       setFinalPrice(Math.round(new_price * 100) / 100);
 
