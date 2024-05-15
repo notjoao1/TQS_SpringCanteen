@@ -35,7 +35,7 @@ const OrderMenuCard = ({
       <CardMedia
         component="img"
         height="194"
-        image={menu.image}
+        image={menu.imageLink}
         alt={menu.name}
       />
       <CardContent>

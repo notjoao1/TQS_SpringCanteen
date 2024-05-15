@@ -21,7 +21,7 @@ export const mockMenus: IMenu[] = [
     id: 1,
     name: "Breakfast Menu",
     price: 8.99,
-    image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fifoodreal.com%2Fwp-content%2Fuploads%2F2018%2F04%2Fhealthy-pancakes-7.jpg&f=1&nofb=1&ipt=b5e84872f7716ef9b58a2414bff1e8192e14c480437f42e19f69c4d8df12e3e9&ipo=images",
+    image: "https://cdn.pixabay.com/photo/2017/05/07/08/56/pancakes-2291908_960_720.jpg",
     items: [
       {
         id: 101,
@@ -160,8 +160,21 @@ export const mockMenus: IMenu[] = [
 ];
 
 export default function Order() {
-  const menus = fetchAllMenus();
-  console.log("bomboclat")
+  const [menus, setMenus] = React.useState<IMenu[]>([]);
+
+  React.useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const fetchedMenus = await fetchAllMenus();
+        setMenus(fetchedMenus);
+      } catch (error) {
+        console.error('Error fetching menus:', error);
+      }
+    };
+
+    fetchMenus();
+  }, []);
+
   const {order, setOrder} = React.useContext(NewOrderContext);
 
   const navigate = useNavigate();
@@ -203,8 +216,8 @@ export default function Order() {
       </Typography>
 
       <Grid container spacing={6} pt={4}>
-        {mockMenus.map((menu, index) => (
-          <Grid item xs={12} md={4}>
+        {menus.map((menu, index) => (
+          <Grid key={menu.id} item xs={12} md={4}>
             <OrderMenuCard index={index} menu={menu} onClickDetails={handleOpenModal} onClickAddToOrder={handleAddToOrder}/>
           </Grid>
         ))}
@@ -216,9 +229,9 @@ export default function Order() {
             gap={1}
             sx={{ display: { xs: "auto", sm: "none" } }}
           >
-            {mockMenus.map((menu, index) => (
+            {menus.map((menu, index) => (
               <Chip
-                key={index}
+                key={menu.id}
                 label={menu.name}
                 onClick={() => console.log("hi")}
                 sx={{
