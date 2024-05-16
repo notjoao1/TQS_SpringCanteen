@@ -1,6 +1,7 @@
  package pt.ua.deti.springcanteen.frontend;
 
  import io.cucumber.java.en.Then;
+ import io.github.bonigarcia.wdm.WebDriverManager;
  import org.openqa.selenium.By;
  import org.openqa.selenium.WebDriver;
  import org.openqa.selenium.firefox.FirefoxDriver;
@@ -17,6 +18,7 @@
 
      @When("I navigate to {string}")
      public void i_navigate_to(String url) {
+         WebDriverManager.firefoxdriver().setup();
          driver = new FirefoxDriver();
          driver.get(url);
      }
@@ -45,8 +47,9 @@
     }
     
     @Then("I should see the message \"Successfully added menu to order.\"")
-    public void i_should_see_message() {
-        assertThat(driver.findElement(By.id("message")).getText(), containsString("Successfully added menu to order."));
+    public void i_should_see_message() throws InterruptedException {
+         Thread.sleep(1000); // wait for the message to appear
+        assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
         driver.quit();
     }
  }

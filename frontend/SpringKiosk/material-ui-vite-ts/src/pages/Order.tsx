@@ -202,6 +202,7 @@ export default function Order() {
           open={isSnackbarOpen}
           autoHideDuration={4000}
           onClose={() => setIsSnackbarOpen(false)}
+          id="snackbar-add-menu-to-order"
           message="Successfully added menu to order."
         />
         {/* Error alert for when the order is empty and the user tries to move on */}

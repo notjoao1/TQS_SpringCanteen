@@ -88,8 +88,8 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                         setSelectedMainDishId(e.target.value)
                     }
                 >
-                    {menu.mainDishOptions.map((mainDish) => (
-                    <MenuItem value={mainDish.id} id={`main-dish-${mainDish.id}`}>
+                    {menu.mainDishOptions.map((mainDish, index) => (
+                    <MenuItem value={mainDish.id} id={`main-dish-${index + 1}`}>
                         {mainDish.name} - {mainDish.price.toFixed(2)}€
                     </MenuItem>
                     ))}
@@ -106,8 +106,8 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                         setSelectedDrinkId(e.target.value)
                     }
                 >
-                    {menu.drinkOptions.map((drink) => (
-                    <MenuItem value={drink.id} id={`drink-${drink.id}`}>
+                    {menu.drinkOptions.map((drink, index) => (
+                    <MenuItem value={drink.id} id={`drink-${index + 1}`}>
                         {drink.name} - {drink.price.toFixed(2)}€
                     </MenuItem>
                     ))}
