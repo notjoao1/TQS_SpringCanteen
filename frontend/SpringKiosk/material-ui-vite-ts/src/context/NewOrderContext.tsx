@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { ICreateOrder } from "../types/OrderTypes";
 
 interface NewOrderContextType {
@@ -19,9 +19,15 @@ export const NewOrderContext =
 export const NewOrderContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [order, setOrder] = useState<ICreateOrder>({
-    menus: []
+  // try to get order from localStorage. otherwise, create a new order
+  const [order, setOrder] = useState<ICreateOrder>(() => {
+    const storedOrder = localStorage.getItem("order");
+    return storedOrder ? JSON.parse(storedOrder) : { menus: [] };
   });
+
+  useEffect(() => {
+    localStorage.setItem("order", JSON.stringify(order));
+  }, [order])
 
 
   return (
