@@ -45,7 +45,7 @@ const OrderMenuCard = ({
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <IconButton aria-label="add to order" onClick={() => onClickAddToOrder(menu)}>
+        <IconButton aria-label="add to order" id={`add-menu-${menu.id}`} onClick={() => onClickAddToOrder(menu)}>
           <AddIcon />
         </IconButton>
         <IconButton
