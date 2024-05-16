@@ -18,6 +18,12 @@ import { getTotalPrice } from "../utils/order_utils";
 
 const OrderCustomize = () => {
   const {order, setOrder} = useContext(NewOrderContext);
+
+  const handleRemoveMenu = (index: number) => {
+    const newMenus = order.menus.filter((menu, i) => i !== index);
+    setOrder({...order, menus: newMenus});
+  };
+
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
       <Typography component="h2" variant="h4" color="text.primary">
@@ -27,7 +33,7 @@ const OrderCustomize = () => {
         <Grid item xs={12} md={8}>
           {order.menus.map((menu, index) => (
             <div key={index}>
-              <OrderCustomizeMenu menu={menu} index={index}/>
+              <OrderCustomizeMenu menu={menu} index={index} handleRemoveMenu={handleRemoveMenu} />
               <Divider />
             </div>
           ))}

@@ -1,4 +1,4 @@
-@order
+@costumize
 Feature: Make an order on SpringCanteen
 
     Scenario: User wants to make an order
@@ -8,5 +8,3 @@ Feature: Make an order on SpringCanteen
         And I select the Drink number "1"
         And I click on "Confirm selection"
         Then I should see the message "Successfully added menu to order."
-
-    # Scenario: User wants to make an order but cancels it

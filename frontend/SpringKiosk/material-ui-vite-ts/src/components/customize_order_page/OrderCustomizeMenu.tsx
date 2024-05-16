@@ -7,9 +7,10 @@ import { getTotalMenuPrice } from "../../utils/order_utils";
 interface OrderCustomizeMenuProps {
   menu: ICreateMenu,
   index: number,
+  handleRemoveMenu: (index: number) => void
 }
 
-const OrderCustomizeMenu = ({ menu, index }: OrderCustomizeMenuProps) => {
+const OrderCustomizeMenu = ({ menu, index, handleRemoveMenu }: OrderCustomizeMenuProps) => {
   const navigate = useNavigate();
   const navigateToCustomize = () => navigate(`/order/customize/menu/${index}`);
 
@@ -37,7 +38,9 @@ const OrderCustomizeMenu = ({ menu, index }: OrderCustomizeMenuProps) => {
         <Typography variant="overline">
             (+0.40€) {/* extra cost from adding extra ingredients on the order */}
         </Typography>
-        <Box component={Button}>Remove</Box>
+        <Box component={Button} onClick={() => handleRemoveMenu(index)}>
+          Remove
+        </Box>
       </Box>
     </Box>
   );
