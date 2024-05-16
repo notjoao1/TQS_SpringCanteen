@@ -81,7 +81,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 <InputLabel id="demo-simple-select-label">Main Dish</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    id="select-main-dish"
                     value={selectedMainDishId}
                     label="Main Dish"
                     onChange={(e) =>
@@ -89,7 +89,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                     }
                 >
                     {menu.mainDishOptions.map((mainDish) => (
-                    <MenuItem value={mainDish.id}>
+                    <MenuItem value={mainDish.id} id={`main-dish-${mainDish.id}`}>
                         {mainDish.name} - {mainDish.price.toFixed(2)}€
                     </MenuItem>
                     ))}
@@ -99,7 +99,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 <InputLabel id="demo-simple-select-label">Drink</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    id="select-drink"
                     value={selectedDrinkId}
                     label="Drink"
                     onChange={(e) =>
@@ -107,7 +107,7 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                     }
                 >
                     {menu.drinkOptions.map((drink) => (
-                    <MenuItem value={drink.id}>
+                    <MenuItem value={drink.id} id={`drink-${drink.id}`}>
                         {drink.name} - {drink.price.toFixed(2)}€
                     </MenuItem>
                     ))}
@@ -115,8 +115,8 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
             </FormControl>
           </Box>
           <Box pt={2} display={"flex"} justifyContent={"center"} alignItems={"center"} gap={2}>
-            <Button color="error" onClick={() => handleClose()} variant="contained">Cancel Selection</Button>
-            <Button onClick={() => handleConfirm()} variant="outlined">Confirm selection</Button>
+            <Button color="error" onClick={() => handleClose()} variant="contained" id="cancel-selection">Cancel Selection</Button>
+            <Button onClick={() => handleConfirm()} variant="outlined" id="confirm-selection">Confirm selection</Button>
           </Box>
         </Typography>
       </Box>
