@@ -1,5 +1,6 @@
 package pt.ua.deti.springcanteen.entities;
 
+import com.google.gson.Gson;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,10 @@ import lombok.Setter;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import pt.ua.deti.springcanteen.dto.CustomizeDTO;
+import pt.ua.deti.springcanteen.dto.CustomizeDrinkDTO;
+import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
+import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
 
 @Entity
 @Setter
@@ -38,5 +43,10 @@ public class OrderMenu {
         this.order = order;
         this.menu = menu;
         this.customization = customization;
+    }
+
+    public float getPriceBasedOnCustomization(){
+
+        return 1.1f;
     }
 }

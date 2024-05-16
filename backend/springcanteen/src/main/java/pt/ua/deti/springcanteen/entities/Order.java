@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
+import static java.lang.Float.sum;
 
 @Entity
 @Setter
@@ -49,7 +50,9 @@ public class Order {
     }
 
     public float getPrice() {
-        return 1.0f;
+        return orderMenus.stream()
+                .map(OrderMenu::getPriceBasedOnCustomization)
+                .reduce(0.0f, Float::sum);
     }
 
 }

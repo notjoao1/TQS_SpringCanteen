@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
-import pt.ua.deti.springcanteen.dto.OrderResponseDTO;
+import pt.ua.deti.springcanteen.dto.OrderClientResponseDTO;
 import pt.ua.deti.springcanteen.service.OrderService;
 
 @RestController
@@ -19,11 +19,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("")
-    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
+    public ResponseEntity<OrderClientResponseDTO> createOrder(@Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
         logger.info("POST /api/orders - create order");
 
         return orderService.createOrder(customizeOrderDTO)
-                .map(order -> ResponseEntity.ok(OrderResponseDTO.fromOrderEntityWithClientLevelDetails(order)))
+                .map(order -> ResponseEntity.ok(OrderClientResponseDTO.fromOrderEntity(order)))
                 .orElse(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build());
     }
 }

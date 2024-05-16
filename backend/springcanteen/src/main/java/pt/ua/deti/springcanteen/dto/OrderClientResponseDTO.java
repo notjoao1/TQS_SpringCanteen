@@ -9,18 +9,18 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class OrderResponseDTO {
+public class OrderClientResponseDTO {
     private long id;
     private boolean isPaid;
     private boolean isPriority;
     private String nif;
-    private Set<OrderMenuResponseDTO> orderMenus;
+    private Set<OrderMenuClientResponseDTO> orderMenus;
     private float price;
 
-    public static OrderResponseDTO fromOrderEntityWithClientLevelDetails(Order order){
-        return new OrderResponseDTO(
+    public static OrderClientResponseDTO fromOrderEntity(Order order){
+        return new OrderClientResponseDTO(
                 order.getId(), order.isPaid(), order.isPriority(), order.getNif(),
-                order.getOrderMenus().stream().map(OrderMenuResponseDTO::fromOrderMenuEntityWithClientLevelDetails).collect(Collectors.toSet()),
+                order.getOrderMenus().stream().map(OrderMenuClientResponseDTO::fromOrderMenuEntity).collect(Collectors.toSet()),
                 order.getPrice()
         );
     }

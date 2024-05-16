@@ -2,6 +2,7 @@ package pt.ua.deti.springcanteen.dto.mappers;
 
 import org.springframework.stereotype.Component;
 
+import pt.ua.deti.springcanteen.dto.MenuClientResponseDTO;
 import pt.ua.deti.springcanteen.dto.MenuResponseDTO;
 import pt.ua.deti.springcanteen.entities.Menu;
 
