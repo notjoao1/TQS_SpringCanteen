@@ -23,7 +23,7 @@ const OrderCustomizeMenu = ({ menu, index, handleRemoveMenu }: OrderCustomizeMen
         <Typography variant="h5">{menu.selectedMenu.name}</Typography>
         <Typography>{getTotalCalories(menu)} kcal</Typography>
       </Box>
-      <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }} onClick={navigateToCustomize}>
+      <Box component={Button} sx={{ width: "15%", height: "100%", fontStyle: "italic" }} onClick={navigateToCustomize} id={`customize-menu-${index + 1}`}>
             <Typography variant="subtitle2">customize</Typography>
         </Box>
       <Box

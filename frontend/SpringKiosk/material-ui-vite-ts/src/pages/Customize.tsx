@@ -77,7 +77,7 @@ import { getMainDishPrice } from "../utils/order_utils";
 
             <Box pt={4} display={"flex"} mx={2}>
               <Button variant="contained" onClick={() => navigate("/order/customize")}>Go back</Button>
-              <Typography ml={"auto"} mr={0} variant="h5">
+              <Typography ml={"auto"} mr={0} variant="h5" id="total-price">
                 Total: <span style={{ fontWeight: "bold" }}>{price.toFixed(2)}€</span>
               </Typography>
             </Box>

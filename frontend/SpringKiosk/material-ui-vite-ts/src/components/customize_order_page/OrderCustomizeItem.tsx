@@ -37,10 +37,10 @@ const OrderCustomizeItem = ({ mainDishIngredient, ingredientIndex, menuIndex }: 
   
     return (
       <StyledInputRoot {...getRootProps()}>
-        <StyledStepperButton className="increment" {...getIncrementButtonProps()}>
+        <StyledStepperButton className="increment" {...getIncrementButtonProps()} id={`increment-${mainDishIngredient.ingredient.name}`}>
           <ArrowDropUpRoundedIcon />
         </StyledStepperButton>
-        <StyledStepperButton className="decrement" {...getDecrementButtonProps()}>
+        <StyledStepperButton className="decrement" {...getDecrementButtonProps()} id={`decrement-${mainDishIngredient.ingredient.name}`}>
           <ArrowDropDownRoundedIcon />
         </StyledStepperButton>
         <HiddenInput {...inputProps} />
