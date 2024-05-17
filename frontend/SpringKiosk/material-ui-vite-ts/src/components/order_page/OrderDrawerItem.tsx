@@ -49,7 +49,9 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
         textAlign={"center"}
       >
         <Typography variant="h6">{getTotalMenuPrice(menu).toFixed(2)}€</Typography>
-        <Button onClick={removeMenuFromOrder}>Remove from order</Button>
+        <Button onClick={removeMenuFromOrder} id={`remove-menu-${index + 1}`}>
+          Remove from order
+        </Button>
       </Box>
     </Box>
   );

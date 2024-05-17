@@ -58,6 +58,11 @@
         Thread.sleep(1000);
         driver.findElement(By.id("cancel-selection")).click();
     }
+
+    @And("I remove the menu number {string}")
+    public void i_remove_menu(String number) {
+        driver.findElement(By.id("remove-menu-" + number)).click();
+    }
     
     @Then("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() throws InterruptedException {
