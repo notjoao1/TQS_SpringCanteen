@@ -17,10 +17,17 @@ Feature: Make an order on SpringCanteen
         And I click on "Confirm selection"
         And I select the menu number "1"
         And I select the Main Dish number "1"
-        And I select the Drink number "1"
+        And I select the Drink number "3"
         And I click on "Confirm selection"
         And I click to "View order"
         Then I should see the 2 menus added to the order
 
 
-    # Scenario: User wants to make an order but cancels it
+    Scenario: User wants to make an order but cancels it
+        When I navigate to "http://localhost:5173/order"
+        And I select the menu number "1"
+        And I select the Main Dish number "1"
+        And I select the Drink number "2"
+        And I click on "Cancel selection"
+        And I click to "View order"
+        Then I should see the 0 menus added to the order

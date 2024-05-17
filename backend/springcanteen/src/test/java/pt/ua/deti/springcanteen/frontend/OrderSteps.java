@@ -52,6 +52,12 @@
     public void i_click_view_order() {
         driver.findElement(By.id("view-order")).click();
     }
+
+    @And("I click on \"Cancel selection\"")
+    public void i_click_cancel() throws InterruptedException {
+        Thread.sleep(1000);
+        driver.findElement(By.id("cancel-selection")).click();
+    }
     
     @Then("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() throws InterruptedException {
@@ -60,11 +66,16 @@
         driver.quit();
     }
 
-    @Then("I should see the 2 menus added to the order")
-    public void i_should_see_order() {
-        // checks that order-drawer-item-1 and order-drawer-item-2 are visible
-        assertThat(driver.findElement(By.id("order-drawer-item-1")).isDisplayed(), is(true));
-        assertThat(driver.findElement(By.id("order-drawer-item-2")).isDisplayed(), is(true));
+    @Then("I should see the {int} menus added to the order")
+    public void i_should_see_order(int number) {
+        if (number == 0) {
+            assertThat(driver.findElements(By.id("order-drawer-item-1")).size(), is(0));
+        } else {
+            // checks that order-drawer-item-1 and order-drawer-item-2 are visible
+            for (int i = 1; i <= number; i++) {
+                assertThat(driver.findElement(By.id("order-drawer-item-" + i)).isDisplayed(), is(true));
+            }
+        }
         driver.quit();
     }
  }
