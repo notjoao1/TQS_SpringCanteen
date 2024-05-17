@@ -13,7 +13,6 @@ import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,11 +29,15 @@ public class IOrderService implements OrderService {
     public Optional<Order> createOrder(CustomizeOrderDTO customizeOrderDTO) {
         logger.info("Creating order...");
 
-        Order order = orderRepository.save(customizeOrderDTO.toOrderEntity());
+        Order order = customizeOrderDTO.toOrderEntity();
+        float totalOrderPrice = 0.0f;
         Set<OrderMenu> orderMenus = order.getOrderMenus();
         for (OrderMenu orderMenu : orderMenus) {
             orderMenu.setOrder(order);
+            totalOrderPrice = totalOrderPrice + priceService.getOrderMenuPrice(orderMenu);
         }
+        order.setPrice(totalOrderPrice);
+        orderRepository.save(order);
         orderMenuRepository.saveAll(orderMenus);
         return Optional.of(order);
     }
