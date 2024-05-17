@@ -51,7 +51,7 @@ class OrderControllerIT {
 
     @Test
     void whenCreateOrderSuccessfully_thenReturnCorrectResponse() {
-        // order with drink as Coke (3€) + main dish as 'Rice with Beef' (7€) with 1 extra beef (1.5€)
+        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (4.5€) with 1 extra ham (+2.5€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -62,19 +62,23 @@ class OrderControllerIT {
         "            \"menu_id\": 1," +
         "            \"customization\": {" +
         "                \"customized_drink\": {" +
-        "                    \"item_id\": 5" +
+        "                    \"item_id\": 8" +
         "                }," +
         "                \"customized_main_dish\": {" +
         "                    \"item_id\": 1," +
         "                    \"customized_ingredients\": [" +
         "                        {" +
         "                            \"ingredient_id\": 1," +
-        "                            \"quantity\": 4" +
+        "                            \"quantity\": 1" +
         "                        }," +
         "                        {" +
-        "                            \"ingredient_id\": 2," +
-        "                            \"quantity\": 3" +
+        "                            \"ingredient_id\": 3," +
+        "                            \"quantity\": 2" +
         "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 4," +
+        "                            \"quantity\": 2" +
+        "                        }" +
         "                    ]" +
         "                }" +
         "            }" +
@@ -92,9 +96,9 @@ class OrderControllerIT {
                 .and()
             .body("order_menus.size()", is(1))
                 .and()
-            .body("order_menus[0].name", is("Rice with Beef"))
+            .body("order_menus[0].name", is("Sandwich & Drink"))
                 .and()
-            .body("order_menus[0].price", is(11.5f));
+            .body("order_menus[0].price", is(9f));
     }
 
     @Test
@@ -109,7 +113,7 @@ class OrderControllerIT {
         "    \"nif\": \"123456789\"," +
         "    \"orderMenus\": [" +
         "        {" +
-        "            \"menu_id\": 1," +
+        "            \"menu_id\": 2," +
         "            \"customization\": {" +
         "                \"customized_drink\": {" +
         "                    \"item_id\": 4" +
@@ -119,15 +123,19 @@ class OrderControllerIT {
         "                    \"customized_ingredients\": [" +
         "                        {" +
         "                            \"ingredient_id\": 3," +
-        "                            \"quantity\": 0" +
-        "                        }," +
-        "                        {" +
-        "                            \"ingredient_id\": 4," +
-        "                            \"quantity\": 2" +
+        "                            \"quantity\": 1" +
         "                        }," +
         "                        {" +
         "                            \"ingredient_id\": 5," +
-        "                            \"quantity\": 4" +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 6," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 7," +
+        "                            \"quantity\": 1" +
         "                        }" +
         "                    ]" +
         "                }" +
@@ -198,7 +206,7 @@ class OrderControllerIT {
         "                        {" +
         "                            \"ingredient_id\": 2," +
         "                            \"quantity\": 3" +
-        "                        }," +
+        "                        }" +
         "                    ]" +
         "                }" +
         "            }" +
@@ -243,7 +251,7 @@ class OrderControllerIT {
         "                        {" +
         "                            \"ingredient_id\": 2," +
         "                            \"quantity\": 3" +
-        "                        }," +
+        "                        }" +
         "                    ]" +
         "                }" +
         "            }" +

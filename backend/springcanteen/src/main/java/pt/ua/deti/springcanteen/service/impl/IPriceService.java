@@ -2,6 +2,9 @@ package pt.ua.deti.springcanteen.service.impl;
 
 import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pt.ua.deti.springcanteen.dto.CustomizeDTO;
 import pt.ua.deti.springcanteen.dto.CustomizeIngredientDTO;
@@ -16,8 +19,10 @@ import java.util.Set;
 @Service
 @AllArgsConstructor
 public class IPriceService implements PriceService {
+    private static final Logger logger = LoggerFactory.getLogger(IPriceService.class);
 
     public float getOrderMenuPrice(OrderMenu orderMenu) {
+        logger.info("Getting menu price for OrderMenu with customization -> {}", orderMenu.getCustomization());
         Menu menu = orderMenu.getMenu();
         CustomizeDTO customizeDTO = new Gson().fromJson(orderMenu.getCustomization(), CustomizeDTO.class);
         Long customizedDrinkId = customizeDTO.getCustomized_drink().getItem_id();
@@ -28,9 +33,12 @@ public class IPriceService implements PriceService {
         // Check if the specified main dish with a given id exists as an option for that menu
         Optional<MainDish> mainDishOpt = menu.getMainDishOptions().stream().filter(m -> m.getId().equals(customizedMainDishId)).findFirst();
 
-        if (drinkOpt.isEmpty())
+        if (drinkOpt.isEmpty()) {
+            logger.error("Drink id '{}' not found for this menu.", customizedDrinkId);
             throw new InvalidOrderException("Provided drink does not exist as an option in the given menu.");
+        }
         if (mainDishOpt.isEmpty()){
+            logger.error("Main dish id '{}' not found for this menu.", customizedMainDishId);
             throw new InvalidOrderException("Provided main dish does not exist as an option in the given menu.");
         }
 
@@ -48,9 +56,12 @@ public class IPriceService implements PriceService {
     private float getMainDishPriceBasedOnCustomization(Set<MainDishIngredients> baseIngredients, Set<CustomizeIngredientDTO> customizedIngredients) {
         float mainDishPrice = 0;
         for (MainDishIngredients baseIngredient : baseIngredients) {
-            CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredient_id() == baseIngredient.getIngredient().getId())
-                                                .findFirst().orElseThrow(() -> new InvalidOrderException(String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", 
-                                                                                                    baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName())));
+            CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredient_id().equals(baseIngredient.getIngredient().getId()))
+                                                .findFirst().orElseThrow(() -> {
+                                                    logger.error("Ingredient with id {} and name {} was not specified.", baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName());
+                                                    return new InvalidOrderException(String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", 
+                                                                                                    baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName()));
+                                                                                                });
             if (customizeIngredientDTO.getQuantity() > baseIngredient.getQuantity()) {
                 mainDishPrice = mainDishPrice + customizeIngredientDTO.getQuantity() * baseIngredient.getIngredient().getPrice();
             } else {

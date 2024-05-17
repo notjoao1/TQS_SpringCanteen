@@ -15,6 +15,7 @@ import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
@@ -39,11 +40,8 @@ public class IOrderService implements OrderService {
     public Optional<Order> createOrder(CustomizeOrderDTO customizeOrderDTO) {
         logger.info("Creating order...");
 
-        Optional<Order> orderOpt = this.orderEntityFromDTO(customizeOrderDTO);
-        if (orderOpt.isEmpty())
-            return Optional.empty();
+        Order order = this.orderEntityFromDTO(customizeOrderDTO);
 
-        Order order = orderOpt.get();
         float totalOrderPrice = 0.0f;
         Set<OrderMenu> orderMenus = order.getOrderMenus();
         for (OrderMenu orderMenu : orderMenus) {
@@ -58,7 +56,7 @@ public class IOrderService implements OrderService {
         return Optional.of(order);
     }
 
-    private Optional<Order> orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
+    private Order orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
         KioskTerminal kioskTerminal = new KioskTerminal();
         kioskTerminal.setId(customizeOrderDTO.getKiosk_id());
         Order order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
@@ -67,11 +65,11 @@ public class IOrderService implements OrderService {
         for (OrderMenuDTO orderMenuDTO : customizeOrderDTO.getOrderMenus()) {
             Optional<Menu> menuOpt = menuService.getMenuById(orderMenuDTO.getMenu_id());
             if (menuOpt.isEmpty())
-                return Optional.empty();
+                throw new InvalidOrderException(String.format("Order has an invalid menu that does not exist with id '%s'", orderMenuDTO.getMenu_id()));
             orderMenus.add(new OrderMenu(order, menuOpt.get(), new Gson().toJson(orderMenuDTO.getCustomization())));
         }
         order.setOrderMenus(orderMenus);
-        return Optional.of(order);
+        return order;
 
     }
 }
