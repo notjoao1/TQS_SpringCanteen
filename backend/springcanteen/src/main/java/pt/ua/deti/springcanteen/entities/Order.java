@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
-import static java.lang.Float.sum;
 
 @Entity
 @Setter
@@ -27,6 +26,10 @@ public class Order {
 
     @NotNull
     private boolean isPaid;
+
+    // calculated based on the customizations for each OrderMenu in this order
+    @NotNull
+    private float price;
 
     @NotNull
     private boolean isPriority;
@@ -47,12 +50,6 @@ public class Order {
         this.isPriority = isPriority;
         this.nif = nif;
         this.kioskTerminal = kioskTerminal;
-    }
-
-    public float getPrice() {
-        return orderMenus.stream()
-                .map(OrderMenu::getPriceBasedOnCustomization)
-                .reduce(0.0f, Float::sum);
     }
 
 }

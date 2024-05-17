@@ -1,12 +1,9 @@
 package pt.ua.deti.springcanteen.dto;
 
-import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pt.ua.deti.springcanteen.entities.Drink;
-import pt.ua.deti.springcanteen.entities.MainDish;
 import pt.ua.deti.springcanteen.entities.Menu;
 
 @Data
