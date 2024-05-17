@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pt.ua.deti.springcanteen.dto.CustomizeDTO;
 import pt.ua.deti.springcanteen.dto.CustomizeIngredientDTO;
 import pt.ua.deti.springcanteen.entities.*;
+import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.service.PriceService;
 
 
@@ -22,17 +23,15 @@ public class IPriceService implements PriceService {
         Long customizedDrinkId = customizeDTO.getCustomized_drink().getItem_id();
         Long customizedMainDishId = customizeDTO.getCustomized_main_dish().getItem_id();
 
-        // TODO verificar que ingredientes existem
-
         // Check if the specified drink with a given id exists as an option for that menu
         Optional<Drink> drinkOpt = menu.getDrinkOptions().stream().filter(d -> d.getId().equals(customizedDrinkId)).findFirst();
         // Check if the specified main dish with a given id exists as an option for that menu
         Optional<MainDish> mainDishOpt = menu.getMainDishOptions().stream().filter(m -> m.getId().equals(customizedMainDishId)).findFirst();
 
         if (drinkOpt.isEmpty())
-            throw new RuntimeException("Provided drink does not exist as an option in the given menu.");
+            throw new InvalidOrderException("Provided drink does not exist as an option in the given menu.");
         if (mainDishOpt.isEmpty()){
-            throw new RuntimeException("Provided main dish does not exist as an option in the given menu.");
+            throw new InvalidOrderException("Provided main dish does not exist as an option in the given menu.");
         }
 
         Set<CustomizeIngredientDTO> customizedIngredients = customizeDTO.getCustomized_main_dish().getCustomized_ingredients();
@@ -41,15 +40,17 @@ public class IPriceService implements PriceService {
         return drinkOpt.get().getPrice() + getMainDishPriceBasedOnCustomization(baseIngredients, customizedIngredients);
     }
 
-
+    
+    // iterate over each customized ingredient, and check if extra ingredients were added based on the base ingredients
+    // if so, price_of_ingredient = price_per_ingredient * quantity,
+    // else, price_of_ingredient = price_per_ingredient * base_quantity
+    // also throws exception is an expected base ingredient was not specified
     private float getMainDishPriceBasedOnCustomization(Set<MainDishIngredients> baseIngredients, Set<CustomizeIngredientDTO> customizedIngredients) {
-        // iterate over each customized ingredient, and check if extra ingredients were added based on the base ingredients
-        // if so, price_of_ingredient = price_per_ingredient * quantity,
-        // else, price_of_ingredient = price_per_ingredient * base_quantity
         float mainDishPrice = 0;
         for (MainDishIngredients baseIngredient : baseIngredients) {
             CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredient_id() == baseIngredient.getIngredient().getId())
-                                                .findFirst().orElseThrow(() -> new RuntimeException("You must specify all ingredients in the main dish and their quantity when ordering a certain menu."));
+                                                .findFirst().orElseThrow(() -> new InvalidOrderException(String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", 
+                                                                                                    baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName())));
             if (customizeIngredientDTO.getQuantity() > baseIngredient.getQuantity()) {
                 mainDishPrice = mainDishPrice + customizeIngredientDTO.getQuantity() * baseIngredient.getIngredient().getPrice();
             } else {

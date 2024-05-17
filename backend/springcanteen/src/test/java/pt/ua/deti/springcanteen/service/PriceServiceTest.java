@@ -16,6 +16,7 @@ import pt.ua.deti.springcanteen.entities.MainDish;
 import pt.ua.deti.springcanteen.entities.MainDishIngredients;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
+import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.service.impl.IPriceService;
 
 class PriceServiceTest {
@@ -25,7 +26,6 @@ class PriceServiceTest {
     OrderMenu requestedOrderMenu;
     Drink drinkOption1, drinkOption2;
     MainDish mainDishOption1, mainDishOption2;
-    MainDishIngredients mainDishIngredient1, mainDishIngredient2, mainDishIngredient3, mainDishIngredient4;
     Ingredient ingredient1, ingredient2, ingredient3, ingredient4; 
 
 
@@ -43,13 +43,11 @@ class PriceServiceTest {
 
         // ingredients for mainDish1 (fat pancakes)
         ingredient1 = new Ingredient(1L, "Sugar", 0.5f, 100);
-        mainDishIngredient1 = new MainDishIngredients(1L, mainDishOption1, ingredient1, 2);
         ingredient2 = new Ingredient(2L, "Milk", 1.0f, 50);
-        mainDishIngredient2 = new MainDishIngredients(2L, mainDishOption1, ingredient2, 1);
 
         Set<MainDishIngredients> mainDish1Ingredients = new HashSet<>();
-        mainDish1Ingredients.add(mainDishIngredient1);
-        mainDish1Ingredients.add(mainDishIngredient2);
+        mainDish1Ingredients.add(new MainDishIngredients(1L, mainDishOption1, ingredient1, 2));
+        mainDish1Ingredients.add(new MainDishIngredients(2L, mainDishOption1, ingredient2, 1));
 
         mainDishOption1 = new MainDish(mainDish1Ingredients);
         mainDishOption1.setId(1L);
@@ -59,13 +57,11 @@ class PriceServiceTest {
 
         // ingredients for mainDish2 (thin pancakes)
         ingredient3 = new Ingredient(3L, "Vegan sugar", 0.25f, 10);
-        mainDishIngredient3 = new MainDishIngredients(3L, mainDishOption2, ingredient3, 1);
         ingredient4 = new Ingredient(4L, "Vegan Milk", 0.5f, 50);
-        mainDishIngredient4 = new MainDishIngredients(4L, mainDishOption2, ingredient4, 2);
 
         Set<MainDishIngredients> mainDish2Ingredients = new HashSet<>();
-        mainDish2Ingredients.add(mainDishIngredient3);
-        mainDish2Ingredients.add(mainDishIngredient4);
+        mainDish2Ingredients.add(new MainDishIngredients(3L, mainDishOption2, ingredient3, 1));
+        mainDish2Ingredients.add(new MainDishIngredients(4L, mainDishOption2, ingredient4, 2));
 
 
         mainDishOption2 = new MainDish(mainDish2Ingredients);
@@ -104,7 +100,7 @@ class PriceServiceTest {
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
             "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:3, customized_ingredients: [{ingredient_id: 1, quantity: 2}]}}");
 
-        Exception exceptionThrown = assertThrows(RuntimeException.class, () -> {
+        Exception exceptionThrown = assertThrows(InvalidOrderException.class, () -> {
             priceService.getOrderMenuPrice(requestedOrderMenu);
         });
 
@@ -126,7 +122,7 @@ class PriceServiceTest {
     }
 
     @Test
-    void whenMenu_hasInvalidIngredientsForMainDish_thenThrowError() {
+    void whenMenu_isMissingIngredientsForMainDish_thenThrowError() {
         // this order request is missing an ingredient in the customization string
         // which is not expected
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
@@ -136,7 +132,8 @@ class PriceServiceTest {
             priceService.getOrderMenuPrice(requestedOrderMenu);
         });
 
-        assertThat(exceptionThrown.getMessage(), is("You must specify all ingredients in the main dish and their quantity when ordering a certain menu."));
+        String expectedMessage = String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", ingredient2.getId(), ingredient2.getName());
+        assertThat(exceptionThrown.getMessage(), is(expectedMessage));
 
     }
 
@@ -165,10 +162,5 @@ class PriceServiceTest {
         // price is 10x sugar price + 1x milk price
         float expectedPrice = ingredient1.getPrice() * 10 + ingredient2.getPrice() * 1 + drinkOption2.getPrice();
         assertThat(actualOrderPrice, is(expectedPrice));
-    }
-
-    @Test
-    void whenMenuRequest_doesNotHaveAllIngredients_thenThrowError() {
-
     }
 }

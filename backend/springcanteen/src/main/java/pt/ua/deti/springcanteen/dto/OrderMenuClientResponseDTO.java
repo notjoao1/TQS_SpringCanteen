@@ -12,7 +12,7 @@ public class OrderMenuClientResponseDTO {
 
     public static OrderMenuClientResponseDTO fromOrderMenuEntity(OrderMenu orderMenu){
         return new OrderMenuClientResponseDTO(
-                MenuClientResponseDTO.fromMenuEntity(orderMenu.getMenu(), 0), orderMenu.getCustomization()
+                MenuClientResponseDTO.fromMenuEntity(orderMenu.getMenu(), orderMenu.getCalculatedPrice()), orderMenu.getCustomization()
         );
     }
 }

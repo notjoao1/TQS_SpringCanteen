@@ -48,7 +48,9 @@ public class IOrderService implements OrderService {
         Set<OrderMenu> orderMenus = order.getOrderMenus();
         for (OrderMenu orderMenu : orderMenus) {
             orderMenu.setOrder(order);
-            totalOrderPrice = totalOrderPrice + priceService.getOrderMenuPrice(orderMenu);
+            float orderMenuPrice = priceService.getOrderMenuPrice(orderMenu);
+            totalOrderPrice = totalOrderPrice + orderMenuPrice;
+            orderMenu.setCalculatedPrice(orderMenuPrice);
         }
         order.setPrice(totalOrderPrice);
         orderRepository.save(order);
