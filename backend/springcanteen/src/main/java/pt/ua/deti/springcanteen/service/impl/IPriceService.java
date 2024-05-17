@@ -56,7 +56,7 @@ public class IPriceService implements PriceService {
                 mainDishPrice = mainDishPrice + baseIngredient.getQuantity() * baseIngredient.getIngredient().getPrice();
             }
         }
-        
+
         return mainDishPrice;
     }
 
