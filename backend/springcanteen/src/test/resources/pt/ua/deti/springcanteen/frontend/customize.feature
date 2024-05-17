@@ -1,4 +1,4 @@
-@costumize
+@customize
 Feature: Make an order on SpringCanteen
 
     Scenario: User wants to make an order

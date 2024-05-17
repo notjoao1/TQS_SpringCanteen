@@ -191,7 +191,7 @@ export default function Order() {
             >
               You currently have {order.menus.length} item(s) in your order.
             </Box>
-            <BottomNavigationAction label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
+            <BottomNavigationAction id="view-order" label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
             <BottomNavigationAction sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={validateOrder} />
           </BottomNavigation>
         </Paper>

@@ -30,6 +30,7 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
       sx={{ height: "100px" }}
       border={1}
       borderRadius={4}
+      id={`order-drawer-item-${index + 1}`}
     >
       <Box sx={{ width: "20%", height: "100%" }}>
         <img

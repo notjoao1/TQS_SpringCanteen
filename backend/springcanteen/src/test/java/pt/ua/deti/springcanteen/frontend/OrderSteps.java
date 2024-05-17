@@ -11,6 +11,7 @@
 
  import static org.hamcrest.MatcherAssert.assertThat;
  import static org.hamcrest.CoreMatchers.containsString;
+    import static org.hamcrest.CoreMatchers.is;
 
 
  public class OrderSteps {
@@ -42,14 +43,28 @@
     }
 
     @And("I click on \"Confirm selection\"")
-    public void i_click_confirm() {
+    public void i_click_confirm() throws InterruptedException {
+        Thread.sleep(1000);
         driver.findElement(By.id("confirm-selection")).click();
+    }
+
+    @And("I click to \"View order\"")
+    public void i_click_view_order() {
+        driver.findElement(By.id("view-order")).click();
     }
     
     @Then("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() throws InterruptedException {
-         Thread.sleep(1000); // wait for the message to appear
+        Thread.sleep(1000); // wait for the message to appear
         assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
+        driver.quit();
+    }
+
+    @Then("I should see the 2 menus added to the order")
+    public void i_should_see_order() {
+        // checks that order-drawer-item-1 and order-drawer-item-2 are visible
+        assertThat(driver.findElement(By.id("order-drawer-item-1")).isDisplayed(), is(true));
+        assertThat(driver.findElement(By.id("order-drawer-item-2")).isDisplayed(), is(true));
         driver.quit();
     }
  }
