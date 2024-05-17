@@ -40,4 +40,4 @@ Feature: Make an order on SpringCanteen
         And I click on "Confirm selection"
         And I click to "View order"
         And I remove the menu number "1"
-        Then I should see the 0 menus added to the order
+        Then I should see the 0 menus added to the order   

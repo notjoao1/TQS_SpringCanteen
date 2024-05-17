@@ -1,4 +1,4 @@
- package pt.ua.deti.springcanteen.frontend;
+ package pt.ua.deti.springcanteen.frontend.order;
 
  import io.cucumber.java.en.Then;
  import io.github.bonigarcia.wdm.WebDriverManager;

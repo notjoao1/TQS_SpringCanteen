@@ -1,4 +1,4 @@
-package pt.ua.deti.springcanteen.frontend;
+package pt.ua.deti.springcanteen.frontend.order;
 
 import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
 import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
@@ -10,8 +10,8 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("pt/ua/deti/springcanteen/frontend")
+@SelectClasspathResource("pt/ua/deti/springcanteen/frontend/order")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "pt.ua.deti.springcanteen.frontend")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "pt.ua.deti.springcanteen.frontend.order")
 public class OrderTest {
 }
