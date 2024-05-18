@@ -164,6 +164,7 @@ INSERT INTO menu_drinks (menu_id, item_id) VALUES
     (1, 8),
     (1, 9),
     (2, 9),
+    (3, 7),
     (4, 7),
     (4, 8),
     (4, 9),

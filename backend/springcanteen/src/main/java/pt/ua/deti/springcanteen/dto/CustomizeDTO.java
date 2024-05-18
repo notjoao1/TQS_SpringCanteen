@@ -9,6 +9,7 @@ public class CustomizeDTO {
 
     // Drinks can be null depending on the menu
     @Valid
+    @NotNull
     private CustomizeDrinkDTO customized_drink;
     @Valid
     @NotNull
