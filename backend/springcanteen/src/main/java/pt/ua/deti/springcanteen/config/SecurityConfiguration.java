@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import pt.ua.deti.springcanteen.service.EmployeeService;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -31,7 +31,7 @@ public class SecurityConfiguration {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        request -> request.requestMatchers("/api/auth/**", "docs/**", "/swagger-ui/**" , "websocket**")
+                        request -> request.requestMatchers("/api/auth/**", "/error", "docs/**", "/swagger-ui/**" , "websocket**")
                                 .permitAll().anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
