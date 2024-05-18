@@ -2,6 +2,8 @@ FROM maven:3.8.1-openjdk-17-slim AS build
 
 WORKDIR /app
 
+COPY . .
+
 RUN chmod 777 -R /app
 
 RUN apt update && apt install -y wget
