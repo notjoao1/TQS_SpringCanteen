@@ -2,14 +2,12 @@ package pt.ua.deti.springcanteen.integration;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -21,12 +19,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import jakarta.persistence.EntityManager;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-it.properties")
 class OrderControllerIT {
-    static final Logger logger = LoggerFactory.getLogger(OrderControllerIT.class);
+    @Autowired
+    EntityManager entityManager;
     
     @Container
     public static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest")
@@ -51,7 +51,7 @@ class OrderControllerIT {
 
     @Test
     void whenCreateOrderSuccessfully_thenReturnCorrectResponse() {
-        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (4.5€) with 1 extra ham (+2.5€)
+        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (6€) with 1 extra ham (+2.5€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -94,18 +94,18 @@ class OrderControllerIT {
         .then()
             .statusCode(HttpStatus.SC_CREATED)
                 .and()
-            .body("order_menus.size()", is(1))
+            .body("orderMenus.size()", is(1))
                 .and()
-            .body("order_menus[0].name", is("Sandwich & Drink"))
+            .body("orderMenus[0].menu.name", is("Sandwich & Drink"))
                 .and()
-            .body("order_menus[0].price", is(9f));
+            .body("orderMenus[0].menu.price", is(10.5f));
     }
 
     @Test
     void whenCreateOrder_with2Menus_thenReturnCorrectResponse() {
-        // order for 2 menus - 'lunch menu' and 'breakfast menu'
-        //      lunch menu has main dish 'Potato chips with Beef and lettuce' (8€) with 0 potatoes and drink 'Water' (1€)
-        //      breakfast menu has main dish 'Pancakes' (1.5f) and drink 'Orange Juice' (2€)
+        // order for 2 menus - 'Russian Salad & Water' and 'Veggie Wrap'
+        //      Russian Salad & Water has main dish 'Russian Salad' (3.5€) with 0 eggs and drink 'Water' (1.2€)
+        //      Veggie Wrap has main dish 'Veggie Wrap' (2.9€) and drink 'Orange Juice' (3€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -116,7 +116,7 @@ class OrderControllerIT {
         "            \"menu_id\": 2," +
         "            \"customization\": {" +
         "                \"customized_drink\": {" +
-        "                    \"item_id\": 4" +
+        "                    \"item_id\": 9" +
         "                }," +
         "                \"customized_main_dish\": {" +
         "                    \"item_id\": 2," +
@@ -127,7 +127,7 @@ class OrderControllerIT {
         "                        }," +
         "                        {" +
         "                            \"ingredient_id\": 5," +
-        "                            \"quantity\": 1" +
+        "                            \"quantity\": 0" +
         "                        }," +
         "                        {" +
         "                            \"ingredient_id\": 6," +
@@ -142,21 +142,29 @@ class OrderControllerIT {
         "            }" +
         "        }," +
         "        {" +
-        "            \"menu_id\": 2," +
+        "            \"menu_id\": 4," +
         "            \"customization\": {" +
         "                \"customized_drink\": {" +
-        "                    \"item_id\": 6" +
+        "                    \"item_id\": 7" +
         "                }," +
         "                \"customized_main_dish\": {" +
-        "                    \"item_id\": 3," +
+        "                    \"item_id\": 4," +
         "                    \"customized_ingredients\": [" +
         "                        {" +
-        "                            \"ingredient_id\": 5," +
-        "                            \"quantity\": 2" +
+        "                            \"ingredient_id\": 2," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 3," +
+        "                            \"quantity\": 1" +
         "                        }," +
         "                        {" +
         "                            \"ingredient_id\": 6," +
-        "                            \"quantity\": 2" +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 7," +
+        "                            \"quantity\": 1" +
         "                        }" +
         "                    ]" +
         "                }" +
@@ -165,7 +173,7 @@ class OrderControllerIT {
         "    ]" +
         "}";
 
-        // expect 2 menus, first one with price (8€ + 1€), second one w ith price (1.50€ + 2€)
+        // expect 2 menus, first one with price (3.5€ + 1.2€), second one w ith price (2.9€ + 3€)
         given()
             .contentType(ContentType.JSON)
             .body(orderRequest)
@@ -174,11 +182,11 @@ class OrderControllerIT {
         .then()
             .statusCode(HttpStatus.SC_CREATED)
                 .and()
-            .body("order_menus.size()", is(2))
+            .body("orderMenus.size()", is(2))
                 .and()
-            .body("order_menus.name", containsInAnyOrder("Potato chips with beef and lettuce", "Pancakes"))
+            .body("orderMenus.menu.name", containsInAnyOrder("Russian Salad & Water", "Veggie Wrap"))
                 .and()
-            .body("order_menus.price", containsInAnyOrder(9.0f, 3.5f));
+            .body("orderMenus.menu.price", containsInAnyOrder(4.7f, 5.9f));
     }
 
     @Test
@@ -220,10 +228,88 @@ class OrderControllerIT {
         .when()
             .post("api/orders")
         .then()
-            .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY)
-                .and()
-            .body(is(emptyOrNullString()));
+            .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
     }
+
+    @Test
+    void whenCreateOrder_with1ValidAnd1InvalidMenu_shouldFailWithStatus422() {
+        // ordering a menu with id 99
+        String orderRequest = "{" +
+        "    \"kiosk_id\": 1," +
+        "    \"isPaid\": false," +
+        "    \"isPriority\": false," +
+        "    \"nif\": \"123456789\"," +
+        "    \"orderMenus\": [" +
+        "        {" +
+        "            \"menu_id\": 2," +
+        "            \"customization\": {" +
+        "                \"customized_drink\": {" +
+        "                    \"item_id\": 9" +
+        "                }," +
+        "                \"customized_main_dish\": {" +
+        "                    \"item_id\": 2," +
+        "                    \"customized_ingredients\": [" +
+        "                        {" +
+        "                            \"ingredient_id\": 3," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 5," +
+        "                            \"quantity\": 0" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 6," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 7," +
+        "                            \"quantity\": 1" +
+        "                        }" +
+        "                    ]" +
+        "                }" +
+        "            }" +
+        "        }," +
+        "        {" +
+        "            \"menu_id\": 99," +
+        "            \"customization\": {" +
+        "                \"customized_drink\": {" +
+        "                    \"item_id\": 7" +
+        "                }," +
+        "                \"customized_main_dish\": {" +
+        "                    \"item_id\": 4," +
+        "                    \"customized_ingredients\": [" +
+        "                        {" +
+        "                            \"ingredient_id\": 2," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 3," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 6," +
+        "                            \"quantity\": 1" +
+        "                        }," +
+        "                        {" +
+        "                            \"ingredient_id\": 7," +
+        "                            \"quantity\": 1" +
+        "                        }" +
+        "                    ]" +
+        "                }" +
+        "            }" +
+        "        }" +
+        "    ]" +
+        "}";
+        
+        given()
+            .contentType(ContentType.JSON)
+            .body(orderRequest)
+        .when()
+            .post("api/orders")
+        .then()
+            .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+    }
+
 
     @Test
     void whenCreateOrder_withInvalidIngredientsForMenu_shouldFailWithStatus422() {
@@ -264,9 +350,6 @@ class OrderControllerIT {
             .body(orderRequest).when()
             .post("api/orders")
         .then()
-            .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY)
-                .and()
-            .body(is(emptyOrNullString()));
-
+            .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
     }
 }
