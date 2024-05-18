@@ -52,7 +52,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 
     @And("I click on \"Confirm selection\"")
     public void i_click_confirm() throws InterruptedException {
-        Thread.sleep(1000);
         driver.findElement(By.id("confirm-selection")).click();
     }
 

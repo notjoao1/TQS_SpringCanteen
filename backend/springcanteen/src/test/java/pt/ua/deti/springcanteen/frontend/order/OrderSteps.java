@@ -54,7 +54,6 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Confirm selection\"")
     public void i_click_confirm() throws InterruptedException {
-        Thread.sleep(1000);
         driver.findElement(By.id("confirm-selection")).click();
     }
 
@@ -65,7 +64,6 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Cancel selection\"")
     public void i_click_cancel() throws InterruptedException {
-        Thread.sleep(1000);
         driver.findElement(By.id("cancel-selection")).click();
     }
 
@@ -76,7 +74,6 @@ import static org.hamcrest.CoreMatchers.is;
     
     @Then("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() throws InterruptedException {
-        Thread.sleep(1000); // wait for the message to appear
         assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
         driver.quit();
     }
