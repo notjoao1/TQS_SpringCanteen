@@ -112,12 +112,12 @@ INSERT INTO ingredients (name, price, calories) VALUES
     ('Banana', 2.5, 59);
 
 INSERT INTO items (name, price) VALUES
-    ('Sandwich', 6.0),
-    ('Russian Salad', 3.5),
-    ('Yogurt', 2.5),
-    ('Veggie Wrap', 2.9),
-    ('Chicken Salad', 4.5),
-    ('Yogurt With Banana', 5.0),
+    ('Sandwich', 3.0),
+    ('Russian Salad', 4.0),
+    ('Yogurt', 2),
+    ('Veggie Wrap', 3.5),
+    ('Chicken Salad', 5.0),
+    ('Yogurt With Banana', 4.0),
     ('Orange Juice', 3),
     ('Lemonade', 2),
     ('Water', 1.2);
