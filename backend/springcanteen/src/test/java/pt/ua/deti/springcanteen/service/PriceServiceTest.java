@@ -91,8 +91,6 @@ class PriceServiceTest {
             "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 2}, {ingredient_id: 2, quantity: 1}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
-        System.out.println("price of drinkoption1:" + drinkOption1.getPrice());
-        System.out.println("price of meaindishopt1:" + mainDishOption1.getPrice());
         assertThat(actualOrderPrice, is(drinkOption2.getPrice() + mainDishOption1.getPrice()));
     }
 

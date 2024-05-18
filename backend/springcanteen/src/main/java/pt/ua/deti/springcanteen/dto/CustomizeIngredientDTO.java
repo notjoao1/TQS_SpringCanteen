@@ -7,7 +7,8 @@ import lombok.Data;
 public class CustomizeIngredientDTO {
 
     @NotNull
-    private Long ingredient_id;
+    private Long ingredientId;
+    
     @NotNull
     private Integer quantity;
 

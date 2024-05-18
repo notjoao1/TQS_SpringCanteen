@@ -58,14 +58,14 @@ public class IOrderService implements OrderService {
 
     private Order orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
         KioskTerminal kioskTerminal = new KioskTerminal();
-        kioskTerminal.setId(customizeOrderDTO.getKiosk_id());
+        kioskTerminal.setId(customizeOrderDTO.getKioskId());
         Order order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
         Set<OrderMenu> orderMenus = new HashSet<>();
         // check if all menus provided exist and add them to orderMenus set
         for (OrderMenuDTO orderMenuDTO : customizeOrderDTO.getOrderMenus()) {
-            Optional<Menu> menuOpt = menuService.getMenuById(orderMenuDTO.getMenu_id());
+            Optional<Menu> menuOpt = menuService.getMenuById(orderMenuDTO.getMenuId());
             if (menuOpt.isEmpty())
-                throw new InvalidOrderException(String.format("Order has an invalid menu that does not exist with id '%s'", orderMenuDTO.getMenu_id()));
+                throw new InvalidOrderException(String.format("Order has an invalid menu that does not exist with id '%s'", orderMenuDTO.getMenuId()));
             orderMenus.add(new OrderMenu(order, menuOpt.get(), new Gson().toJson(orderMenuDTO.getCustomization())));
         }
         order.setOrderMenus(orderMenus);

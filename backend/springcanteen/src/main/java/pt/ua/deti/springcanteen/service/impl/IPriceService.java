@@ -25,8 +25,8 @@ public class IPriceService implements PriceService {
         logger.info("Getting menu price for OrderMenu with customization -> {}", orderMenu.getCustomization());
         Menu menu = orderMenu.getMenu();
         CustomizeDTO customizeDTO = new Gson().fromJson(orderMenu.getCustomization(), CustomizeDTO.class);
-        Long customizedDrinkId = customizeDTO.getCustomized_drink().getItem_id();
-        Long customizedMainDishId = customizeDTO.getCustomized_main_dish().getItem_id();
+        Long customizedDrinkId = customizeDTO.getCustomizedDrink().getItemId();
+        Long customizedMainDishId = customizeDTO.getCustomizedMainDish().getItemId();
 
         // Check if the specified drink with a given id exists as an option for that menu
         Optional<Drink> drinkOpt = menu.getDrinkOptions().stream().filter(d -> d.getId().equals(customizedDrinkId)).findFirst();
@@ -43,7 +43,7 @@ public class IPriceService implements PriceService {
         }
 
         MainDish mainDish = mainDishOpt.get();
-        Set<CustomizeIngredientDTO> customizedIngredients = customizeDTO.getCustomized_main_dish().getCustomized_ingredients();
+        Set<CustomizeIngredientDTO> customizedIngredients = customizeDTO.getCustomizedMainDish().getCustomizedIngredients();
         Set<MainDishIngredients> baseIngredients = mainDish.getMainDishIngredients();
 
         return drinkOpt.get().getPrice() + getMainDishPriceBasedOnCustomization(baseIngredients, customizedIngredients, mainDish.getPrice());
@@ -56,7 +56,7 @@ public class IPriceService implements PriceService {
     private float getMainDishPriceBasedOnCustomization(Set<MainDishIngredients> baseIngredients, Set<CustomizeIngredientDTO> customizedIngredients, float mainDishBasePrice) {
         float mainDishPrice = mainDishBasePrice;
         for (MainDishIngredients baseIngredient : baseIngredients) {
-            CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredient_id().equals(baseIngredient.getIngredient().getId()))
+            CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredientId().equals(baseIngredient.getIngredient().getId()))
                                                 .findFirst().orElseThrow(() -> {
                                                     logger.error("Ingredient with id {} and name {} was not specified.", baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName());
                                                     return new InvalidOrderException(String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", 

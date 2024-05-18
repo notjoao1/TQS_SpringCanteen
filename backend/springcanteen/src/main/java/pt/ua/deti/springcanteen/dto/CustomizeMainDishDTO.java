@@ -10,8 +10,10 @@ import java.util.Set;
 public class CustomizeMainDishDTO {
 
     @NotNull
-    private Long item_id;
+    private Long itemId;
+
+    @NotNull
     @Valid
-    private Set<CustomizeIngredientDTO> customized_ingredients;
+    private Set<CustomizeIngredientDTO> customizedIngredients;
 
 }

@@ -67,7 +67,7 @@ class OrderServiceTest {
     @Test
     void whenCreateValidPaidOrder_thenShouldBePaid_andStatusIdle() {
         // ordering menu 1, and already paid for it
-        orderMenuDTO.setMenu_id(1L);
+        orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(true);
         customizeOrderDTO.setIsPriority(false);
@@ -85,7 +85,7 @@ class OrderServiceTest {
     @Test
     void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusIdle() {
         // ordering menu 1, and already paid for it
-        orderMenuDTO.setMenu_id(1L);
+        orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(false);
         customizeOrderDTO.setIsPriority(true);
@@ -104,7 +104,7 @@ class OrderServiceTest {
     @Test
     void whenCreateOrderWithInvalidMenus_thenShouldThrow() {
         // ordering menu 99, which doesnt exist
-        orderMenuDTO.setMenu_id(99L);
+        orderMenuDTO.setMenuId(99L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(false);
         customizeOrderDTO.setIsPriority(true);
@@ -118,9 +118,9 @@ class OrderServiceTest {
     @Test
     void whenCreateOrderWithTwoMenus_thenPriceShouldBeCorrectlyCalculated() {
         // ordering menu 1 and menu 2
-        orderMenuDTO.setMenu_id(1L);
+        orderMenuDTO.setMenuId(1L);
         OrderMenuDTO orderMenuDTO2 = new OrderMenuDTO();
-        orderMenuDTO2.setMenu_id(2L);
+        orderMenuDTO2.setMenuId(2L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO, orderMenuDTO2));
         customizeOrderDTO.setIsPaid(false);
         customizeOrderDTO.setIsPriority(true);

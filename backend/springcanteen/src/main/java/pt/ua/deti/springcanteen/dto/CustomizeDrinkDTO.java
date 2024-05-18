@@ -7,6 +7,6 @@ import lombok.Data;
 public class CustomizeDrinkDTO {
 
     @NotNull
-    private Long item_id;
+    private Long itemId;
 
 }

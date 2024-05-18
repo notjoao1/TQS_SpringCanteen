@@ -11,7 +11,7 @@ import java.util.Set;
 public class CustomizeOrderDTO {
 
     @NotNull
-    private Long kiosk_id;
+    private Long kioskId;
     @NotNull
     private Boolean isPaid;
     @NotNull
