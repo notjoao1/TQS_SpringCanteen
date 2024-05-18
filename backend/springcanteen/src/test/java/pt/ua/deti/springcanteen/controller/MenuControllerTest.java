@@ -72,12 +72,10 @@ class MenuControllerTest {
         menu1 = new Menu();
         menu1.setId(1L);
         menu1.setName("Menu 1");
-        menu1.setPrice(1.0f);
 
         menu2 = new Menu();
         menu2.setId(2L);
         menu2.setName("Menu 2");
-        menu2.setPrice(2.0f);
 
         Set<Drink> drinkMenu1 = new HashSet<>();
         drinkMenu1.add(drink1);

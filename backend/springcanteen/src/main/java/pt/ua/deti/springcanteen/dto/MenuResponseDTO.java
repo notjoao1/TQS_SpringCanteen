@@ -1,10 +1,10 @@
 package pt.ua.deti.springcanteen.dto;
 
-import java.util.Set;
-
 import lombok.Data;
 import pt.ua.deti.springcanteen.entities.Drink;
 import pt.ua.deti.springcanteen.entities.MainDish;
+
+import java.util.Set;
 
 @Data
 public class MenuResponseDTO {

@@ -1,6 +1,7 @@
 package pt.ua.deti.springcanteen.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,4 +33,10 @@ public class IMenuService implements MenuService {
 
         return menusDb.stream().map(mapper::toDTO).toList();
     }
+
+    @Override
+    public Optional<Menu> getMenuById(Long menuId) {
+        return menuRepository.findById(menuId);
+    }
+
 }

@@ -27,6 +27,10 @@ public class Order {
     @NotNull
     private boolean isPaid;
 
+    // calculated based on the customizations for each OrderMenu in this order
+    @NotNull
+    private float price;
+
     @NotNull
     private boolean isPriority;
 
@@ -39,5 +43,13 @@ public class Order {
 
     @OneToMany(mappedBy = "order")
     private Set<OrderMenu> orderMenus;
+
+    public Order(OrderStatus orderStatus, boolean isPaid, boolean isPriority, String nif, KioskTerminal kioskTerminal) {
+        this.orderStatus = orderStatus;
+        this.isPaid = isPaid;
+        this.isPriority = isPriority;
+        this.nif = nif;
+        this.kioskTerminal = kioskTerminal;
+    }
 
 }

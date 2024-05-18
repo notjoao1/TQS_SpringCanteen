@@ -24,9 +24,6 @@ public class Menu {
     private String name;
 
     @NotNull
-    private float price;
-
-    @NotNull
     private String imageLink;
 
     @OneToMany(mappedBy = "menu")
