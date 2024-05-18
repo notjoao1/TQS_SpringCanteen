@@ -53,7 +53,7 @@ class PriceServiceTest {
         mainDishOption1 = new MainDish(mainDish1Ingredients);
         mainDishOption1.setId(1L);
         mainDishOption1.setName("Fat Pancakes");
-        mainDishOption1.setPrice(2.0f); // based on the base quantity * ingredient_price for each ingredient
+        mainDishOption1.setPrice(3.0f);
 
 
         // ingredients for mainDish2 (thin pancakes)
@@ -68,7 +68,7 @@ class PriceServiceTest {
         mainDishOption2 = new MainDish(mainDish2Ingredients);
         mainDishOption2.setId(2L);
         mainDishOption2.setName("Thin Pancakes");
-        mainDishOption2.setPrice(1.0f); // based on the base quantity * ingredient_price for each ingredient
+        mainDishOption2.setPrice(1.8f);
 
         // available menu
         Set<Drink> drinkOptions = new HashSet<>();
@@ -85,14 +85,15 @@ class PriceServiceTest {
 
     @Test
     void whenGetMenuPrice_thenPriceIsCorrectlyCalculated() {
-        // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Thin Pancakes' main dish
-        // with default quantities -> expected price is 2€ + 2€ => 4€
+        // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Fat Pancakes' main dish
+        // with default quantities
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
             "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 2}, {ingredient_id: 2, quantity: 1}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
-
-        assertThat(actualOrderPrice, is(4.0f));
+        System.out.println("price of drinkoption1:" + drinkOption1.getPrice());
+        System.out.println("price of meaindishopt1:" + mainDishOption1.getPrice());
+        assertThat(actualOrderPrice, is(drinkOption2.getPrice() + mainDishOption1.getPrice()));
     }
 
     @Test
@@ -140,28 +141,28 @@ class PriceServiceTest {
 
     @Test
     void whenMenu_hasLessIngredientQuantityThanBase_thenPriceShouldNotBeLowerThanBasePrice() {
-        // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Thin Pancakes' main dish
-        // the requested main dish costs 2€ base.
+        // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Fat Pancakes' main dish
+        // the requested main dish costs 3€ base.
         // this order request removed all 'sugar' ingredient and the price should not be lowered when removing ingredients.
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
             "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 1}, {ingredient_id: 2, quantity: 1}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
 
-        assertThat(actualOrderPrice, is(4.0f));
+        assertThat(actualOrderPrice, is(drinkOption2.getPrice() + mainDishOption1.getPrice()));
     }
 
     @Test
     void whenMenu_hasMoreIngredientsThanBase_thenPriceShouldBeHigher() {
-        // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Thin Pancakes' main dish
-        // with extra sugar. sugar costs 0.5€ a piece
+        // setup an order for a pancakes menu with the 'Water' drink (1.5€) and 'Thin Pancakes' main dish
+        // with 9x extra 'vegan sugar' and 2x extra 'vegan milk'
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 10}, {ingredient_id: 2, quantity: 1}]}}");
+            "{customized_drink: {item_id: 1}, customized_main_dish: {item_id:2, customized_ingredients: [{ingredient_id: 3, quantity: 10}, {ingredient_id: 4, quantity: 4}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
 
-        // price is 10x sugar price + 1x milk price
-        float expectedPrice = ingredient1.getPrice() * 10 + ingredient2.getPrice() * 1 + drinkOption2.getPrice();
+        // price = drink_price + main_dish_base_price + extra ingredients price
+        float expectedPrice = drinkOption1.getPrice() + mainDishOption2.getPrice() + ingredient3.getPrice() * 9 + ingredient4.getPrice() * 2;
         assertThat(actualOrderPrice, is(expectedPrice));
     }
 }

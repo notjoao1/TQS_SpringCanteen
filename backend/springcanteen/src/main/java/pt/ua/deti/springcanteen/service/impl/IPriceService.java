@@ -42,19 +42,19 @@ public class IPriceService implements PriceService {
             throw new InvalidOrderException("Provided main dish does not exist as an option in the given menu.");
         }
 
+        MainDish mainDish = mainDishOpt.get();
         Set<CustomizeIngredientDTO> customizedIngredients = customizeDTO.getCustomized_main_dish().getCustomized_ingredients();
-        Set<MainDishIngredients> baseIngredients = mainDishOpt.get().getMainDishIngredients();
+        Set<MainDishIngredients> baseIngredients = mainDish.getMainDishIngredients();
 
-        return drinkOpt.get().getPrice() + getMainDishPriceBasedOnCustomization(baseIngredients, customizedIngredients);
+        return drinkOpt.get().getPrice() + getMainDishPriceBasedOnCustomization(baseIngredients, customizedIngredients, mainDish.getPrice());
     }
 
     
     // iterate over each customized ingredient, and check if extra ingredients were added based on the base ingredients
-    // if so, price_of_ingredient = price_per_ingredient * quantity,
-    // else, price_of_ingredient = price_per_ingredient * base_quantity
+    // add that to the base main dish price.
     // also throws exception is an expected base ingredient was not specified
-    private float getMainDishPriceBasedOnCustomization(Set<MainDishIngredients> baseIngredients, Set<CustomizeIngredientDTO> customizedIngredients) {
-        float mainDishPrice = 0;
+    private float getMainDishPriceBasedOnCustomization(Set<MainDishIngredients> baseIngredients, Set<CustomizeIngredientDTO> customizedIngredients, float mainDishBasePrice) {
+        float mainDishPrice = mainDishBasePrice;
         for (MainDishIngredients baseIngredient : baseIngredients) {
             CustomizeIngredientDTO customizeIngredientDTO = customizedIngredients.stream().filter(i -> i.getIngredient_id().equals(baseIngredient.getIngredient().getId()))
                                                 .findFirst().orElseThrow(() -> {
@@ -63,9 +63,8 @@ public class IPriceService implements PriceService {
                                                                                                     baseIngredient.getIngredient().getId(), baseIngredient.getIngredient().getName()));
                                                                                                 });
             if (customizeIngredientDTO.getQuantity() > baseIngredient.getQuantity()) {
-                mainDishPrice = mainDishPrice + customizeIngredientDTO.getQuantity() * baseIngredient.getIngredient().getPrice();
-            } else {
-                mainDishPrice = mainDishPrice + baseIngredient.getQuantity() * baseIngredient.getIngredient().getPrice();
+                int extraIngredientNumber = customizeIngredientDTO.getQuantity() - baseIngredient.getQuantity();
+                mainDishPrice = mainDishPrice + (extraIngredientNumber * baseIngredient.getIngredient().getPrice());
             }
         }
 
