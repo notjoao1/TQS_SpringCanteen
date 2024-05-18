@@ -5,9 +5,10 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - "backend/springcanteen/**"
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -24,19 +25,6 @@ jobs:
           java-version: 17
           distribution: 'zulu' # Alternative distribution options are available.
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-          with:
-            path: ~/.sonar/cache
-            key: ${{ runner.os }}-sonar
-            restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
       - name: Install Firefox
         run: |
           sudo snap remove firefox
@@ -51,8 +39,6 @@ jobs:
           sudo apt install firefox -y --allow-downgrades
 
       - name: Up containers
-        env:
-          CURRENCY_API_KEY: ${{ secrets.CURRENCY_API_KEY }}
         run: docker compose up -d --build
 
       - name: Build and test using Cucumber + Selenium 
