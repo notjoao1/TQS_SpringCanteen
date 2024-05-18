@@ -150,26 +150,26 @@ class OrderControllerTest {
 
         // order with drink as Coke (3€) + main dish as 'Rice with Beef' (9€) with 1 extra beef (1.5€)
         String orderRequest = "{" +
-        "    \"kiosk_id\": 1," +
+        "    \"kioskId\": 1," +
         "    \"isPaid\": false," +
         "    \"isPriority\": false," +
         "    \"nif\": \"123456789\"," +
         "    \"orderMenus\": [" +
         "        {" +
-        "            \"menu_id\": 1," +
+        "            \"menuId\": 1," +
         "            \"customization\": {" +
-        "                \"customized_drink\": {" +
-        "                    \"item_id\": 2" +
+        "                \"customizedDrink\": {" +
+        "                    \"itemId\": 2" +
         "                }," +
-        "                \"customized_main_dish\": {" +
-        "                    \"item_id\": 1," +
-        "                    \"customized_ingredients\": [" +
+        "                \"customizedMainDish\": {" +
+        "                    \"itemId\": 1," +
+        "                    \"customizedIngredients\": [" +
         "                        {" +
-        "                            \"ingredient_id\": 1," +
+        "                            \"ingredientId\": 1," +
         "                            \"quantity\": 4" +
         "                        }," +
         "                        {" +
-        "                            \"ingredient_id\": 2," +
+        "                            \"ingredientId\": 2," +
         "                            \"quantity\": 3" +
         "                        }" +
         "                    ]" +
@@ -210,30 +210,30 @@ class OrderControllerTest {
         //      lunch menu has main dish 'Potato chips with Beef and lettuce' (10€) with 0 potatoes and drink 'Water' (1€)
         //      breakfast menu has main dish 'Pancakes' (3€) and drink 'Orange Juice' (2€)
         String orderRequest = "{" +
-        "    \"kiosk_id\": 1," +
+        "    \"kioskId\": 1," +
         "    \"isPaid\": false," +
         "    \"isPriority\": false," +
         "    \"nif\": \"123456789\"," +
         "    \"orderMenus\": [" +
         "        {" +
-        "            \"menu_id\": 1," +
+        "            \"menuId\": 1," +
         "            \"customization\": {" +
-        "                \"customized_drink\": {" +
-        "                    \"item_id\": 1" +
+        "                \"customizedDrink\": {" +
+        "                    \"itemId\": 1" +
         "                }," +
-        "                \"customized_main_dish\": {" +
-        "                    \"item_id\": 2," +
-        "                    \"customized_ingredients\": [" +
+        "                \"customizedMainDish\": {" +
+        "                    \"itemId\": 2," +
+        "                    \"customizedIngredients\": [" +
         "                        {" +
-        "                            \"ingredient_id\": 3," +
+        "                            \"ingredientId\": 3," +
         "                            \"quantity\": 0" +
         "                        }," +
         "                        {" +
-        "                            \"ingredient_id\": 4," +
+        "                            \"ingredientId\": 4," +
         "                            \"quantity\": 2" +
         "                        }," +
         "                        {" +
-        "                            \"ingredient_id\": 55," +
+        "                            \"ingredientId\": 55," +
         "                            \"quantity\": 4" +
         "                        }" +
         "                    ]" +
@@ -241,20 +241,20 @@ class OrderControllerTest {
         "            }" +
         "        }," +
         "        {" +
-        "            \"menu_id\": 2," +
+        "            \"menuId\": 2," +
         "            \"customization\": {" +
-        "                \"customized_drink\": {" +
-        "                    \"item_id\": 3" +
+        "                \"customizedDrink\": {" +
+        "                    \"itemId\": 3" +
         "                }," +
-        "                \"customized_main_dish\": {" +
-        "                    \"item_id\": 3," +
-        "                    \"customized_ingredients\": [" +
+        "                \"customizedMainDish\": {" +
+        "                    \"itemId\": 3," +
+        "                    \"customizedIngredients\": [" +
         "                        {" +
-        "                            \"ingredient_id\": 5," +
+        "                            \"ingredientId\": 5," +
         "                            \"quantity\": 2" +
         "                        }," +
         "                        {" +
-        "                            \"ingredient_id\": 6," +
+        "                            \"ingredientId\": 6," +
         "                            \"quantity\": 2" +
         "                        }" +
         "                    ]" +

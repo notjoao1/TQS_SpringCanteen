@@ -88,7 +88,7 @@ class PriceServiceTest {
         // setup an order for a pancakes menu with the 'Orange Juice' drink (2€) and 'Fat Pancakes' main dish
         // with default quantities
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 2}, {ingredient_id: 2, quantity: 1}]}}");
+            "{customizedDrink: {itemId: 2}, customizedMainDish: {itemId:1, customizedIngredients: [{ingredientId: 1, quantity: 2}, {ingredientId: 2, quantity: 1}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
         assertThat(actualOrderPrice, is(drinkOption2.getPrice() + mainDishOption1.getPrice()));
@@ -98,7 +98,7 @@ class PriceServiceTest {
     void whenMenu_hasInvalidMainDish_thenThrowError() {
         // this order requests a main dish that does not exist for the requested menu
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:3, customized_ingredients: [{ingredient_id: 1, quantity: 2}]}}");
+            "{customizedDrink: {itemId: 2}, customizedMainDish: {itemId:3, customizedIngredients: [{ingredientId: 1, quantity: 2}]}}");
 
         Exception exceptionThrown = assertThrows(InvalidOrderException.class, () -> {
             priceService.getOrderMenuPrice(requestedOrderMenu);
@@ -111,7 +111,7 @@ class PriceServiceTest {
     void whenMenu_hasInvalidDrink_thenThrowError() {
         // this order requests a drink that does not exist for the requested menu
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 3}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 2}, {ingredient_id: 2, quantity: 1}]}}");
+            "{customizedDrink: {itemId: 3}, customizedMainDish: {itemId:1, customizedIngredients: [{ingredientId: 1, quantity: 2}, {ingredientId: 2, quantity: 1}]}}");
 
         Exception exceptionThrown = assertThrows(RuntimeException.class, () -> {
             priceService.getOrderMenuPrice(requestedOrderMenu);
@@ -126,7 +126,7 @@ class PriceServiceTest {
         // this order request is missing an ingredient in the customization string
         // which is not expected
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 2}]}}");
+            "{customizedDrink: {itemId: 2}, customizedMainDish: {itemId:1, customizedIngredients: [{ingredientId: 1, quantity: 2}]}}");
 
         Exception exceptionThrown = assertThrows(RuntimeException.class, () -> {
             priceService.getOrderMenuPrice(requestedOrderMenu);
@@ -143,7 +143,7 @@ class PriceServiceTest {
         // the requested main dish costs 3€ base.
         // this order request removed all 'sugar' ingredient and the price should not be lowered when removing ingredients.
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 2}, customized_main_dish: {item_id:1, customized_ingredients: [{ingredient_id: 1, quantity: 1}, {ingredient_id: 2, quantity: 1}]}}");
+            "{customizedDrink: {itemId: 2}, customizedMainDish: {itemId:1, customizedIngredients: [{ingredientId: 1, quantity: 1}, {ingredientId: 2, quantity: 1}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
 
@@ -155,7 +155,7 @@ class PriceServiceTest {
         // setup an order for a pancakes menu with the 'Water' drink (1.5€) and 'Thin Pancakes' main dish
         // with 9x extra 'vegan sugar' and 2x extra 'vegan milk'
         requestedOrderMenu = new OrderMenu(null, availableMenu, 
-            "{customized_drink: {item_id: 1}, customized_main_dish: {item_id:2, customized_ingredients: [{ingredient_id: 3, quantity: 10}, {ingredient_id: 4, quantity: 4}]}}");
+            "{customizedDrink: {itemId: 1}, customizedMainDish: {itemId:2, customizedIngredients: [{ingredientId: 3, quantity: 10}, {ingredientId: 4, quantity: 4}]}}");
 
         float actualOrderPrice = priceService.getOrderMenuPrice(requestedOrderMenu);
 
