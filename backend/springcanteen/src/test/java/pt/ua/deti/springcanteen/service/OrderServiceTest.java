@@ -4,6 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -20,6 +22,7 @@ import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
+import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
@@ -45,7 +48,7 @@ class OrderServiceTest {
 
     CustomizeOrderDTO customizeOrderDTO;
     OrderMenuDTO orderMenuDTO;
-    Menu menu1;
+    Menu menu1, menu2;
 
     @BeforeEach
     void setup() {
@@ -55,6 +58,10 @@ class OrderServiceTest {
         menu1 = new Menu();
         menu1.setId(1L);
         menu1.setName("menu1");
+
+        menu2 = new Menu();
+        menu2.setId(2L);
+        menu2.setName("menu2");
     }
 
     @Test
@@ -83,26 +90,54 @@ class OrderServiceTest {
         customizeOrderDTO.setIsPaid(false);
         customizeOrderDTO.setIsPriority(true);
         when(menuService.getMenuById(1L)).thenReturn(Optional.of(menu1));
+        when(priceService.getOrderMenuPrice(any())).thenReturn(3.0f);
 
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
         assertThat(orderOpt.isPresent(), is(true));
         assertThat(orderOpt.get().getOrderStatus(), is(OrderStatus.IDLE));
         assertThat(orderOpt.get().isPriority(), is(true));
+        assertThat(orderOpt.get().getPrice(), is(3.0f));
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
     }
 
     @Test
     void whenCreateOrderWithInvalidMenus_thenShouldThrow() {
-        // ordering menu 2, which doesnt exist
-        orderMenuDTO.setMenu_id(2L);
+        // ordering menu 99, which doesnt exist
+        orderMenuDTO.setMenu_id(99L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(false);
         customizeOrderDTO.setIsPriority(true);
-        when(menuService.getMenuById(2L)).thenReturn(Optional.empty());
+        when(menuService.getMenuById(99L)).thenReturn(Optional.empty());
 
         Exception actualException = assertThrows(InvalidOrderException.class, () -> orderService.createOrder(customizeOrderDTO));
 
-        assertThat(actualException.getMessage(), containsString("Order has an invalid menu that does not exist with id '2'"));
+        assertThat(actualException.getMessage(), containsString("Order has an invalid menu that does not exist with id '99'"));
+    }
+
+    @Test
+    void whenCreateOrderWithTwoMenus_thenPriceShouldBeCorrectlyCalculated() {
+        // ordering menu 1 and menu 2
+        orderMenuDTO.setMenu_id(1L);
+        OrderMenuDTO orderMenuDTO2 = new OrderMenuDTO();
+        orderMenuDTO2.setMenu_id(2L);
+        customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO, orderMenuDTO2));
+        customizeOrderDTO.setIsPaid(false);
+        customizeOrderDTO.setIsPriority(true);
+        when(menuService.getMenuById(anyLong())).thenAnswer(input -> {
+            if ((Long) input.getArgument(0) == 1L) 
+                return Optional.of(menu1);
+            return Optional.of(menu2);
+        });
+        // return 5€ * menuId as the price for each menu
+        when(priceService.getOrderMenuPrice(any())).thenAnswer(input -> ((OrderMenu) input.getArgument(0)).getMenu().getId() * 5.0f);
+
+        Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
+        
+
+        assertThat(orderOpt.isPresent(), is(true));
+        assertThat(orderOpt.get().getOrderMenus().size(), is(2));
+        // 5€ from menu 1 and 10€ from menu 2
+        assertThat(orderOpt.get().getPrice(), is(15.0f));
     }
 }

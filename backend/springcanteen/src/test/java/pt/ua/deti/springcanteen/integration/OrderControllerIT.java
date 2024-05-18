@@ -51,7 +51,7 @@ class OrderControllerIT {
 
     @Test
     void whenCreateOrderSuccessfully_thenReturnCorrectResponse() {
-        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (6€) with 1 extra ham (+2.5€)
+        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (3€) with 1 extra ham (+2.5€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -98,14 +98,14 @@ class OrderControllerIT {
                 .and()
             .body("orderMenus[0].menu.name", is("Sandwich & Drink"))
                 .and()
-            .body("orderMenus[0].menu.price", is(10.5f));
+            .body("orderMenus[0].menu.price", is(7.5f));
     }
 
     @Test
     void whenCreateOrder_with2Menus_thenReturnCorrectResponse() {
         // order for 2 menus - 'Russian Salad & Water' and 'Veggie Wrap'
-        //      Russian Salad & Water has main dish 'Russian Salad' (3.5€) with 0 eggs and drink 'Water' (1.2€)
-        //      Veggie Wrap has main dish 'Veggie Wrap' (2.9€) and drink 'Orange Juice' (3€)
+        //      Russian Salad & Water has main dish 'Russian Salad' (4.0€) with 0 eggs and drink 'Water' (1.2€)
+        //      Veggie Wrap has main dish 'Veggie Wrap' (3.5€) and drink 'Orange Juice' (3€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -173,7 +173,7 @@ class OrderControllerIT {
         "    ]" +
         "}";
 
-        // expect 2 menus, first one with price (3.5€ + 1.2€), second one w ith price (2.9€ + 3€)
+        // expect 2 menus, first one with price (4.0€ + 1.2€), second one with price (3.5€ + 3€)
         given()
             .contentType(ContentType.JSON)
             .body(orderRequest)
@@ -184,9 +184,11 @@ class OrderControllerIT {
                 .and()
             .body("orderMenus.size()", is(2))
                 .and()
+            .body("price", is(11.7f))
+                .and()
             .body("orderMenus.menu.name", containsInAnyOrder("Russian Salad & Water", "Veggie Wrap"))
                 .and()
-            .body("orderMenus.menu.price", containsInAnyOrder(4.7f, 5.9f));
+            .body("orderMenus.menu.price", containsInAnyOrder(5.2f, 6.5f));
     }
 
     @Test

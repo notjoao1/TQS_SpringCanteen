@@ -98,17 +98,17 @@ class OrderControllerTest {
         mainDish1 = new MainDish();
         mainDish1.setId(1L);
         mainDish1.setName("Rice with Beef");
-        mainDish1.setPrice(7.0f);
+        mainDish1.setPrice(9.0f);
 
         mainDish2 = new MainDish();
         mainDish2.setId(2L);
         mainDish2.setName("Potato chips with beef and lettuce");
-        mainDish2.setPrice(8.0f);
+        mainDish2.setPrice(10.0f);
 
         mainDish3 = new MainDish();
         mainDish3.setId(3L);
         mainDish3.setName("Pancakes");
-        mainDish3.setPrice(1.5f);
+        mainDish3.setPrice(3.0f);
 
         // ingredients for Rice with beef
         Set<MainDishIngredients> mainDishIngredients1 = new HashSet<>();
@@ -144,11 +144,11 @@ class OrderControllerTest {
     @Test
     void whenCreateOrderSuccessfully_thenReturnCorrectResponse() {
         OrderMenu orderMenu1 = new OrderMenu(null, menu1, null);
-        orderMenu1.setCalculatedPrice(11.5f);
-        Optional<Order> returnOrder = Optional.of(new Order(1L, OrderStatus.IDLE, false, 11.5f, false, "123456789", null, Set.of(orderMenu1)));
+        orderMenu1.setCalculatedPrice(13.5f);
+        Optional<Order> returnOrder = Optional.of(new Order(1L, OrderStatus.IDLE, false, orderMenu1.getCalculatedPrice(), false, "123456789", null, Set.of(orderMenu1)));
         when(orderService.createOrder(any())).thenReturn(returnOrder);
 
-        // order with drink as Coke (3€) + main dish as 'Rice with Beef' (7€) with 1 extra beef (1.5€)
+        // order with drink as Coke (3€) + main dish as 'Rice with Beef' (9€) with 1 extra beef (1.5€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -190,23 +190,25 @@ class OrderControllerTest {
                         .and()
                     .body("orderMenus.size()", is(1))
                         .and()
+                    .body("price", is(orderMenu1.getCalculatedPrice()))
+                        .and()
                     .body("orderMenus[0].menu.name", is(menu1.getName()))
                         .and()
-                    .body("orderMenus[0].menu.price", is(11.5f));
+                    .body("orderMenus[0].menu.price", is(13.5f));
     }
 
     @Test
     void whenCreateOrder_with2Menus_thenReturnCorrectResponse() {
         OrderMenu orderMenu1 = new OrderMenu(null, menu1, null);
-        orderMenu1.setCalculatedPrice(9.0f);
+        orderMenu1.setCalculatedPrice(11.0f);
         OrderMenu orderMenu2 = new OrderMenu(null, menu2, null);
-        orderMenu2.setCalculatedPrice(3.5f);
-        Optional<Order> returnOrder = Optional.of(new Order(1L, OrderStatus.IDLE, false, 11.5f, false, "123456789", null, Set.of(orderMenu1, orderMenu2)));
+        orderMenu2.setCalculatedPrice(5.0f);
+        Optional<Order> returnOrder = Optional.of(new Order(1L, OrderStatus.IDLE, false, orderMenu1.getCalculatedPrice() + orderMenu2.getCalculatedPrice(), false, "123456789", null, Set.of(orderMenu1, orderMenu2)));
         when(orderService.createOrder(any())).thenReturn(returnOrder);
 
         // order for 2 menus - 'lunch menu' and 'breakfast menu'
-        //      lunch menu has main dish 'Potato chips with Beef and lettuce' (8€) with 0 potatoes and drink 'Water' (1€)
-        //      breakfast menu has main dish 'Pancakes' (1.5f) and drink 'Orange Juice' (2€)
+        //      lunch menu has main dish 'Potato chips with Beef and lettuce' (10€) with 0 potatoes and drink 'Water' (1€)
+        //      breakfast menu has main dish 'Pancakes' (3€) and drink 'Orange Juice' (2€)
         String orderRequest = "{" +
         "    \"kiosk_id\": 1," +
         "    \"isPaid\": false," +
@@ -262,7 +264,7 @@ class OrderControllerTest {
         "    ]" +
         "}";
 
-        // expect 2 menus, first one with price (8€ + 1€), second one w ith price (1.50€ + 2€)
+        // expect 2 menus, first one with price (10€ + 1€), second one w ith price (3€ + 2€)
         RestAssuredMockMvc
             .given()
                 .mockMvc(mockMvc)
@@ -274,8 +276,10 @@ class OrderControllerTest {
                         .and()
                     .body("orderMenus.size()", is(2))
                         .and()
+                    .body("price", is(orderMenu1.getCalculatedPrice() + orderMenu2.getCalculatedPrice()))
+                        .and()
                     .body("orderMenus.menu.name", containsInAnyOrder(menu1.getName(), menu2.getName()))
                         .and()
-                    .body("orderMenus.menu.price", containsInAnyOrder(9.0f, 3.5f));
+                    .body("orderMenus.menu.price", containsInAnyOrder(11.0f, 5.0f));
     }
 }
