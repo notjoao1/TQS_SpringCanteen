@@ -1,15 +1,16 @@
- package pt.ua.deti.springcanteen.frontend.customize;
+package pt.ua.deti.springcanteen.frontend.customize;
 
- import io.cucumber.java.en.Then;
- import io.github.bonigarcia.wdm.WebDriverManager;
- import org.openqa.selenium.By;
- import org.openqa.selenium.WebDriver;
+import io.cucumber.java.en.Then;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
 import io.cucumber.java.en.And;
- import io.cucumber.java.en.When;
+import io.cucumber.java.en.When;
 
- import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
 
@@ -21,16 +22,20 @@ import static org.hamcrest.CoreMatchers.containsString;
 
      @When("I navigate to {string}")
      public void i_navigate_to(String url) {
-         WebDriverManager.firefoxdriver().setup();
-         driver = new FirefoxDriver();
-         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-         driver.get(url);
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        driver = new FirefoxDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.get(url);
      }
 
      // changed the id in frontend, continue...
      @And("I select the menu number {string}")
         public void i_select_menu(String number) {
-            driver.findElement(By.cssSelector("#add-menu-" + number + " path")).click();
+            driver.findElement(By.id("add-menu-" + number)).click();
         }
 
     @And("I select the Main Dish number {string}")
