@@ -44,14 +44,8 @@ jobs:
       - name: Change ownership of project files
         run: sudo chown -R $USER:$USER backend/springcanteen/target
 
-      - name: Set permissions for target directory
-        run: chmod -R 777 backend/springcanteen/target  && chmod -R 777 .
-
-      - name: Clean Maven target directory
-        run: mvn clean
-
       - name: Build and test using Cucumber + Selenium 
-        run: mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' verify
+        run: rm -rf target/ && mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' verify
         working-directory: ./backend/springcanteen
 
       - name: Down containers
