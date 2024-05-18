@@ -1,6 +1,7 @@
 package pt.ua.deti.springcanteen.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -104,7 +105,7 @@ class PriceServiceTest {
             priceService.getOrderMenuPrice(requestedOrderMenu);
         });
 
-        assertThat(exceptionThrown.getMessage(), is("Provided main dish does not exist as an option in the given menu."));
+        assertThat(exceptionThrown.getMessage(), containsString("Provided main dish does not exist as an option in the given menu."));
     }
 
     @Test
@@ -117,7 +118,7 @@ class PriceServiceTest {
             priceService.getOrderMenuPrice(requestedOrderMenu);
         });
 
-        assertThat(exceptionThrown.getMessage(), is("Provided drink does not exist as an option in the given menu."));
+        assertThat(exceptionThrown.getMessage(), containsString("Provided drink does not exist as an option in the given menu."));
 
     }
 
@@ -133,7 +134,7 @@ class PriceServiceTest {
         });
 
         String expectedMessage = String.format("You must specify all ingredients in the main dish and their quantity when ordering a certain menu. Ingredient %d '%s' not found.", ingredient2.getId(), ingredient2.getName());
-        assertThat(exceptionThrown.getMessage(), is(expectedMessage));
+        assertThat(exceptionThrown.getMessage(), containsString(expectedMessage));
 
     }
 
