@@ -4,14 +4,16 @@
  import io.github.bonigarcia.wdm.WebDriverManager;
  import org.openqa.selenium.By;
  import org.openqa.selenium.WebDriver;
- import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
- import io.cucumber.java.en.And;
+import io.cucumber.java.en.And;
  import io.cucumber.java.en.When;
 
  import static org.hamcrest.MatcherAssert.assertThat;
- import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
+
+import java.time.Duration;
+
+import static org.hamcrest.CoreMatchers.containsString;
 
 
  public class CustomizeSteps {
@@ -21,6 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
      public void i_navigate_to(String url) {
          WebDriverManager.firefoxdriver().setup();
          driver = new FirefoxDriver();
+         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
          driver.get(url);
      }
 
