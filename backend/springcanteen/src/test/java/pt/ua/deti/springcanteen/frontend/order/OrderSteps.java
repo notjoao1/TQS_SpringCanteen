@@ -6,6 +6,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
@@ -20,6 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 
  public class OrderSteps {
      private WebDriver driver;
+     private Wait<WebDriver> wait;
 
      @When("I navigate to {string}")
      public void i_navigate_to(String url) {
@@ -32,6 +36,8 @@ import static org.hamcrest.CoreMatchers.is;
         // wait up to 10 seconds
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get(url);
+        // setup wait
+        wait = new WebDriverWait(driver, Duration.ofSeconds(2));
      }
 
      // changed the id in frontend, continue...
@@ -54,6 +60,7 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Confirm selection\"")
     public void i_click_confirm() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirm-selection")));
         driver.findElement(By.id("confirm-selection")).click();
     }
 
@@ -64,6 +71,7 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Cancel selection\"")
     public void i_click_cancel() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("cancel-selection")));
         driver.findElement(By.id("cancel-selection")).click();
     }
 
@@ -74,6 +82,7 @@ import static org.hamcrest.CoreMatchers.is;
     
     @Then("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() {
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id("snackbar-add-menu-to-order"), "Successfully added menu to order."));
         assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
         driver.quit();
     }

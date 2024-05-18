@@ -6,6 +6,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
@@ -19,6 +22,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 
  public class CustomizeSteps {
      private WebDriver driver;
+     private Wait<WebDriver> wait;
+
 
      @When("I navigate to {string}")
      public void i_navigate_to(String url) {
@@ -30,6 +35,8 @@ import static org.hamcrest.CoreMatchers.containsString;
         driver = new FirefoxDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get(url);
+        // setup wait
+        wait = new WebDriverWait(driver, Duration.ofSeconds(2));
      }
 
      // changed the id in frontend, continue...
@@ -52,6 +59,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 
     @And("I click on \"Confirm selection\"")
     public void i_click_confirm() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirm-selection")));
         driver.findElement(By.id("confirm-selection")).click();
     }
 
