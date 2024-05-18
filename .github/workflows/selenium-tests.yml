@@ -42,9 +42,8 @@ jobs:
         run: docker compose up -d --build
 
       - name: Build and test using Cucumber + Selenium 
-        run: |
-          cd backend/springcanteen
-          mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' clean test
+        run: mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' clean test
+        working-directory: ./backend/springcanteen
 
       - name: Down containers
         run: |
