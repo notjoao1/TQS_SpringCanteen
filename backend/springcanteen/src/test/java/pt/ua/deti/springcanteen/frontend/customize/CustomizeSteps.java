@@ -6,7 +6,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
@@ -67,7 +66,7 @@ import org.openqa.selenium.NoSuchElementException;
     public void i_click_confirm() {
         wait.until(new Function<WebDriver, Boolean>() {
             public Boolean apply(WebDriver driver) {
-                return driver.findElement(By.id("confirm-selection")).isEnabled();
+                return driver.findElement(By.id("confirm-selection")).isDisplayed();
             }
         });
         driver.findElement(By.id("confirm-selection")).click();

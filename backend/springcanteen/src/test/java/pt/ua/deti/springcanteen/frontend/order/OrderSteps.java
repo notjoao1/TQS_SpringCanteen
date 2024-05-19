@@ -67,7 +67,7 @@ import static org.hamcrest.CoreMatchers.is;
     public void i_click_confirm() {
         wait.until(new Function<WebDriver, Boolean>() {
             public Boolean apply(WebDriver driver) {
-                return driver.findElement(By.id("confirm-selection")).isEnabled();
+                return driver.findElement(By.id("confirm-selection")).isDisplayed();
             }
         });
         driver.findElement(By.id("confirm-selection")).click();
@@ -82,7 +82,7 @@ import static org.hamcrest.CoreMatchers.is;
     public void i_click_cancel() {
         wait.until(new Function<WebDriver, Boolean>() {
             public Boolean apply(WebDriver driver) {
-                return driver.findElement(By.id("cancel-selection")).isEnabled();
+                return driver.findElement(By.id("cancel-selection")).isDisplayed();
             }
         });
         driver.findElement(By.id("cancel-selection")).click();
