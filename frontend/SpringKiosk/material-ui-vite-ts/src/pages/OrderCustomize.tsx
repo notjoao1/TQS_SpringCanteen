@@ -30,6 +30,7 @@ const OrderCustomize = () => {
   const {isLoading, menusById} = useContext(MenuContext);
   const [hasErrors, setHasErrors] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isFormAccepted, setIsFormAccepted] = useState(false);
   const navigate = useNavigate();
 
   if (isLoading)
@@ -72,10 +73,21 @@ const OrderCustomize = () => {
       return;
     }
 
+    if (!isFormAccepted) {
+      setErrorMessage("Please fill in the payment form before confirming the order!");
+      setHasErrors(true);
+      setTimeout(() => setHasErrors(false), 5000);
+      return;
+    }
+
     const createOrderResponse = await createOrder(order, paymentPlace === PaymentPlace.KIOSK, isPriority, nif);
 
     console.log("response of placing order ->", createOrderResponse);
   }
+
+  const handleFormSubmit = (accepted: boolean) => {
+    setIsFormAccepted(accepted);
+  };
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
@@ -107,7 +119,7 @@ const OrderCustomize = () => {
           </Box>
         </Grid>
         <Grid item xs={12} md={4}>
-          <OrderPaymentCustomer />
+          <OrderPaymentCustomer onFormSubmit={handleFormSubmit} />
           <Box component={Button} variant="outlined" onClick={() => confirmOrder()}>
             <Typography color="text.primary" variant="body2" fontWeight="bold">
               Confirm order

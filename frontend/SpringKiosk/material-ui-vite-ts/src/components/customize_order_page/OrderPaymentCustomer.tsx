@@ -9,14 +9,99 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { PaymentPlace } from "../../types/OrderTypes";
 
+interface OrderPaymentCustomerProps {
+  onFormSubmit: (accepted: boolean) => void;
+}
 
 
-const OrderPaymentCustomer = () => {
-  const {paymentPlace, setPaymentPlace, nif, setNif} = useContext(NewOrderContext);
+const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
+  const { paymentPlace, setPaymentPlace, nif, setNif } = useContext(NewOrderContext);
+  const [nameOnCard, setNameOnCard] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
+  const [errors, setErrors] = useState({
+    nameOnCard: "",
+    cardNumber: "",
+    expirationDate: "",
+  });
+
+  useEffect(() => {
+    // Perform form validation whenever any relevant state changes
+    validateForm();
+  }, [nameOnCard, cardNumber, expirationDate]);
+
+  const validateNameOnCard = (value: string) => {
+    if (!value) return "Name on card is required";
+    if (!/^[\p{L}\p{M}\s]+$/u.test(value)) return "Name on card can only contain letters and spaces";
+    return "";
+  };
+
+  const validateCardNumber = (value: string) => {
+    if (!value) return "Card number is required";
+    if (!/^\d{16}$/.test(value)) return "Card number must be 16 digits";
+    return "";
+  };
+
+  const validateExpirationDate = (value: string) => {
+    if (!value) return "Expiration date is required";
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) return "Expiration date must be valid and in MM/YY format";
+    return "";
+  };
+
+  const validateForm = () => {
+    // Perform form validation
+    const nameOnCardError = validateNameOnCard(nameOnCard);
+    const cardNumberError = validateCardNumber(cardNumber);
+    const expirationDateError = validateExpirationDate(expirationDate);
+
+    // Set errors
+    setErrors({
+      nameOnCard: nameOnCardError,
+      cardNumber: cardNumberError,
+      expirationDate: expirationDateError,
+    });
+
+    // Check if form is valid
+    const isFormValid = !nameOnCardError && !cardNumberError && !expirationDateError;
+
+    // Submit form if valid
+    if (isFormValid) {
+      onFormSubmit(true);
+    } else {
+      onFormSubmit(false);
+    }
+  };
+
+  const handleNameOnCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNameOnCard(value);
+    // setErrors((prevErrors) => ({
+    //   ...prevErrors,
+    //   nameOnCard: validateNameOnCard(value),
+    // }));
+  };
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCardNumber(value);
+    // setErrors((prevErrors) => ({
+    //   ...prevErrors,
+    //   cardNumber: validateCardNumber(value),
+    // }));
+  };
+
+  const handleExpirationDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setExpirationDate(value);
+    // setErrors((prevErrors) => ({
+    //   ...prevErrors,
+    //   expirationDate: validateExpirationDate(value),
+    // }));
+  };
 
   return (
     <Box
@@ -53,14 +138,47 @@ const OrderPaymentCustomer = () => {
           minHeight: 400,
         }}
       >
-        <TextField id="outlined-basic" label="NIF" variant="outlined" value={nif} onChange={(e) => {
-            if (e.target.value.length <= 9) setNif(e.target.value)
-          }} />
+        <TextField
+          id="outlined-basic"
+          label="NIF"
+          variant="outlined"
+          value={nif}
+          onChange={(e) => {
+            if (e.target.value.length <= 9) setNif(e.target.value);
+          }}
+        />
         <Typography variant={"h6"}>Payment Details</Typography>
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Name on Card" variant="outlined" />
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Card Number" variant="outlined" />
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
-        
+        <TextField
+          disabled={paymentPlace === PaymentPlace.DESK}
+          id="outlined-basic"
+          label="Name on Card"
+          variant="outlined"
+          value={nameOnCard}
+          onChange={handleNameOnCardChange}
+          error={!!errors.nameOnCard}
+          helperText={errors.nameOnCard}
+        />
+        <TextField
+          disabled={paymentPlace === PaymentPlace.DESK}
+          id="outlined-basic"
+          label="Card Number"
+          variant="outlined"
+          value={cardNumber}
+          onChange={handleCardNumberChange}
+          error={!!errors.cardNumber}
+          helperText={errors.cardNumber}
+        />
+        <TextField
+          disabled={paymentPlace === PaymentPlace.DESK}
+          id="outlined-basic"
+          label="Expiration Date"
+          placeholder={"MM/YY"}
+          variant="outlined"
+          value={expirationDate}
+          onChange={handleExpirationDateChange}
+          error={!!errors.expirationDate}
+          helperText={errors.expirationDate}
+        />
       </Box>
     </Box>
   );
