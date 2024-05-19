@@ -95,6 +95,7 @@ const OrderCustomize = () => {
               <Tooltip title="Donate to the SpringCanteen foundation!">
                 <FormControlLabel
                   control={<Checkbox />}
+                  id="priority-queue-checkbox"
                   label="Priority Queue (+0.30€)"
                   value={isPriority}
                   onChange={(e) =>  setIsPriority(e.target.checked as boolean)}
@@ -108,7 +109,7 @@ const OrderCustomize = () => {
         </Grid>
         <Grid item xs={12} md={4}>
           <OrderPaymentCustomer />
-          <Box component={Button} variant="outlined" onClick={() => confirmOrder()}>
+          <Box component={Button} id="confirm-order-button" variant="outlined" onClick={() => confirmOrder()}>
             <Typography color="text.primary" variant="body2" fontWeight="bold">
               Confirm order
             </Typography>

@@ -53,13 +53,13 @@ const OrderPaymentCustomer = () => {
           minHeight: 400,
         }}
       >
-        <TextField id="outlined-basic" label="NIF" variant="outlined" value={nif} onChange={(e) => {
+        <TextField id="nif-input" label="NIF" variant="outlined" value={nif} onChange={(e) => {
             if (e.target.value.length <= 9) setNif(e.target.value)
           }} />
         <Typography variant={"h6"}>Payment Details</Typography>
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Name on Card" variant="outlined" />
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Card Number" variant="outlined" />
-        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="name-on-card-input" label="Name on Card" variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="card-number-input" label="Card Number" variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="exp-date-input" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
         
       </Box>
     </Box>

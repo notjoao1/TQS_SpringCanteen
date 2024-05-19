@@ -48,7 +48,7 @@ const OrderFinish = () => {
           <Paper sx={{ width: "100%" }} elevation={6}>
             {orderResponse?.priority && (
               <Box sx={{height: "10%", background: "linear-gradient(to bottom, #006400, #228B22)"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
-                <Typography sx={{ color:"white", fontWeight: "bold" }}>
+                <Typography id="priority-order" sx={{ color:"white", fontWeight: "bold" }}>
                   Priority Order
                 </Typography>
               </Box>
@@ -60,7 +60,7 @@ const OrderFinish = () => {
               justifyContent={"center"}
               alignItems={"center"}
             >
-              <Typography variant="h3" sx={{ fontWeight: "bold" }}>
+              <Typography id="order-number-text" variant="h3" sx={{ fontWeight: "bold" }}>
                 ORDER: {orderResponse.id}
               </Typography>
             </Box>
@@ -77,7 +77,7 @@ const OrderFinish = () => {
                 <Typography variant="body1">
                   <span style={{fontWeight: "bold"}}>NIF: </span>{orderResponse.nif}
                 </Typography>
-                <Typography variant="body1">
+                <Typography id="order-cost-text" variant="body1">
                   <span style={{fontWeight: "bold"}}>Total cost: </span>{orderResponse.price.toFixed(2)}€
                 </Typography>
                 <Typography variant="body1">
