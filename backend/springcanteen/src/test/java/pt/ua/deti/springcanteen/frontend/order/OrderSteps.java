@@ -71,7 +71,7 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Cancel selection\"")
     public void i_click_cancel() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("cancel-selection")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("cancel-selection")));
         driver.findElement(By.id("cancel-selection")).click();
     }
 
