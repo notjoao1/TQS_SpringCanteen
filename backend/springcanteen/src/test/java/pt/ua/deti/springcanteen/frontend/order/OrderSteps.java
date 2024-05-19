@@ -3,12 +3,13 @@ package pt.ua.deti.springcanteen.frontend.order;
 import io.cucumber.java.en.Then;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
@@ -16,6 +17,7 @@ import io.cucumber.java.en.When;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
+import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -37,7 +39,10 @@ import static org.hamcrest.CoreMatchers.is;
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get(url);
         // setup wait
-        wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+        wait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(10))
+                .pollingEvery(Duration.ofMillis(500))
+                .ignoring(NoSuchElementException.class);
      }
 
      // changed the id in frontend, continue...
@@ -60,7 +65,11 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Confirm selection\"")
     public void i_click_confirm() {
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("confirm-selection")));
+        wait.until(new Function<WebDriver, Boolean>() {
+            public Boolean apply(WebDriver driver) {
+                return driver.findElement(By.id("confirm-selection")).isEnabled();
+            }
+        });
         driver.findElement(By.id("confirm-selection")).click();
     }
 
@@ -71,7 +80,11 @@ import static org.hamcrest.CoreMatchers.is;
 
     @And("I click on \"Cancel selection\"")
     public void i_click_cancel() {
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("cancel-selection")));
+        wait.until(new Function<WebDriver, Boolean>() {
+            public Boolean apply(WebDriver driver) {
+                return driver.findElement(By.id("cancel-selection")).isEnabled();
+            }
+        });
         driver.findElement(By.id("cancel-selection")).click();
     }
 
