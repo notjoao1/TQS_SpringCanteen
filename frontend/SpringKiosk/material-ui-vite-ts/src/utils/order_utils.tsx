@@ -1,23 +1,33 @@
-import { ICreateMenu, IMainDish } from "../types/MenuTypes";
+import { ICreateMenu, IMainDish, IMainDishIngredient, IMenu } from "../types/MenuTypes";
 import { ICreateOrder } from "../types/OrderTypes"
 
 // calculates total price of an order (excluding +0.30€ from priority queue)
 // based on selected main dish, selected drink, and extra ingredients added
-export const getTotalPrice = (order: ICreateOrder) => {
-    return order.menus.reduce((acc, currMenu) => acc + getTotalMenuPrice(currMenu), 0)
+export const getTotalPrice = (order: ICreateOrder, menusById: Map<number, IMenu>) => {
+    return order.menus.reduce((acc, currMenu) => acc + getTotalMenuPrice(currMenu, menusById.get(currMenu.selectedMenu.id)!), 0)
 }
 
-export const getTotalMenuPrice = (menu: ICreateMenu) => {
-    return menu.selectedDrink.price + getMainDishPrice(menu.selectedMainDish);
+export const getTotalMenuPrice = (menu: ICreateMenu, baseMenu: IMenu) => {
+    return menu.selectedDrink.price + getMainDishPrice(menu.selectedMainDish, baseMenu.mainDishOptions.find(md => md.id == menu.selectedMainDish.id)!);
 }
 
-// gets total price of mainDish based on the ingredients, with the following requirements:
-//   - if ingredients are removed, they don't affect the price
-//   - the minimum price of a mainDish is always the base price of that mainDish. it can only increase
-export const getMainDishPrice = (mainDish: IMainDish) => {
-    const priceWithIngredients = mainDish.mainDishIngredients.reduce(
-        (acc, currMainDishIngredient) => acc + currMainDishIngredient.quantity * currMainDishIngredient.ingredient.price, 0
-    );
+// iterate over each customized ingredient, and check if extra ingredients were added based on the base ingredients
+// if so, add that to the base main dish price.
+export const getMainDishPrice = (customizedMainDish: IMainDish, baseMainDish: IMainDish) => {
+    return baseMainDish.price + getPriceOfExtraIngredients(customizedMainDish, baseMainDish);
+}
 
-    return priceWithIngredients < mainDish.price ? mainDish.price : priceWithIngredients;
+export const getPriceOfExtraIngredients = (customizedMainDish: IMainDish, baseMainDish: IMainDish) => {
+    let extraPrice = 0;
+    customizedMainDish.mainDishIngredients.forEach((customizedIngredient) => {
+        const baseIngredient = baseMainDish.mainDishIngredients.find(i => i.id === customizedIngredient.id)!;
+        const extraAddedIngredients = numberOfAddedIngredients(baseIngredient, customizedIngredient);
+        if (extraAddedIngredients > 0)
+            extraPrice = extraPrice + extraAddedIngredients * baseIngredient.ingredient.price;
+    })
+    return extraPrice;
+}
+
+const numberOfAddedIngredients = (baseIngredient: IMainDishIngredient, customizedIngredient: IMainDishIngredient) => {
+    return customizedIngredient.quantity - baseIngredient.quantity;
 }

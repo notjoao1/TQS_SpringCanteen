@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { getTotalCalories } from "../../utils/menu_utils";
 import { getTotalMenuPrice } from "../../utils/order_utils";
+import { MenuContext } from "../../context/MenuContext";
 
 interface OrderDrawerItemProps {
   menu: ICreateMenu;
@@ -12,6 +13,14 @@ interface OrderDrawerItemProps {
 
 const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
   const {order, setOrder} = useContext(NewOrderContext);
+  const {isLoading, menusById} = useContext(MenuContext);
+
+  if (isLoading)
+    return (
+      <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+          <CircularProgress size={20}/>
+      </Box>
+  )
 
   const removeMenuFromOrder = () => {
     setOrder((prevOrder) => {
@@ -48,7 +57,7 @@ const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
         flexDirection={"column"}
         textAlign={"center"}
       >
-        <Typography variant="h6">{getTotalMenuPrice(menu).toFixed(2)}€</Typography>
+        <Typography variant="h6">{getTotalMenuPrice(menu, menusById.get(menu.selectedMenu.id)!).toFixed(2)}€</Typography>
         <Button onClick={removeMenuFromOrder} id={`remove-menu-${index + 1}`}>
           Remove from order
         </Button>

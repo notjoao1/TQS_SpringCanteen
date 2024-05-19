@@ -1,8 +1,10 @@
-import { Avatar, Box, Button, Link, Typography } from "@mui/material";
+import { Avatar, Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ICreateMenu } from "../../types/MenuTypes";
 import { getTotalCalories } from "../../utils/menu_utils";
-import { getTotalMenuPrice } from "../../utils/order_utils";
+import { getPriceOfExtraIngredients, getTotalMenuPrice } from "../../utils/order_utils";
+import { MenuContext } from "../../context/MenuContext";
+import { useContext } from "react";
 
 interface OrderCustomizeMenuProps {
   menu: ICreateMenu,
@@ -13,6 +15,16 @@ interface OrderCustomizeMenuProps {
 const OrderCustomizeMenu = ({ menu, index, handleRemoveMenu }: OrderCustomizeMenuProps) => {
   const navigate = useNavigate();
   const navigateToCustomize = () => navigate(`/order/customize/menu/${index}`);
+  const {isLoading, menusById} = useContext(MenuContext);
+
+  if (isLoading) {
+    return (
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+          <CircularProgress size={20}/>
+        </Box>
+    )
+  }
+
 
   return (
     <Box display={"flex"} sx={{ minHeight: 150 }} py={1} alignItems={"center"}>
@@ -33,10 +45,10 @@ const OrderCustomizeMenu = ({ menu, index, handleRemoveMenu }: OrderCustomizeMen
         textAlign={"center"}
       >
         <Typography variant="h6">
-            {getTotalMenuPrice(menu).toFixed(2)}€
+            {getTotalMenuPrice(menu, menusById.get(menu.selectedMenu.id)!).toFixed(2)}€
         </Typography>
         <Typography variant="overline">
-            (+0.40€) {/* extra cost from adding extra ingredients on the order */}
+            (+{getPriceOfExtraIngredients(menu.selectedMainDish, menusById.get(menu.selectedMenu.id)?.mainDishOptions.find(m => m.id === menu.selectedMainDish.id)!).toFixed(2)}€)
         </Typography>
         <Box component={Button} onClick={() => handleRemoveMenu(index)}>
           Remove
