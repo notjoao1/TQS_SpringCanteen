@@ -71,10 +71,10 @@ const OrderCustomize = () => {
       setTimeout(() => setHasErrors(false), 5000);
       return;
     }
-
+    // success
+    setOrder({menus: []}); // clear order state
     const createOrderResponse = await createOrder(order, paymentPlace === PaymentPlace.KIOSK, isPriority, nif);
-
-    console.log("response of placing order ->", createOrderResponse);
+    navigate('/order/finish', { state: { orderResponse: createOrderResponse } });
   }
 
   return (
