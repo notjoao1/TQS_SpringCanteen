@@ -17,9 +17,11 @@ import { useContext } from "react";
 import { NewOrderContext } from "../context/NewOrderContext";
 import { getTotalPrice } from "../utils/order_utils";
 import { MenuContext } from "../context/MenuContext";
+import { createOrder } from "../api/order.service";
+import { PaymentPlace } from "../types/OrderTypes";
 
 const OrderCustomize = () => {
-  const {order, setOrder, isPriority, setIsPriority} = useContext(NewOrderContext);
+  const {order, setOrder, isPriority, paymentPlace, setIsPriority, nif} = useContext(NewOrderContext);
   const {isLoading, menusById} = useContext(MenuContext);
 
   if (isLoading)
@@ -35,6 +37,19 @@ const OrderCustomize = () => {
     const newMenus = order.menus.filter((menu, i) => i !== index);
     setOrder({...order, menus: newMenus});
   };
+
+  // confirm and place order
+  const confirmOrder = async () => {
+    // check if nif is exactly 9 numbers
+    if (!/^\d{9}$/.test(nif)) {
+      console.log("cannot confirm order...");
+      return;
+    }
+
+    const createOrderResponse = await createOrder(order, paymentPlace === PaymentPlace.KIOSK, isPriority, nif);
+
+    console.log("response of placing order ->", createOrderResponse);
+  }
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
@@ -61,13 +76,13 @@ const OrderCustomize = () => {
               </Tooltip>
             </FormGroup>
             <Typography ml={"auto"} mr={0} pt={2} variant="h5">
-              Total: <span style={{ fontWeight: "bold" }}>{getTotalPrice(order, menusById).toFixed(2)}€</span>
+              Total: <span style={{ fontWeight: "bold" }}>{(getTotalPrice(order, menusById) + (isPriority ? 0.3 : 0.0)).toFixed(2)}€</span>
             </Typography>
           </Box>
         </Grid>
         <Grid item xs={12} md={4}>
           <OrderPaymentCustomer />
-          <Box component={Button} variant="outlined">
+          <Box component={Button} variant="outlined" onClick={() => confirmOrder()}>
             <Typography color="text.primary" variant="body2" fontWeight="bold">
               Confirm order
             </Typography>

@@ -28,3 +28,19 @@ export enum PaymentPlace {
     KIOSK = "In Kiosk",
     DESK = "In Desk",
 }
+
+
+export interface IOrderResponse {
+    id: number;
+    isPaid: boolean;
+    isPriority: boolean;
+    nif: number;
+    orderMenus: IOrderMenuResponse[];
+    price: number;
+}
+
+
+interface IOrderMenuResponse {
+    menu: {name: string, price: number};
+    customization: string;
+}
