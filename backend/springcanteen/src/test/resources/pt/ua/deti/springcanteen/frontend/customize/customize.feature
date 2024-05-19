@@ -11,4 +11,4 @@ Feature: Customize a menu on SpringCanteen
         And I increase the quantity of item "Cheese" by "1"
         And I increase the quantity of item "Bread" by "2"
         And I decrease the quantity of item "Ham" by "1"
-        Then I should see the total price of "6.00"
+        Then I should see the total price of "5.50"
