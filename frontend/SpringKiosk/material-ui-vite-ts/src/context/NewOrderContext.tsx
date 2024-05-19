@@ -8,6 +8,8 @@ interface NewOrderContextType {
   setPaymentPlace: React.Dispatch<React.SetStateAction<PaymentPlace>>;
   isPriority: boolean;
   setIsPriority: React.Dispatch<React.SetStateAction<boolean>>;
+  nif: string;
+  setNif: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const defaultContextState: NewOrderContextType = {
@@ -19,6 +21,8 @@ const defaultContextState: NewOrderContextType = {
   setPaymentPlace: () => {},
   isPriority: false,
   setIsPriority: () => {},
+  nif: "",
+  setNif: () => {},
 };
 
 export const NewOrderContext =
@@ -35,6 +39,7 @@ export const NewOrderContextProvider: React.FC<{
 
   const [isPriority, setIsPriority] = useState<boolean>(false);
   const [paymentPlace, setPaymentPlace] = useState<PaymentPlace>(PaymentPlace.KIOSK);
+  const [nif, setNif] = useState<string>("");
 
   useEffect(() => {
     localStorage.setItem("order", JSON.stringify(order));
@@ -49,7 +54,9 @@ export const NewOrderContextProvider: React.FC<{
         isPriority,
         setIsPriority,
         paymentPlace,
-        setPaymentPlace
+        setPaymentPlace,
+        nif,
+        setNif
       }}
     >
       {children}

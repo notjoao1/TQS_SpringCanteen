@@ -9,14 +9,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { PaymentPlace } from "../../types/OrderTypes";
 
 
 
 const OrderPaymentCustomer = () => {
-  const {paymentPlace, setPaymentPlace} = useContext(NewOrderContext);
+  const {paymentPlace, setPaymentPlace, nif, setNif} = useContext(NewOrderContext);
 
   return (
     <Box
@@ -53,10 +53,14 @@ const OrderPaymentCustomer = () => {
           minHeight: 400,
         }}
       >
+        <TextField id="outlined-basic" label="NIF" variant="outlined" value={nif} onChange={(e) => {
+            if (e.target.value.length <= 9) setNif(e.target.value)
+          }} />
         <Typography variant={"h6"}>Payment Details</Typography>
         <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Name on Card" variant="outlined" />
         <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Card Number" variant="outlined" />
         <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
+        
       </Box>
     </Box>
   );
