@@ -1,19 +1,23 @@
 import {
     Box,
     Button,
+    CircularProgress,
     Container,
     Divider,
     Grid,
     Typography,
   } from "@mui/material";
   import OrderCustomizeItem from "../components/customize_order_page/OrderCustomizeItem";
-  import { useContext, useState } from "react";
+  import { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { NewOrderContext } from "../context/NewOrderContext";
 import { getMainDishPrice } from "../utils/order_utils";
+import { MenuContext } from "../context/MenuContext";
     
   const Customize = () => {
     const {order, setOrder} = useContext(NewOrderContext);
+    const {isLoading, menusById} = useContext(MenuContext);
+
     const navigate = useNavigate();
     
     const urlParams = useParams();
@@ -33,6 +37,16 @@ import { getMainDishPrice } from "../utils/order_utils";
         
       )
     }
+
+    if (isLoading) {
+      return (
+        <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
+          <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+            <CircularProgress size={100}/>
+          </Box>
+        </Container>
+      )
+    }
     
     const menuId = parseInt(menuIdString);
 
@@ -50,7 +64,8 @@ import { getMainDishPrice } from "../utils/order_utils";
         
       )
     }
-    const price = getMainDishPrice(menuToCustomize.selectedMainDish);
+
+    const price = getMainDishPrice(menuToCustomize.selectedMainDish, menusById.get(menuToCustomize.selectedMenu.id)!.mainDishOptions.find(m => m.id === menuToCustomize.selectedMainDish.id)!);
 
     return (
       <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>

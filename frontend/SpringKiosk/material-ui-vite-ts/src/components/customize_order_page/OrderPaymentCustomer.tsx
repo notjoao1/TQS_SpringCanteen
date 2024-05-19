@@ -9,15 +9,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext } from "react";
+import { NewOrderContext } from "../../context/NewOrderContext";
+import { PaymentPlace } from "../../types/OrderTypes";
 
-enum PaymentPlace {
-  KIOSK = "In Kiosk",
-  DESK = "In Desk",
-}
+
 
 const OrderPaymentCustomer = () => {
-  const [selectedPaymentPlace, setSelectedPaymentPlace] = useState<PaymentPlace>(PaymentPlace.KIOSK);
+  const {paymentPlace, setPaymentPlace, nif, setNif} = useContext(NewOrderContext);
 
   return (
     <Box
@@ -35,9 +34,9 @@ const OrderPaymentCustomer = () => {
         <FormLabel id="demo-radio-buttons-group-label">Where will you pay?</FormLabel>
         <RadioGroup
           aria-labelledby="demo-radio-buttons-group-label"
-          defaultValue={PaymentPlace.KIOSK}
+          value={paymentPlace}
           name="radio-buttons-group"
-          onChange={(e) => setSelectedPaymentPlace(e.target.value as PaymentPlace)}
+          onChange={(e) => setPaymentPlace(e.target.value as PaymentPlace)}
         >
           <FormControlLabel value={PaymentPlace.KIOSK} control={<Radio />} label={PaymentPlace.KIOSK} />
           <FormControlLabel value={PaymentPlace.DESK} control={<Radio />} label={PaymentPlace.DESK} />
@@ -54,10 +53,14 @@ const OrderPaymentCustomer = () => {
           minHeight: 400,
         }}
       >
+        <TextField id="outlined-basic" label="NIF" variant="outlined" value={nif} onChange={(e) => {
+            if (e.target.value.length <= 9) setNif(e.target.value)
+          }} />
         <Typography variant={"h6"}>Payment Details</Typography>
-        <TextField disabled={selectedPaymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Name on Card" variant="outlined" />
-        <TextField disabled={selectedPaymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Card Number" variant="outlined" />
-        <TextField disabled={selectedPaymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Name on Card" variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Card Number" variant="outlined" />
+        <TextField disabled={paymentPlace === PaymentPlace.DESK} id="outlined-basic" label="Expiration Date" placeholder={"MM/YY"} variant="outlined" />
+        
       </Box>
     </Box>
   );
