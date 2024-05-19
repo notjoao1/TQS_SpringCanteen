@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Container,
   Divider,
   FormControlLabel,
@@ -18,8 +19,17 @@ import { getTotalPrice } from "../utils/order_utils";
 import { MenuContext } from "../context/MenuContext";
 
 const OrderCustomize = () => {
-  const {order, setOrder} = useContext(NewOrderContext);
-  const {menusById} = useContext(MenuContext);
+  const {order, setOrder, isPriority, setIsPriority} = useContext(NewOrderContext);
+  const {isLoading, menusById} = useContext(MenuContext);
+
+  if (isLoading)
+    return (
+      <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+          <CircularProgress size={100}/>
+        </Box>
+      </Container>
+    )
 
   const handleRemoveMenu = (index: number) => {
     const newMenus = order.menus.filter((menu, i) => i !== index);
@@ -45,6 +55,8 @@ const OrderCustomize = () => {
                 <FormControlLabel
                   control={<Checkbox />}
                   label="Priority Queue (+0.30€)"
+                  value={isPriority}
+                  onChange={(e) =>  setIsPriority(e.target.checked as boolean)}
                 />
               </Tooltip>
             </FormGroup>
