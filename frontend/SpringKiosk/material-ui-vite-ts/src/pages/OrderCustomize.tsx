@@ -1,10 +1,14 @@
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Checkbox,
   CircularProgress,
+  Collapse,
   Container,
   Divider,
+  Fade,
   FormControlLabel,
   FormGroup,
   Grid,
@@ -13,7 +17,7 @@ import {
 } from "@mui/material";
 import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymentCustomer";
 import OrderCustomizeMenu from "../components/customize_order_page/OrderCustomizeMenu";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NewOrderContext } from "../context/NewOrderContext";
 import { getTotalPrice } from "../utils/order_utils";
 import { MenuContext } from "../context/MenuContext";
@@ -23,6 +27,8 @@ import { PaymentPlace } from "../types/OrderTypes";
 const OrderCustomize = () => {
   const {order, setOrder, isPriority, paymentPlace, setIsPriority, nif} = useContext(NewOrderContext);
   const {isLoading, menusById} = useContext(MenuContext);
+  const [hasErrors, setHasErrors] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   if (isLoading)
     return (
@@ -42,7 +48,9 @@ const OrderCustomize = () => {
   const confirmOrder = async () => {
     // check if nif is exactly 9 numbers
     if (!/^\d{9}$/.test(nif)) {
-      console.log("cannot confirm order...");
+      setErrorMessage("You must fill NIF with a 9 digit number! Example: 123456789")
+      setHasErrors(true);
+      setTimeout(() => setHasErrors(false), 5000);
       return;
     }
 
@@ -89,6 +97,12 @@ const OrderCustomize = () => {
           </Box>
         </Grid>
       </Grid>
+      <Fade in={hasErrors} unmountOnExit>
+        <Alert severity="error" variant="filled" sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}}>
+          <AlertTitle>Error while placing order:</AlertTitle>
+          {errorMessage}
+        </Alert>
+      </Fade>
     </Container>
   );
 };
