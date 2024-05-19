@@ -2,6 +2,7 @@ import { Box, Divider, Drawer, Typography } from "@mui/material";
 import OrderDrawerItem from "./OrderDrawerItem";
 import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
+import { getTotalPrice } from "../../utils/order_utils";
 
 interface OrderDrawerProps {
     isOpen: boolean;
@@ -9,7 +10,7 @@ interface OrderDrawerProps {
 }
 
 const OrderDrawer = ({ isOpen, onClose }: OrderDrawerProps) => {
-    const {order, setOrder, getOrderTotalCost} = useContext(NewOrderContext);
+    const {order, setOrder} = useContext(NewOrderContext);
 
     return (
         <Drawer
@@ -23,7 +24,7 @@ const OrderDrawer = ({ isOpen, onClose }: OrderDrawerProps) => {
             >
                 <Box display={"flex"} textAlign={"center"} justifyItems={"center"} sx={{height: "15%", position: "sticky", top: "0"}}>
                     <Typography variant="h4">Current order</Typography>
-                    <Typography variant="h6" mr={1} ml={"auto"}>Total: {Number(getOrderTotalCost()).toFixed(2)}€</Typography>
+                    <Typography variant="h6" mr={1} ml={"auto"}>Total: {getTotalPrice(order).toFixed(2)}€</Typography>
                     
                 </Box>
                 <Divider sx={{

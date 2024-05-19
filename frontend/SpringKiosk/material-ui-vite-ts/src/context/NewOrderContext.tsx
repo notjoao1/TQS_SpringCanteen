@@ -1,10 +1,9 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { ICreateOrder } from "../types/OrderTypes";
 
 interface NewOrderContextType {
   order: ICreateOrder;
   setOrder: React.Dispatch<React.SetStateAction<ICreateOrder>>;
-  getOrderTotalCost: () => number;
 }
 
 const defaultContextState: NewOrderContextType = {
@@ -12,7 +11,6 @@ const defaultContextState: NewOrderContextType = {
     menus: []
   },
   setOrder: () => {},
-  getOrderTotalCost: () => 1,
 };
 
 export const NewOrderContext =
@@ -21,21 +19,22 @@ export const NewOrderContext =
 export const NewOrderContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [order, setOrder] = useState<ICreateOrder>({
-    menus: []
+  // try to get order from localStorage. otherwise, create a new order
+  const [order, setOrder] = useState<ICreateOrder>(() => {
+    const storedOrder = localStorage.getItem("order");
+    return storedOrder ? JSON.parse(storedOrder) : { menus: [] };
   });
 
-  const getOrderTotalCost = (): number => {
-    if (order.menus.length == 0) return 0;
-    return order.menus.reduce((acc, currMenu) => acc + currMenu.selectedMenu.price, 0)
-  }
+  useEffect(() => {
+    localStorage.setItem("order", JSON.stringify(order));
+  }, [order])
+
 
   return (
     <NewOrderContext.Provider
       value={{
         order,
         setOrder,
-        getOrderTotalCost
       }}
     >
       {children}

@@ -14,9 +14,16 @@ import OrderPaymentCustomer from "../components/customize_order_page/OrderPaymen
 import OrderCustomizeMenu from "../components/customize_order_page/OrderCustomizeMenu";
 import { useContext } from "react";
 import { NewOrderContext } from "../context/NewOrderContext";
+import { getTotalPrice } from "../utils/order_utils";
 
 const OrderCustomize = () => {
   const {order, setOrder} = useContext(NewOrderContext);
+
+  const handleRemoveMenu = (index: number) => {
+    const newMenus = order.menus.filter((menu, i) => i !== index);
+    setOrder({...order, menus: newMenus});
+  };
+
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
       <Typography component="h2" variant="h4" color="text.primary">
@@ -25,10 +32,10 @@ const OrderCustomize = () => {
       <Grid container spacing={6} py={4}>
         <Grid item xs={12} md={8}>
           {order.menus.map((menu, index) => (
-            <>
-              <OrderCustomizeMenu menu={menu} key={index}/>
-              <Divider key={index} />
-            </>
+            <div key={index}>
+              <OrderCustomizeMenu menu={menu} index={index} handleRemoveMenu={handleRemoveMenu} />
+              <Divider />
+            </div>
           ))}
           <Box pt={4} display={"flex"} mx={2}>
             <FormGroup>
@@ -40,7 +47,7 @@ const OrderCustomize = () => {
               </Tooltip>
             </FormGroup>
             <Typography ml={"auto"} mr={0} pt={2} variant="h5">
-              Total: <span style={{ fontWeight: "bold" }}>24.90€</span>
+              Total: <span style={{ fontWeight: "bold" }}>{getTotalPrice(order).toFixed(2)}€</span>
             </Typography>
           </Box>
         </Grid>

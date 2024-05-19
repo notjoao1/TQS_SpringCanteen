@@ -1,0 +1,54 @@
+name: Selenium tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - "backend/springcanteen/**"
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build and test frontend
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'zulu' # Alternative distribution options are available.
+
+      - name: Install Firefox
+        run: |
+          sudo snap remove firefox
+          wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+          echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
+          echo '
+          Package: *
+          Pin: origin packages.mozilla.org
+          Pin-Priority: 1000
+          ' | sudo tee /etc/apt/preferences.d/mozilla
+          sudo apt update
+          sudo apt install firefox -y --allow-downgrades
+
+      - name: Up containers
+        run: docker compose up -d --build
+      
+      - name: Change ownership of project files
+        run: sudo chown -R $USER:$USER backend/springcanteen/target
+
+      - name: Build and test using Cucumber + Selenium 
+        run: rm -rf target/ && mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' verify
+        working-directory: ./backend/springcanteen
+
+      - name: Down containers
+        run: |
+          docker compose down --volumes
+          docker builder prune -a -f

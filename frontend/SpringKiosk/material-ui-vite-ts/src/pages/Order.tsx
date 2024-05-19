@@ -191,8 +191,8 @@ export default function Order() {
             >
               You currently have {order.menus.length} item(s) in your order.
             </Box>
-            <BottomNavigationAction label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
-            <BottomNavigationAction sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={validateOrder} />
+            <BottomNavigationAction id="view-order" label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
+            <BottomNavigationAction id="customize-and-pay" sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={validateOrder} />
           </BottomNavigation>
         </Paper>
         <OrderDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}/>
@@ -202,6 +202,7 @@ export default function Order() {
           open={isSnackbarOpen}
           autoHideDuration={4000}
           onClose={() => setIsSnackbarOpen(false)}
+          id="snackbar-add-menu-to-order"
           message="Successfully added menu to order."
         />
         {/* Error alert for when the order is empty and the user tries to move on */}
