@@ -23,3 +23,8 @@ export interface ICreateOrder {
     menus: ICreateMenu[]
     nif?: string;
 }
+
+export enum PaymentPlace {
+    KIOSK = "In Kiosk",
+    DESK = "In Desk",
+}

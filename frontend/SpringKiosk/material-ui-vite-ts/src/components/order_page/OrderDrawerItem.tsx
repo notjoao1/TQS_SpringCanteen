@@ -1,5 +1,5 @@
-import { Box, Button, Typography } from "@mui/material";
-import { ICreateMenu, IMenu } from "../../types/MenuTypes";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import { ICreateMenu } from "../../types/MenuTypes";
 import { useContext } from "react";
 import { NewOrderContext } from "../../context/NewOrderContext";
 import { getTotalCalories } from "../../utils/menu_utils";
@@ -12,7 +12,7 @@ interface OrderDrawerItemProps {
 }
 
 const OrderDrawerItem = ({ menu, index }: OrderDrawerItemProps) => {
-  const {order, setOrder} = useContext(NewOrderContext);
+  const {setOrder} = useContext(NewOrderContext);
   const {isLoading, menusById} = useContext(MenuContext);
 
   if (isLoading)

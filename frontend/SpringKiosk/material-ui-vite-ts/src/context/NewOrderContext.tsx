@@ -1,9 +1,13 @@
 import { createContext, useEffect, useState } from "react";
-import { ICreateOrder } from "../types/OrderTypes";
+import { ICreateOrder, PaymentPlace } from "../types/OrderTypes";
 
 interface NewOrderContextType {
   order: ICreateOrder;
   setOrder: React.Dispatch<React.SetStateAction<ICreateOrder>>;
+  paymentPlace: PaymentPlace;
+  setPaymentPlace: React.Dispatch<React.SetStateAction<PaymentPlace>>;
+  isPriority: boolean;
+  setIsPriority: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const defaultContextState: NewOrderContextType = {
@@ -11,6 +15,10 @@ const defaultContextState: NewOrderContextType = {
     menus: []
   },
   setOrder: () => {},
+  paymentPlace: PaymentPlace.KIOSK,
+  setPaymentPlace: () => {},
+  isPriority: false,
+  setIsPriority: () => {},
 };
 
 export const NewOrderContext =
@@ -25,6 +33,9 @@ export const NewOrderContextProvider: React.FC<{
     return storedOrder ? JSON.parse(storedOrder) : { menus: [] };
   });
 
+  const [isPriority, setIsPriority] = useState<boolean>(false);
+  const [paymentPlace, setPaymentPlace] = useState<PaymentPlace>(PaymentPlace.KIOSK);
+
   useEffect(() => {
     localStorage.setItem("order", JSON.stringify(order));
   }, [order])
@@ -35,6 +46,10 @@ export const NewOrderContextProvider: React.FC<{
       value={{
         order,
         setOrder,
+        isPriority,
+        setIsPriority,
+        paymentPlace,
+        setPaymentPlace
       }}
     >
       {children}
