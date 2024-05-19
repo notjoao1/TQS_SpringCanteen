@@ -57,9 +57,9 @@ export default function Order() {
     setIsAddToOrderModalOpen(false);
     setOrder({
       menus: [...order.menus, {
-        selectedMenu: menu,
-        selectedDrink,
-        selectedMainDish
+        selectedMenu: structuredClone(menu),
+        selectedDrink: structuredClone(selectedDrink),
+        selectedMainDish: structuredClone(selectedMainDish)
       }]
     })
     setIsSnackbarOpen(true);
