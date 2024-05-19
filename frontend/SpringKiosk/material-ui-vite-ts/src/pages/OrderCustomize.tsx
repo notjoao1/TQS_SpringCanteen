@@ -23,12 +23,14 @@ import { getTotalPrice } from "../utils/order_utils";
 import { MenuContext } from "../context/MenuContext";
 import { createOrder } from "../api/order.service";
 import { PaymentPlace } from "../types/OrderTypes";
+import { useNavigate } from "react-router-dom";
 
 const OrderCustomize = () => {
   const {order, setOrder, isPriority, paymentPlace, setIsPriority, nif} = useContext(NewOrderContext);
   const {isLoading, menusById} = useContext(MenuContext);
   const [hasErrors, setHasErrors] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate();
 
   if (isLoading)
     return (
@@ -38,6 +40,22 @@ const OrderCustomize = () => {
         </Box>
       </Container>
     )
+
+
+  if (order.menus.length === 0) {
+    return (
+      <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"column"} gap={4}>
+          <Typography variant="h4">
+            You have not yet added any meals to your order!
+          </Typography>
+          <Button onClick={() => navigate("/order")} variant="contained">
+            Create your order!
+          </Button>
+        </Box>
+      </Container>
+    )
+  }
 
   const handleRemoveMenu = (index: number) => {
     const newMenus = order.menus.filter((menu, i) => i !== index);
