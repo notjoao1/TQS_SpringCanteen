@@ -120,7 +120,7 @@ const OrderCustomize = () => {
         </Grid>
         <Grid item xs={12} md={4}>
           <OrderPaymentCustomer onFormSubmit={handleFormSubmit} />
-          <Box component={Button} variant="outlined" onClick={() => confirmOrder()}>
+          <Box component={Button} variant="outlined" onClick={() => confirmOrder()} id="confirm-order-button">
             <Typography color="text.primary" variant="body2" fontWeight="bold">
               Confirm order
             </Typography>
