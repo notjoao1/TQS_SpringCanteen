@@ -2,6 +2,7 @@ package pt.ua.deti.springcanteen.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -32,7 +33,12 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         request -> request.requestMatchers("/api/auth/**", "/error", "docs/**", "/swagger-ui/**" , "websocket**")
-                                .permitAll().anyRequest().authenticated())
+                                .permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/orders")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/menus")
+                                .permitAll()
+                                .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
