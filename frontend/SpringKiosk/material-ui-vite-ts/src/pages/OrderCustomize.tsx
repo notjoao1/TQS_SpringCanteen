@@ -128,7 +128,7 @@ const OrderCustomize = () => {
         </Grid>
       </Grid>
       <Fade in={hasErrors} unmountOnExit>
-        <Alert severity="error" variant="filled" sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}}>
+        <Alert severity="error" variant="filled" sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}} id="error-alert">
           <AlertTitle>Error while placing order:</AlertTitle>
           {errorMessage}
         </Alert>
