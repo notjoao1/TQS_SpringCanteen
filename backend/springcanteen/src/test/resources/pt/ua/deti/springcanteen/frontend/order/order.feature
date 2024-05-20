@@ -53,7 +53,10 @@ Feature: Make an order on SpringCanteen
         And I select the Drink number "1"
         And I click on "Confirm selection"
         And I click on "Customize and pay"
-        And I write my NIF as "123456789"
+        And I fill in the NIF with "123456789"
+        And I fill in the name on the card with "John Doe"
+        And I fill in the card number with "1231231231231231"
+        And I fill in the expiration date with "12/24"
         And I check the Priority Queue checkbox
         And I click on "Confirm order"
         Then I should see my order number as "7"

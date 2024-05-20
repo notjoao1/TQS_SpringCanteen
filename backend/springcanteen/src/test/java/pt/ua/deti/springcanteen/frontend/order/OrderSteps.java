@@ -113,8 +113,8 @@ import static org.hamcrest.CoreMatchers.is;
         driver.findElement(By.id("customize-and-pay")).click();
     }
 
-    @And("I write my NIF as {string}")
-    public void i_write_my_nif_as(String nif) {
+    @And("I fill in the NIF with {string}")
+    public void i_fill_nif(String nif) {
         driver.findElement(By.id("nif-input")).sendKeys(nif);
     }
 
@@ -151,10 +151,25 @@ import static org.hamcrest.CoreMatchers.is;
         driver.findElement(By.id("remove-menu-customize-" + removeMenuNumber)).click();
     }
 
+    @And("I fill in the name on the card with {string}")
+    public void i_fill_name(String name) {
+        driver.findElement(By.id("name-on-card-input")).sendKeys(name);
+    }
+
+    @And("I fill in the card number with {string}")
+    public void i_fill_card_number(String number) {
+        driver.findElement(By.id("card-number-input")).sendKeys(number);
+    }
+
+    @And("I fill in the expiration date with {string}")
+    public void i_fill_expiration_date(String date) {
+        driver.findElement(By.id("expiration-date-input")).sendKeys(date);
+    }
+
+
     @Then("I should see the menu number {string} and not the menu number {string}")
     public void i_should_see_the_menu_number_and_not_the_menu_number(String menuNumberExisting, String menuNumberGone) {
         assertThat(driver.findElement(By.id("customize-menu-" + menuNumberExisting)).isDisplayed(), is(true));
         assertThat(driver.findElements(By.id("customize-menu-" + menuNumberGone)).size(), is(0));
     }
-
  }
