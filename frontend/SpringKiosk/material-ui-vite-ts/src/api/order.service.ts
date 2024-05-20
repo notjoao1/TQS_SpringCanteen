@@ -45,8 +45,6 @@ export const createOrder = async (order: ICreateOrder, isPaid: boolean, isPriori
 
 
 const createOrderCreateObject = (order: ICreateOrder, isPaid: boolean, isPriority: boolean, nif: string): OrderCreateObject => {
-    
-    console.log("order main dish -> ", order.menus.at(0)?.selectedMainDish)
     const postObject: OrderCreateObject = {
         kioskId: 1,
         isPaid,

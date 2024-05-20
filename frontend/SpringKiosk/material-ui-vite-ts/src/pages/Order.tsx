@@ -202,8 +202,8 @@ export default function Order() {
           message="Successfully added menu to order."
         />
         {/* Error alert for when the order is empty and the user tries to move on */}
-        <Collapse in={isAlertOpen} sx={{position: "absolute", bottom: 20, right: 20}}>
-          <Alert variant="filled" severity="error" action={
+        <Collapse in={isAlertOpen} >
+          <Alert sx={{position: "fixed", bottom: 20, right: 20}} variant="filled" severity="error" action={
             <IconButton
               aria-label="close"
               color="inherit"

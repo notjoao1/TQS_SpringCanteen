@@ -107,4 +107,42 @@ import static org.hamcrest.CoreMatchers.is;
         }
         driver.quit();
     }
+
+    @And("I click on \"Customize and pay\"")
+    public void i_click_on_customize_and_pay() {
+        driver.findElement(By.id("customize-and-pay")).click();
+    }
+
+    @And("I write my NIF as {string}")
+    public void i_write_my_nif_as(String nif) {
+        driver.findElement(By.id("nif-input")).sendKeys(nif);
+    }
+
+    @And("I check the Priority Queue checkbox")
+    public void i_check_the_priority_queue_checkbox() {
+        driver.findElement(By.id("priority-queue-checkbox")).click();
+    }
+
+    @And("I click on \"Confirm order\"")
+    public void i_click_on_confirm_order() {
+        driver.findElement(By.id("confirm-order-button")).click();
+    }
+
+    @Then("I should see my order number as {string}")
+    public void i_should_see_my_order_number_as(String orderNumber) {
+        String actualOrderNumber = driver.findElement(By.id("order-number-text")).getText();
+        assertThat(actualOrderNumber, is("ORDER: " + orderNumber));
+    }
+
+    @And("I should see total cost as {string}€")
+    public void i_should_see_total_cost_as(String totalCost) {
+        String actualCost = driver.findElement(By.id("order-cost-text")).getText();
+        assertThat(actualCost, containsString(totalCost));
+    }
+
+    @And("I should see that my order is a priority order")
+    public void i_should_see_that_my_order_is_a_priority_order() {
+        String priorityOrderElementText = driver.findElement(By.id("priority-order")).getText();
+        assertThat(priorityOrderElementText, is("Priority Order"));
+    }
  }
