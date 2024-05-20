@@ -79,6 +79,22 @@ import static org.hamcrest.CoreMatchers.is;
         driver.findElement(By.id("nif-input")).sendKeys(nif);
     }
 
+    @And("I fill in the name on the card with {string}")
+    public void i_fill_name(String name) {
+        driver.findElement(By.id("name-on-card-input")).sendKeys(name);
+    }
+
+    @And("I fill in the card number with {string}")
+    public void i_fill_card_number(String number) {
+        driver.findElement(By.id("card-number-input")).sendKeys(number);
+    }
+
+    @And("I fill in the expiration date with {string}")
+    public void i_fill_expiration_date(String date) {
+        driver.findElement(By.id("expiration-date-input")).sendKeys(date);
+    }
+
+
     @And("I click on \"Confirm order\"")
     public void i_click_confirm_order() {
         driver.findElement(By.id("confirm-order-button")).click();

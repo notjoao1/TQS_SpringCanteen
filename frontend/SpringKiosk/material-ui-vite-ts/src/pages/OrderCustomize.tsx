@@ -74,7 +74,7 @@ const OrderCustomize = () => {
     }
 
     if (!isFormAccepted) {
-      setErrorMessage("Please fill in the payment form before confirming the order!");
+      setErrorMessage("Please fill in the payment form correctly before confirming the order!");
       setHasErrors(true);
       setTimeout(() => setHasErrors(false), 5000);
       return;

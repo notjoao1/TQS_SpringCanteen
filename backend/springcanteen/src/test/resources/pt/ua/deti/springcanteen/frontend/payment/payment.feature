@@ -22,37 +22,19 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Customize and pay"
         And I fill in the NIF with "123456789"
         And I click on "Confirm order"
-        Then I should see the error "Please fill in the payment form before confirming the order!"
+        Then I should see the error "Please fill in the payment form correctly before confirming the order!"
 
-    # Scenario: User wants to make an order adding 2 menus
-    #     When I navigate to "http://localhost:5173/order"
-    #     And I select the menu number "2"
-    #     And I select the Main Dish number "1"
-    #     And I select the Drink number "1"
-    #     And I click on "Confirm selection"
-    #     And I select the menu number "1"
-    #     And I select the Main Dish number "1"
-    #     And I select the Drink number "3"
-    #     And I click on "Confirm selection"
-    #     And I click to "View order"
-    #     Then I should see the 2 menus added to the order
-
-
-    # Scenario: User wants to make an order but cancels it
-    #     When I navigate to "http://localhost:5173/order"
-    #     And I select the menu number "1"
-    #     And I select the Main Dish number "1"
-    #     And I select the Drink number "2"
-    #     And I click on "Cancel selection"
-    #     And I click to "View order"
-    #     Then I should see the 0 menus added to the order
-
-    # Scenario: User wants to make an order, and then remove a menu
-    #     When I navigate to "http://localhost:5173/order"
-    #     And I select the menu number "2"
-    #     And I select the Main Dish number "1"
-    #     And I select the Drink number "1"
-    #     And I click on "Confirm selection"
-    #     And I click to "View order"
-    #     And I remove the menu number "1"
-    #     Then I should see the 0 menus added to the order   
+    Scenario: User wants to make an order, but doesn't enter a valid expiration date
+        When I navigate to "http://localhost:5173/order"
+        And I select the menu number "2"
+        And I select the Main Dish number "1"
+        And I select the Drink number "1"
+        And I click on "Confirm selection"
+        And I should see the message "Successfully added menu to order."
+        And I click on "Customize and pay"
+        And I fill in the NIF with "123456789"
+        And I fill in the name on the card with "John Doe"
+        And I fill in the card number with "1231231231231231"
+        And I fill in the expiration date with "13/24"
+        And I click on "Confirm order"
+        Then I should see the error "Please fill in the payment form correctly before confirming the order!"
