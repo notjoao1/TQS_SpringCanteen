@@ -30,11 +30,11 @@ public class IOrderNotifierService implements OrderNotifierService {
     }
 
     @Override
-    public void sendOrderStatusUpdates(Order order, OrderStatus newOrderStatus) {
+    public void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus) {
         OrderUpdateResponseDTO updateResponse = new OrderUpdateResponseDTO();
-        updateResponse.setOrderId(order.getId());
+        updateResponse.setOrderId(orderId);
         updateResponse.setNewOrderStatus(newOrderStatus); 
-        logger.info("Sending order update to /topic/orders. New status - {}; Order - {}", newOrderStatus, order);
+        logger.info("Sending order update to /topic/orders. New status - {}; Order id - {}", newOrderStatus, orderId);
         websocketClient.convertAndSend("/topic/orders", updateResponse);
     }
     

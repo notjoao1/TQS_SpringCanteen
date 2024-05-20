@@ -8,5 +8,5 @@ public interface OrderNotifierService {
 
     void sendExistingOrderQueues();
 
-    void sendOrderStatusUpdates(Order order, OrderStatus newOrderStatus);
+    void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus);
 }

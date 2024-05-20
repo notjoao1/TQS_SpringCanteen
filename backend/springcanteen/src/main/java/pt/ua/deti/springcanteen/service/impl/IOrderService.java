@@ -99,14 +99,13 @@ public class IOrderService implements OrderService {
             return Optional.empty();
 
         Order order = orderOpt.get();
-        if (
-                (order.getOrderStatus() == null && newOrderStatus != OrderStatus.IDLE) ||
-                (order.getOrderStatus() == OrderStatus.IDLE && newOrderStatus != OrderStatus.PREPARING) ||
-                (order.getOrderStatus() == OrderStatus.PREPARING && newOrderStatus != OrderStatus.READY) ||
-                (order.getOrderStatus() == OrderStatus.READY && newOrderStatus != OrderStatus.PICKED_UP)
-        ) {
+        if (!isValidOrderStatusChange(order.getOrderStatus(), newOrderStatus)) {
+            logger.error("Invalid order status change from {} to {}", order.getOrderStatus(), newOrderStatus);
             return Optional.empty();
         }
+        // TODO: para além de dar update no status na DB, temos de dar update do status das Orders nas queues
+        // TODO: quando uma order passa de READY para PICKED_UP, mandar mensagem pela websocket só para no frontend
+        //       ficar confirmado que está terminada a order?
         // order gets paid
         if (newOrderStatus == OrderStatus.IDLE) {
             if(orderManagementService.addOrder(order)){
@@ -116,7 +115,11 @@ public class IOrderService implements OrderService {
             } else {
                 logger.error("Order with id {} could not be added to queue. OrderStatus unchanged.", order.getId());
             }
-        } else if (newOrderStatus == OrderStatus.PICKED_UP) { // order is finished
+        } else if (newOrderStatus == OrderStatus.PREPARING || newOrderStatus == OrderStatus.READY) {
+            logger.info("Order with id {} status updated from {} to {}", order.getId(), order.getOrderStatus(), newOrderStatus);
+            order.setOrderStatus(newOrderStatus);
+            orderNotifierService.sendOrderStatusUpdates(order.getId(), newOrderStatus);
+        } else if (newOrderStatus == OrderStatus.PICKED_UP) { // order finished
             if (orderManagementService.removeOrder(order)){
                 order.setOrderStatus(newOrderStatus);
                 logger.info("Order with id {} removed from the queue and OrderStatus changed to {}", order.getId(), newOrderStatus);
@@ -128,5 +131,14 @@ public class IOrderService implements OrderService {
         return Optional.of(order);
     }
 
-
+    private boolean isValidOrderStatusChange(OrderStatus oldOrderStatus, OrderStatus newOrderStatus) {
+        if (
+            (oldOrderStatus == null && newOrderStatus != OrderStatus.IDLE) ||
+            (oldOrderStatus == OrderStatus.IDLE && newOrderStatus != OrderStatus.PREPARING) ||
+            (oldOrderStatus == OrderStatus.PREPARING && newOrderStatus != OrderStatus.READY) ||
+            (oldOrderStatus == OrderStatus.READY && newOrderStatus != OrderStatus.PICKED_UP)
+        ) return false;
+        
+        return true;
+    }
 }
