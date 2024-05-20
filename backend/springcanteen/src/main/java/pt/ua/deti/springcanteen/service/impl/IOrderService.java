@@ -20,6 +20,7 @@ import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
+import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
@@ -36,6 +37,7 @@ public class IOrderService implements OrderService {
     private OrderManagementService orderManagementService;
     private OrderRepository orderRepository;
     private OrderMenuRepository orderMenuRepository;
+    private OrderNotifierService orderNotifierService;
 
     @Override
     @Transactional
@@ -54,6 +56,16 @@ public class IOrderService implements OrderService {
         }
         order.setPrice(totalOrderPrice);
         orderRepository.save(order);
+        // add order to queue that is paid and therefore, ready to be cooked (idle status)
+        if (order.getOrderStatus() == OrderStatus.IDLE) {
+            logger.info("Created order is in IDLE status, ready to cook -> sending it to the queue...");
+            orderNotifierService.sendNewOrder(order);
+            if (orderManagementService.addOrder(order)) 
+                logger.info("Successfully added IDLE order to queue.");
+            else
+                logger.error("Could not add IDLE order to queue...");
+            
+        }
         orderMenuRepository.saveAll(orderMenus);
         return Optional.of(order);
     }
@@ -63,7 +75,7 @@ public class IOrderService implements OrderService {
         kioskTerminal.setId(customizeOrderDTO.getKioskId());
         
         Order order;
-        if (customizeOrderDTO.getIsPaid())
+        if (Boolean.TRUE.equals(customizeOrderDTO.getIsPaid()))
             order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
         else 
             order = new Order(OrderStatus.NOT_PAID, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
@@ -78,7 +90,6 @@ public class IOrderService implements OrderService {
         }
         order.setOrderMenus(orderMenus);
         return order;
-
     }
 
     public Optional<Order> changeOrderStatus(Order order, OrderStatus newOrderStatus){
@@ -90,14 +101,16 @@ public class IOrderService implements OrderService {
         ) {
             return Optional.empty();
         }
+        // order gets paid
         if (newOrderStatus == OrderStatus.IDLE) {
             if(orderManagementService.addOrder(order)){
                 order.setOrderStatus(newOrderStatus);
+                orderNotifierService.sendNewOrder(order);
                 logger.info("Order with id {} added to queue and OrderStatus changed to {}", order.getId(), newOrderStatus);
             } else {
                 logger.error("Order with id {} could not be added to queue. OrderStatus unchanged.", order.getId());
             }
-        } else if (newOrderStatus == OrderStatus.PICKED_UP) {
+        } else if (newOrderStatus == OrderStatus.PICKED_UP) { // order is finished
             if (orderManagementService.removeOrder(order)){
                 order.setOrderStatus(newOrderStatus);
                 logger.info("Order with id {} removed from the queue and OrderStatus changed to {}", order.getId(), newOrderStatus);
