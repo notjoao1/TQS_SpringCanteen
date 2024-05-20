@@ -50,7 +50,7 @@ const OrderCustomizeMenu = ({ menu, index, handleRemoveMenu }: OrderCustomizeMen
         <Typography variant="overline">
             (+{getPriceOfExtraIngredients(menu.selectedMainDish, menusById.get(menu.selectedMenu.id)?.mainDishOptions.find(m => m.id === menu.selectedMainDish.id)!).toFixed(2)}€)
         </Typography>
-        <Box component={Button} onClick={() => handleRemoveMenu(index)}>
+        <Box id={`remove-menu-customize-${index + 1}`} component={Button} onClick={() => handleRemoveMenu(index)}>
           Remove
         </Box>
       </Box>

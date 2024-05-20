@@ -145,4 +145,16 @@ import static org.hamcrest.CoreMatchers.is;
         String priorityOrderElementText = driver.findElement(By.id("priority-order")).getText();
         assertThat(priorityOrderElementText, is("Priority Order"));
     }
+  
+    @And("I click on remove for menu number {string}")
+    public void i_click_on_remove_for_menu_number(String removeMenuNumber) {
+        driver.findElement(By.id("remove-menu-customize-" + removeMenuNumber)).click();
+    }
+
+    @Then("I should see the menu number {string} and not the menu number {string}")
+    public void i_should_see_the_menu_number_and_not_the_menu_number(String menuNumberExisting, String menuNumberGone) {
+        assertThat(driver.findElement(By.id("customize-menu-" + menuNumberExisting)).isDisplayed(), is(true));
+        assertThat(driver.findElements(By.id("customize-menu-" + menuNumberGone)).size(), is(0));
+    }
+
  }
