@@ -59,3 +59,18 @@ Feature: Make an order on SpringCanteen
         Then I should see my order number as "7"
         And I should see total cost as "7.00"€
         And I should see that my order is a priority order
+
+    @order_modify_at_end
+    Scenario: User was about to complete an order, but decided to remove a menu from the order
+        When I navigate to "http://localhost:5173/order"
+        And I select the menu number "2"
+        And I select the Main Dish number "1"
+        And I select the Drink number "1"
+        And I click on "Confirm selection"
+        And I select the menu number "1"
+        And I select the Main Dish number "1"
+        And I select the Drink number "3"
+        And I click on "Confirm selection"
+        And I click on "Customize and pay"
+        And I click on remove for menu number "2"
+        Then I should see the menu number "1" and not the menu number "2"
