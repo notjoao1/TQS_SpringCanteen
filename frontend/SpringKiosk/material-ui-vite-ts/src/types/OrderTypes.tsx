@@ -23,3 +23,24 @@ export interface ICreateOrder {
     menus: ICreateMenu[]
     nif?: string;
 }
+
+export enum PaymentPlace {
+    KIOSK = "In Kiosk",
+    DESK = "In Desk",
+}
+
+
+export interface IOrderResponse {
+    id: number;
+    paid: boolean;
+    priority: boolean;
+    nif: number;
+    orderMenus: IOrderMenuResponse[];
+    price: number;
+}
+
+
+interface IOrderMenuResponse {
+    menu: {name: string, price: number};
+    customization: string;
+}

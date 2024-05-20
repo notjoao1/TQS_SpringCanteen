@@ -61,7 +61,13 @@ public class IOrderService implements OrderService {
     private Order orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
         KioskTerminal kioskTerminal = new KioskTerminal();
         kioskTerminal.setId(customizeOrderDTO.getKioskId());
-        Order order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
+        
+        Order order;
+        if (customizeOrderDTO.getIsPaid())
+            order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
+        else 
+            order = new Order(OrderStatus.NOT_PAID, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
+        
         Set<OrderMenu> orderMenus = new HashSet<>();
         // check if all menus provided exist and add them to orderMenus set
         for (OrderMenuDTO orderMenuDTO : customizeOrderDTO.getOrderMenus()) {

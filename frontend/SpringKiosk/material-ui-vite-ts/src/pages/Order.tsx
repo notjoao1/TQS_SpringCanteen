@@ -8,30 +8,17 @@ import Typography from "@mui/material/Typography";
 import { Check, Close, FormatListNumberedOutlined } from "@mui/icons-material";
 import { IDrink, IMainDish, IMenu } from "../types/MenuTypes";
 import OrderMenuCard from "../components/order_page/OrderMenuCard";
-import { Alert, BottomNavigation, BottomNavigationAction, Collapse, IconButton, Paper, Snackbar } from "@mui/material";
+import { Alert, BottomNavigation, BottomNavigationAction, CircularProgress, Collapse, IconButton, Paper, Snackbar } from "@mui/material";
 import MenuDetailsModal from "../components/order_page/MenuDetailsModal";
 import OrderDrawer from "../components/order_page/OrderDrawer";
 import { useNavigate } from "react-router-dom";
 import { NewOrderContext } from "../context/NewOrderContext";
-import { fetchAllMenus } from "../api/menu.service";
 import AddToOrderModal from "../components/order_page/AddToOrderModal";
+import { MenuContext } from "../context/MenuContext";
 
 
 export default function Order() {
-  const [menus, setMenus] = React.useState<IMenu[]>([]);
-
-  React.useEffect(() => {
-    const fetchMenus = async () => {
-      try {
-        const fetchedMenus = await fetchAllMenus();
-        setMenus(fetchedMenus);
-      } catch (error) {
-        console.error('Error fetching menus:', error);
-      }
-    };
-
-    fetchMenus();
-  }, []);
+  const {isLoading, menusById} = React.useContext(MenuContext);
 
   const {order, setOrder} = React.useContext(NewOrderContext);
 
@@ -45,6 +32,15 @@ export default function Order() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(false);
   const [isSnackbarOpen, setIsSnackbarOpen] = React.useState<boolean>(false);
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+
+  if (isLoading)
+    return (
+      <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
+            <CircularProgress size={100}/>
+        </Box>
+      </Container>
+  )
 
   const handleOpenModal = (menu: IMenu) => {
     setSelectedMenu(menu);
@@ -61,9 +57,9 @@ export default function Order() {
     setIsAddToOrderModalOpen(false);
     setOrder({
       menus: [...order.menus, {
-        selectedMenu: menu,
-        selectedDrink,
-        selectedMainDish
+        selectedMenu: structuredClone(menu),
+        selectedDrink: structuredClone(selectedDrink),
+        selectedMainDish: structuredClone(selectedMainDish)
       }]
     })
     setIsSnackbarOpen(true);
@@ -86,7 +82,7 @@ export default function Order() {
       </Typography>
 
       <Grid container spacing={6} pt={4}>
-        {menus.map((menu, index) => (
+        {Array.from(menusById.values()).map((menu, index) => (
           <Grid key={menu.id} item xs={12} md={4}>
             <OrderMenuCard index={index} menu={menu} onClickDetails={handleOpenModal} onClickAddToOrder={handleOpenAddToOrderModal}/>
           </Grid>
@@ -99,7 +95,7 @@ export default function Order() {
             gap={1}
             sx={{ display: { xs: "auto", sm: "none" } }}
           >
-            {menus.map((menu, index) => (
+            {Array.from(menusById.values()).map((menu, index) => (
               <Chip
                 key={menu.id}
                 label={menu.name}
@@ -191,8 +187,8 @@ export default function Order() {
             >
               You currently have {order.menus.length} item(s) in your order.
             </Box>
-            <BottomNavigationAction label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
-            <BottomNavigationAction sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={validateOrder} />
+            <BottomNavigationAction id="view-order" label="View your order" icon={<FormatListNumberedOutlined />} onClick={() => setIsDrawerOpen(true)} />
+            <BottomNavigationAction id="customize-and-pay" sx={{float: "right"}} label="Customize and pay" icon={<Check />} onClick={validateOrder} />
           </BottomNavigation>
         </Paper>
         <OrderDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}/>
@@ -202,11 +198,12 @@ export default function Order() {
           open={isSnackbarOpen}
           autoHideDuration={4000}
           onClose={() => setIsSnackbarOpen(false)}
+          id="snackbar-add-menu-to-order"
           message="Successfully added menu to order."
         />
         {/* Error alert for when the order is empty and the user tries to move on */}
-        <Collapse in={isAlertOpen} sx={{position: "absolute", bottom: 20, right: 20}}>
-          <Alert variant="filled" severity="error" action={
+        <Collapse in={isAlertOpen} >
+          <Alert sx={{position: "fixed", bottom: 20, right: 20}} variant="filled" severity="error" action={
             <IconButton
               aria-label="close"
               color="inherit"

@@ -12,7 +12,9 @@ import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import EmployeeOrders from './pages/EmployeeOrders';
 import EmployeePayments from './pages/EmployeePayments';
+import Customize from './pages/Customize';
 import { NewOrderContextProvider } from './context/NewOrderContext';
+import { MenuContextProvider } from './context/MenuContext';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -26,17 +28,20 @@ export default function App() {
       <TopBar mode={mode} />
       <BrowserRouter>
         <NewOrderContextProvider>
-          <Routes>
-            <Route path="/" Component={Home} />
-            <Route path="/order" Component={Order} />
-            <Route path="/order/customize" Component={OrderCustomize} />
-            <Route path="/order/finish" Component={OrderFinish} />
-            <Route path="/signup" Component={SignUp} />
-            <Route path="/signin" Component={SignIn} />
-            <Route path="/employee/orders" Component={EmployeeOrders} />
-            <Route path="/employee/payments" Component={EmployeePayments} />
-            <Route path="/menu" Component={Home} />
-          </Routes>
+          <MenuContextProvider>
+            <Routes>
+              <Route path="/" Component={Home} />
+              <Route path="/order" Component={Order} />
+              <Route path="/order/customize" Component={OrderCustomize} />
+              <Route path="/order/customize/menu/:id" Component={Customize} />
+              <Route path="/order/finish" Component={OrderFinish} />
+              <Route path="/signup" Component={SignUp} />
+              <Route path="/signin" Component={SignIn} />
+              <Route path="/employee/orders" Component={EmployeeOrders} />
+              <Route path="/employee/payments" Component={EmployeePayments} />
+              <Route path="/menu" Component={Home} />
+            </Routes>
+          </MenuContextProvider>
         </NewOrderContextProvider>
       </BrowserRouter>
     </ThemeProvider>

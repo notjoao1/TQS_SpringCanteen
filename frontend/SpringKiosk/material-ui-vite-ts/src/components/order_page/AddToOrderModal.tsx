@@ -81,16 +81,16 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 <InputLabel id="demo-simple-select-label">Main Dish</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    id="select-main-dish"
                     value={selectedMainDishId}
                     label="Main Dish"
                     onChange={(e) =>
                         setSelectedMainDishId(e.target.value)
                     }
                 >
-                    {menu.mainDishOptions.map((mainDish) => (
-                    <MenuItem value={mainDish.id}>
-                        {mainDish.name} - {mainDish.price}€
+                    {menu.mainDishOptions.map((mainDish, index) => (
+                    <MenuItem value={mainDish.id} id={`main-dish-${index + 1}`}>
+                        {mainDish.name} - {mainDish.price.toFixed(2)}€
                     </MenuItem>
                     ))}
                 </Select>
@@ -99,24 +99,24 @@ const AddToOrderModal = ({ isOpen, menu, onClose, addToOrder }: AddToOrderModalP
                 <InputLabel id="demo-simple-select-label">Drink</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    id="select-drink"
                     value={selectedDrinkId}
                     label="Drink"
                     onChange={(e) =>
                         setSelectedDrinkId(e.target.value)
                     }
                 >
-                    {menu.drinkOptions.map((drink) => (
-                    <MenuItem value={drink.id}>
-                        {drink.name} - {drink.price}€
+                    {menu.drinkOptions.map((drink, index) => (
+                    <MenuItem value={drink.id} id={`drink-${index + 1}`}>
+                        {drink.name} - {drink.price.toFixed(2)}€
                     </MenuItem>
                     ))}
                 </Select>
             </FormControl>
           </Box>
           <Box pt={2} display={"flex"} justifyContent={"center"} alignItems={"center"} gap={2}>
-            <Button color="error" onClick={() => handleClose()} variant="contained">Cancel Selection</Button>
-            <Button onClick={() => handleConfirm()} variant="outlined">Confirm selection</Button>
+            <Button color="error" onClick={() => handleClose()} variant="contained" id="cancel-selection">Cancel Selection</Button>
+            <Button onClick={() => handleConfirm()} variant="outlined" id="confirm-selection">Confirm selection</Button>
           </Box>
         </Typography>
       </Box>

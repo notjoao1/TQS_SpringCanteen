@@ -31,7 +31,7 @@ const OrderMenuCard = ({
       variant="outlined"
       sx={{ maxWidth: 345 }}
     >
-      <CardHeader title={menu.name} subheader={menu.price + "€"} />
+      <CardHeader title={menu.name}/>
       <CardMedia
         component="img"
         height="194"
@@ -45,7 +45,7 @@ const OrderMenuCard = ({
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <IconButton aria-label="add to order" onClick={() => onClickAddToOrder(menu)}>
+        <IconButton aria-label="add to order" id={`add-menu-${index + 1}`} onClick={() => onClickAddToOrder(menu)}>
           <AddIcon />
         </IconButton>
         <IconButton
