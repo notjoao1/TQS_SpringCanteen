@@ -9,6 +9,8 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm selection"
         And I should see the message "Successfully added menu to order."
         And I click on "Customize and pay"
+        And I click on "Confirm order"
+        Then I should see the error "You must fill NIF with a 9 digit number! Example: 123456789"
         
 
     # Scenario: User wants to make an order adding 2 menus

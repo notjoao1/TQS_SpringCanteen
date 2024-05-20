@@ -74,6 +74,10 @@ import static org.hamcrest.CoreMatchers.is;
         driver.findElement(By.id("customize-and-pay")).click();
     }
 
+    @And("I click on \"Confirm order\"")
+    public void i_click_confirm_order() {
+        driver.findElement(By.id("confirm-order-button")).click();
+    }
     
     @And("I should see the message \"Successfully added menu to order.\"")
     public void i_should_see_message() {
@@ -81,16 +85,25 @@ import static org.hamcrest.CoreMatchers.is;
         assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
     }
 
-    @Then("I should see the {int} menus added to the order")
-    public void i_should_see_order(int number) {
-        if (number == 0) {
-            assertThat(driver.findElements(By.id("order-drawer-item-1")).size(), is(0));
-        } else {
-            // checks that order-drawer-item-1 and order-drawer-item-2 are visible
-            for (int i = 1; i <= number; i++) {
-                assertThat(driver.findElement(By.id("order-drawer-item-" + i)).isDisplayed(), is(true));
-            }
-        }
+    @Then("I should see the error {string}")
+    public void i_should_see_error(String error) {
+        wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id("error-alert"), error));
+        assertThat(driver.findElement(By.id("error-alert")).getText(), containsString(error));
+
         driver.quit();
     }
+
+
+    // @Then("I should see the {int} menus added to the order")
+    // public void i_should_see_order(int number) {
+    //     if (number == 0) {
+    //         assertThat(driver.findElements(By.id("order-drawer-item-1")).size(), is(0));
+    //     } else {
+    //         // checks that order-drawer-item-1 and order-drawer-item-2 are visible
+    //         for (int i = 1; i <= number; i++) {
+    //             assertThat(driver.findElement(By.id("order-drawer-item-" + i)).isDisplayed(), is(true));
+    //         }
+    //     }
+    //     driver.quit();
+    // }
  }
