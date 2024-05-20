@@ -74,6 +74,11 @@ import static org.hamcrest.CoreMatchers.is;
         driver.findElement(By.id("customize-and-pay")).click();
     }
 
+    @And("I fill in the NIF with {string}")
+    public void i_fill_nif(String nif) {
+        driver.findElement(By.id("nif-input")).sendKeys(nif);
+    }
+
     @And("I click on \"Confirm order\"")
     public void i_click_confirm_order() {
         driver.findElement(By.id("confirm-order-button")).click();
