@@ -30,6 +30,7 @@ const OrderCustomize = () => {
   const {isLoading, menusById} = useContext(MenuContext);
   const [hasErrors, setHasErrors] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isFormAccepted, setIsFormAccepted] = useState(false);
   const navigate = useNavigate();
 
   if (isLoading)
@@ -71,11 +72,22 @@ const OrderCustomize = () => {
       setTimeout(() => setHasErrors(false), 5000);
       return;
     }
+
+    if (!isFormAccepted) {
+      setErrorMessage("Please fill in the payment form correctly before confirming the order!");
+      setHasErrors(true);
+      setTimeout(() => setHasErrors(false), 5000);
+      return;
+    }
     // success
     setOrder({menus: []}); // clear order state
     const createOrderResponse = await createOrder(order, paymentPlace === PaymentPlace.KIOSK, isPriority, nif);
     navigate('/order/finish', { state: { orderResponse: createOrderResponse } });
   }
+
+  const handleFormSubmit = (accepted: boolean) => {
+    setIsFormAccepted(accepted);
+  };
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
@@ -108,7 +120,7 @@ const OrderCustomize = () => {
           </Box>
         </Grid>
         <Grid item xs={12} md={4}>
-          <OrderPaymentCustomer />
+          <OrderPaymentCustomer onFormSubmit={handleFormSubmit} />
           <Box component={Button} id="confirm-order-button" variant="outlined" onClick={() => confirmOrder()}>
             <Typography color="text.primary" variant="body2" fontWeight="bold">
               Confirm order
@@ -117,7 +129,7 @@ const OrderCustomize = () => {
         </Grid>
       </Grid>
       <Fade in={hasErrors} unmountOnExit>
-        <Alert severity="error" variant="filled" sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}}>
+        <Alert severity="error" variant="filled" sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}} id="error-alert">
           <AlertTitle>Error while placing order:</AlertTitle>
           {errorMessage}
         </Alert>
