@@ -1,4 +1,4 @@
-package pt.ua.deti.springcanteen.dto;
+package pt.ua.deti.springcanteen.dto.cookresponse;
 
 
 import lombok.AllArgsConstructor;
@@ -9,11 +9,11 @@ import pt.ua.deti.springcanteen.entities.Menu;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MenuClientResponseDTO {
+public class MenuOrderResponseDTO {
     private String name;
     private float price;
 
-    public static MenuClientResponseDTO fromMenuEntity(Menu menu, float price) {
-        return new MenuClientResponseDTO(menu.getName(), price);
+    public static MenuOrderResponseDTO fromMenuEntity(Menu menu, float price) {
+        return new MenuOrderResponseDTO(menu.getName(), price);
     }
 }

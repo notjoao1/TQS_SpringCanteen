@@ -13,6 +13,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,12 +29,19 @@ import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.service.EmployeeService;
+import pt.ua.deti.springcanteen.service.JwtService;
 import pt.ua.deti.springcanteen.service.impl.IOrderService;
 
 @WebMvcTest(OrderController.class)
-class OrderControllerTest {
+@AutoConfigureMockMvc(addFilters = false)
+class OrderControllerTest{
     @Autowired
     MockMvc mockMvc;
+    @MockBean
+    JwtService jwtService;
+    @MockBean
+    EmployeeService employeeService;
 
     @MockBean
     private IOrderService orderService;

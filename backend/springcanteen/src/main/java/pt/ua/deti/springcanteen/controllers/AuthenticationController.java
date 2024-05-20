@@ -22,7 +22,7 @@ public class AuthenticationController {
     @Operation(summary = "Create an account.")
     @ApiResponse(responseCode = "200", description = "Account created successfully." , content = { @Content(mediaType = "application/json",
       schema = @Schema(implementation = JwtAuthenticationResponseDTO.class)) })
-    @PostMapping("/signup")
+    @PostMapping("signup")
     public ResponseEntity<JwtAuthenticationResponseDTO> signUp(@Valid @RequestBody SignUpRequestDTO req) {
         return ResponseEntity.ok(authenticationService.signup(req));
     }

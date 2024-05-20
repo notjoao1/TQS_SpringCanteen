@@ -19,6 +19,7 @@ import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
+import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
@@ -31,9 +32,10 @@ import java.util.Set;
 public class IOrderService implements OrderService {
     private static final Logger logger = LoggerFactory.getLogger(IOrderService.class);
     private PriceService priceService;
+    private MenuService menuService;
+    private OrderManagementService orderManagementService;
     private OrderRepository orderRepository;
     private OrderMenuRepository orderMenuRepository;
-    private MenuService menuService;
 
     @Override
     @Transactional
@@ -72,4 +74,34 @@ public class IOrderService implements OrderService {
         return order;
 
     }
+
+    public Optional<Order> changeOrderStatus(Order order, OrderStatus newOrderStatus){
+        if (
+                (order.getOrderStatus() == null && newOrderStatus != OrderStatus.IDLE) ||
+                (order.getOrderStatus() == OrderStatus.IDLE && newOrderStatus != OrderStatus.PREPARING) ||
+                (order.getOrderStatus() == OrderStatus.PREPARING && newOrderStatus != OrderStatus.READY) ||
+                (order.getOrderStatus() == OrderStatus.READY && newOrderStatus != OrderStatus.PICKED_UP)
+        ) {
+            return Optional.empty();
+        }
+        if (newOrderStatus == OrderStatus.IDLE) {
+            if(orderManagementService.addOrder(order)){
+                order.setOrderStatus(newOrderStatus);
+                logger.info("Order with id {} added to queue and OrderStatus changed to {}", order.getId(), newOrderStatus);
+            } else {
+                logger.error("Order with id {} could not be added to queue. OrderStatus unchanged.", order.getId());
+            }
+        } else if (newOrderStatus == OrderStatus.PICKED_UP) {
+            if (orderManagementService.removeOrder(order)){
+                order.setOrderStatus(newOrderStatus);
+                logger.info("Order with id {} removed from the queue and OrderStatus changed to {}", order.getId(), newOrderStatus);
+            } else {
+                logger.error("Order with id {} could not be removed from the queue. OrderStatus unchanged.", order.getId());
+            }
+        }
+        orderRepository.save(order);
+        return Optional.of(order);
+    }
+
+
 }

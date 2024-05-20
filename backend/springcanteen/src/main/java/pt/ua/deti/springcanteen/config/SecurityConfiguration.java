@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import pt.ua.deti.springcanteen.service.EmployeeService;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
