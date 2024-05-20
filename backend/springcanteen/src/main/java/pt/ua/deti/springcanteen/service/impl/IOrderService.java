@@ -93,7 +93,12 @@ public class IOrderService implements OrderService {
         return order;
     }
 
-    public Optional<Order> changeOrderStatus(Order order, OrderStatus newOrderStatus){
+    public Optional<Order> changeOrderStatus(Long orderId, OrderStatus newOrderStatus) {
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty())
+            return Optional.empty();
+
+        Order order = orderOpt.get();
         if (
                 (order.getOrderStatus() == null && newOrderStatus != OrderStatus.IDLE) ||
                 (order.getOrderStatus() == OrderStatus.IDLE && newOrderStatus != OrderStatus.PREPARING) ||
