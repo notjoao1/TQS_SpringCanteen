@@ -121,10 +121,11 @@ const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
           aria-labelledby="demo-radio-buttons-group-label"
           value={paymentPlace}
           name="radio-buttons-group"
+          id="payment-options"
           onChange={(e) => setPaymentPlace(e.target.value as PaymentPlace)}
         >
-          <FormControlLabel value={PaymentPlace.KIOSK} control={<Radio />} label={PaymentPlace.KIOSK} />
-          <FormControlLabel value={PaymentPlace.DESK} control={<Radio />} label={PaymentPlace.DESK} />
+          <FormControlLabel value={PaymentPlace.KIOSK} control={<Radio />} label={PaymentPlace.KIOSK} id="kiosk" />
+          <FormControlLabel value={PaymentPlace.DESK} control={<Radio />} label={PaymentPlace.DESK} id="desk" />
         </RadioGroup>
       </FormControl>
       <Box
@@ -139,7 +140,7 @@ const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
         }}
       >
         <TextField
-          id="outlined-basic"
+          id="nif-input"
           label="NIF"
           variant="outlined"
           value={nif}
@@ -150,7 +151,7 @@ const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
         <Typography variant={"h6"}>Payment Details</Typography>
         <TextField
           disabled={paymentPlace === PaymentPlace.DESK}
-          id="outlined-basic"
+          id="name-on-card-input"
           label="Name on Card"
           variant="outlined"
           value={nameOnCard}
@@ -160,7 +161,7 @@ const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
         />
         <TextField
           disabled={paymentPlace === PaymentPlace.DESK}
-          id="outlined-basic"
+          id="card-number-input"
           label="Card Number"
           variant="outlined"
           value={cardNumber}
@@ -170,7 +171,7 @@ const OrderPaymentCustomer = ({ onFormSubmit }: OrderPaymentCustomerProps) => {
         />
         <TextField
           disabled={paymentPlace === PaymentPlace.DESK}
-          id="outlined-basic"
+          id="expiration-date-input"
           label="Expiration Date"
           placeholder={"MM/YY"}
           variant="outlined"
