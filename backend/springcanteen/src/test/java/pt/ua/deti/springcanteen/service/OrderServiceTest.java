@@ -83,7 +83,7 @@ class OrderServiceTest {
 
 
     @Test
-    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusIdle() {
+    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusNotPaid() {
         // ordering menu 1, and already paid for it
         orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
@@ -95,7 +95,7 @@ class OrderServiceTest {
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
         assertThat(orderOpt.isPresent(), is(true));
-        assertThat(orderOpt.get().getOrderStatus(), is(OrderStatus.IDLE));
+        assertThat(orderOpt.get().getOrderStatus(), is(OrderStatus.NOT_PAID));
         assertThat(orderOpt.get().isPriority(), is(true));
         assertThat(orderOpt.get().getPrice(), is(3.0f));
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
