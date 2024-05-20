@@ -45,7 +45,7 @@ jobs:
         run: sudo chown -R $USER:$USER backend/springcanteen/target
 
       - name: Build and test using Cucumber + Selenium 
-        run: rm -rf target/ && mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' verify
+        run: rm -rf target/ && mvn -B '-Dtest=pt.ua.deti.springcanteen.frontend.**' test
         working-directory: ./backend/springcanteen
 
       - name: Down containers
