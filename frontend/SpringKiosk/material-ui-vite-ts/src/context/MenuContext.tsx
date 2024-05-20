@@ -26,13 +26,11 @@ export const MenuContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
         fetchedMenus.forEach(m => newMenusById.set(m.id, m));
         setMenusById(newMenusById);
         setIsLoading(false);
-        console.log("Menus fetched and state updated");
       } catch (error) {
         console.error('Error fetching menus:', error);
       }
     };
 
-    console.log("Fetching menus");
     fetchMenus();
   }, []);
 

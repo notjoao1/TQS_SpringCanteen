@@ -32,8 +32,8 @@ export enum PaymentPlace {
 
 export interface IOrderResponse {
     id: number;
-    isPaid: boolean;
-    isPriority: boolean;
+    paid: boolean;
+    priority: boolean;
     nif: number;
     orderMenus: IOrderMenuResponse[];
     price: number;
