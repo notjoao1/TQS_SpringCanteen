@@ -114,17 +114,9 @@ import static org.hamcrest.CoreMatchers.is;
         driver.quit();
     }
 
-
-    // @Then("I should see the {int} menus added to the order")
-    // public void i_should_see_order(int number) {
-    //     if (number == 0) {
-    //         assertThat(driver.findElements(By.id("order-drawer-item-1")).size(), is(0));
-    //     } else {
-    //         // checks that order-drawer-item-1 and order-drawer-item-2 are visible
-    //         for (int i = 1; i <= number; i++) {
-    //             assertThat(driver.findElement(By.id("order-drawer-item-" + i)).isDisplayed(), is(true));
-    //         }
-    //     }
-    //     driver.quit();
-    // }
+    @Then("I should not see any errors")
+    public void i_should_not_see_errors() {
+        assertThat(driver.findElements(By.id("error-alert")).size(), is(0));
+        driver.quit();
+    }
  }
