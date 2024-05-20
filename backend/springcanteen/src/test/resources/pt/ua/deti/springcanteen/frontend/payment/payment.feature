@@ -1,6 +1,7 @@
 @payment
 Feature: Pay for my order on SpringCanteen
 
+    @payment_fail_nif
     Scenario: User wants to make an order, but doesn't enter his NIF
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
@@ -12,6 +13,7 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm order"
         Then I should see the error "You must fill NIF with a 9 digit number! Example: 123456789"
         
+    @payment_fail_no_payment_details
     Scenario: User wants to make an order, but doesn't enter any payment details
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
@@ -24,6 +26,7 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm order"
         Then I should see the error "Please fill in the payment form correctly before confirming the order!"
 
+    @payment_fail_date
     Scenario: User wants to make an order, but doesn't enter a valid expiration date
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
@@ -39,6 +42,7 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm order"
         Then I should see the error "Please fill in the payment form correctly before confirming the order!"
 
+    @payment_fail_card
     Scenario: User wants to make an order, but doesn't enter a valid card number
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
@@ -54,6 +58,7 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm order"
         Then I should see the error "Please fill in the payment form correctly before confirming the order!"
 
+    @payment_success
     Scenario: User wants to make an order, and enters all the payment details correctly
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
@@ -69,6 +74,7 @@ Feature: Pay for my order on SpringCanteen
         And I click on "Confirm order"
         Then I should not see any errors
 
+    @payment_success_desk   
     Scenario: User wants to make an order, and pay it in the desk
         When I navigate to "http://localhost:5173/order"
         And I select the menu number "2"
