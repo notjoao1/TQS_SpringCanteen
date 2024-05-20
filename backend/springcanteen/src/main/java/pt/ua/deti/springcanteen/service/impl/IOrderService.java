@@ -58,10 +58,11 @@ public class IOrderService implements OrderService {
         orderRepository.save(order);
         // add order to queue that is paid and therefore, ready to be cooked (idle status)
         if (order.getOrderStatus() == OrderStatus.IDLE) {
-            logger.info("Created order is in IDLE status, ready to cook -> sending it to the queue...");
-            orderNotifierService.sendNewOrder(order);
-            if (orderManagementService.addOrder(order)) 
-                logger.info("Successfully added IDLE order to queue.");
+            logger.info("Created order is in IDLE status, ready to cook -> adding it to the queue...");
+            if (orderManagementService.addOrder(order)) {
+                logger.info("Successfully added IDLE order to queue. Sending it through Websockets...");
+                orderNotifierService.sendNewOrder(order);
+            }
             else
                 logger.error("Could not add IDLE order to queue...");
             

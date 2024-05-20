@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -43,6 +45,12 @@ class OrderServiceTest {
     @Mock
     PriceService priceService;
 
+    @Mock
+    OrderNotifierService orderNotifierService;
+
+    @Mock
+    OrderManagementService orderManagementService;
+
     @InjectMocks
     IOrderService orderService;
 
@@ -72,13 +80,18 @@ class OrderServiceTest {
         customizeOrderDTO.setIsPaid(true);
         customizeOrderDTO.setIsPriority(false);
         when(menuService.getMenuById(1L)).thenReturn(Optional.of(menu1));
+        when(orderManagementService.addOrder(any())).thenReturn(true);
 
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
+        // assert order
         assertThat(orderOpt.isPresent(), is(true));
         assertThat(orderOpt.get().getOrderStatus(), is(OrderStatus.IDLE));
         assertThat(orderOpt.get().isPriority(), is(false));
         assertThat(orderOpt.get().isPaid(), is(true)); // paid
+        verify(orderRepository, times(1)).save(any()); // was saved in DB
+        verify(orderNotifierService, times(1)).sendNewOrder(any()); // was sent through websockets
+        verify(orderManagementService, times(1)).addOrder(any()); // was saved in the order queue
     }
 
 
@@ -99,6 +112,9 @@ class OrderServiceTest {
         assertThat(orderOpt.get().isPriority(), is(true));
         assertThat(orderOpt.get().getPrice(), is(3.0f));
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
+        verify(orderRepository, times(1)).save(any()); // was saved in DB
+        verify(orderNotifierService, times(0)).sendNewOrder(any()); // was not sent through websockets
+        verify(orderManagementService, times(0)).addOrder(any()); // was not saved in the order queue
     }
 
     @Test
@@ -113,6 +129,7 @@ class OrderServiceTest {
         Exception actualException = assertThrows(InvalidOrderException.class, () -> orderService.createOrder(customizeOrderDTO));
 
         assertThat(actualException.getMessage(), containsString("Order has an invalid menu that does not exist with id '99'"));
+        verify(orderRepository, times(0)).save(any());
     }
 
     @Test
