@@ -6,5 +6,5 @@ import pt.ua.deti.springcanteen.entities.Order;
 public interface OrderManagementService {
     boolean manageOrder(Order order);
 
-    QueueOrdersDTO getAllOrders();
+    QueueOrdersDTO getAllIdleOrders();
 }

@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
+import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.entities.KioskTerminal;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
@@ -57,7 +58,7 @@ public class IOrderService implements OrderService {
         order.setPrice(totalOrderPrice);
         orderRepository.save(order);
         // add order to queue that is paid and therefore, ready to be cooked (idle status)
-        if (order.getOrderStatus() == OrderStatus.IDLE) {
+            if (order.getOrderStatus() == OrderStatus.IDLE) {
             logger.info("Created order is in IDLE status, ready to cook -> adding it to the queue...");
             if (orderManagementService.manageOrder(order)) {
                 logger.info("Successfully added IDLE order to queue. Sending it through Websockets...");
@@ -99,6 +100,7 @@ public class IOrderService implements OrderService {
             return Optional.empty();
 
         Order order = orderOpt.get();
+        logger.info("Changing from order status {}", order.getOrderStatus());
         if(orderManagementService.manageOrder(order)){
             logger.info("Order with id {} moved to the next queue and OrderStatus changed to {}", order.getId(), order.getOrderStatus());
             return Optional.of(order);

@@ -8,8 +8,5 @@ import pt.ua.deti.springcanteen.entities.OrderStatus;
 public interface OrderNotifierService {
     void sendNewOrder(Order order);
 
-    @EventListener
-    void sendExistingOrderQueues(SessionSubscribeEvent event);
-
     void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus);
 }

@@ -12,7 +12,6 @@ import java.util.Set;
 @Setter
 @Getter
 @Table(name = "kiosk_terminals")
-@AllArgsConstructor
 @NoArgsConstructor
 public class KioskTerminal {
 
@@ -21,6 +20,6 @@ public class KioskTerminal {
     private Long id;
 
     @OneToMany(mappedBy = "kioskTerminal")
-    private Set<Order> orders;
+    private Set<Order> orders = Set.of();
 
 }
