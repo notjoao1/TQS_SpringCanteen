@@ -106,6 +106,11 @@ import static org.hamcrest.CoreMatchers.is;
         assertThat(driver.findElement(By.id("snackbar-add-menu-to-order")).getText(), containsString("Successfully added menu to order."));
     }
 
+    @And("I select to pay in the {string}")
+    public void i_select_pay_desk(String payment_locale) {
+        driver.findElement(By.id(payment_locale)).click();
+    }
+
     @Then("I should see the error {string}")
     public void i_should_see_error(String error) {
         wait.until(ExpectedConditions.textToBePresentInElementLocated(By.id("error-alert"), error));
