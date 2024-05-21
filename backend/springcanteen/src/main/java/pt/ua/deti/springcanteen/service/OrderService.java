@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface OrderService {
     Optional<Order> createOrder(CustomizeOrderDTO customizeOrderDTO);
-    Optional<Order> changeOrderStatus(Long orderId, OrderStatus newOrderStatus);
+    Optional<Order> changeToNextOrderStatus(Long orderId);
 }

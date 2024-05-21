@@ -18,6 +18,6 @@ public class OrderUpdatesController {
     @MessageMapping("/order_updates")
     public void receiveOrderUpdates(OrderUpdateRequestDTO orderUpdateRequest) {
         logger.info("STOMP MESSAGE RECEIVED AT /order_updates: Update order with body - {}", orderUpdateRequest);
-        orderService.changeOrderStatus(orderUpdateRequest.getOrderId(), orderUpdateRequest.getNewOrderStatus());
+        orderService.changeToNextOrderStatus(orderUpdateRequest.getOrderId());
     }
 }

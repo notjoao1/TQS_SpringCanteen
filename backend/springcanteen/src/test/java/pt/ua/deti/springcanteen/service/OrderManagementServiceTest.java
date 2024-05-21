@@ -39,7 +39,7 @@ class OrderManagementServiceTest {
     void whenAddPriorityOrder_thenOrderAddedToPriorityQueue() {
         order1.setPriority(true);
 
-        orderManagementService.addOrder(order1);
+        orderManagementService.manageOrder(order1);
 
         verify(priorityOrders, times(1)).add(order1);
         verify(regularOrders, times(0)).add(any());
@@ -49,7 +49,7 @@ class OrderManagementServiceTest {
     void whenAddRegularOrder_thenOrderAddedToRegularQueue() {
         order1.setPriority(false);
 
-        orderManagementService.addOrder(order1);
+        orderManagementService.manageOrder(order1);
 
         verify(regularOrders, times(1)).add(order1);
         verify(priorityOrders, times(0)).add(any());

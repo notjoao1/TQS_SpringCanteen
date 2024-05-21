@@ -22,7 +22,6 @@ public class OrderController {
     public ResponseEntity<OrderClientResponseDTO> createOrder(@Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
         logger.info("POST /api/orders - create order");
 
-
         return orderService.createOrder(customizeOrderDTO)
                 .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(OrderClientResponseDTO.fromOrderEntity(order)))
                 .orElse(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build());

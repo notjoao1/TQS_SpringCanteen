@@ -6,5 +6,4 @@ import pt.ua.deti.springcanteen.entities.OrderStatus;
 @Data
 public class OrderUpdateRequestDTO {
     private Long orderId;
-    private OrderStatus newOrderStatus;
 }

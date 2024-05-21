@@ -80,7 +80,7 @@ class OrderServiceTest {
         customizeOrderDTO.setIsPaid(true);
         customizeOrderDTO.setIsPriority(false);
         when(menuService.getMenuById(1L)).thenReturn(Optional.of(menu1));
-        when(orderManagementService.addOrder(any())).thenReturn(true);
+        when(orderManagementService.manageOrder(any())).thenReturn(true);
 
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
@@ -91,7 +91,7 @@ class OrderServiceTest {
         assertThat(orderOpt.get().isPaid(), is(true)); // paid
         verify(orderRepository, times(1)).save(any()); // was saved in DB
         verify(orderNotifierService, times(1)).sendNewOrder(any()); // was sent through websockets
-        verify(orderManagementService, times(1)).addOrder(any()); // was saved in the order queue
+        verify(orderManagementService, times(1)).manageOrder(any()); // was saved in the order queue
     }
 
 
@@ -114,7 +114,7 @@ class OrderServiceTest {
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
         verify(orderRepository, times(1)).save(any()); // was saved in DB
         verify(orderNotifierService, times(0)).sendNewOrder(any()); // was not sent through websockets
-        verify(orderManagementService, times(0)).addOrder(any()); // was not saved in the order queue
+        verify(orderManagementService, times(0)).manageOrder(any()); // was not saved in the order queue
     }
 
     @Test

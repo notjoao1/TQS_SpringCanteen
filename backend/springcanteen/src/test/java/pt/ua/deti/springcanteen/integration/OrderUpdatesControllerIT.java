@@ -1,6 +1,7 @@
 package pt.ua.deti.springcanteen.integration;
 
-import static io.restassured.RestAssured.reset;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -111,7 +112,6 @@ class OrderUpdatesControllerIT {
         orderRepository.save(testOrder);
         OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
         orderUpdateRequest.setOrderId(testOrder.getId());
-        orderUpdateRequest.setNewOrderStatus(OrderStatus.PREPARING);
 
         // act
         stompSession.send("/app/order_updates", orderUpdateRequest);
@@ -123,7 +123,9 @@ class OrderUpdatesControllerIT {
         });
 
         // assert
-        verify(orderServiceSpy, times(1)).changeOrderStatus(testOrder.getId(), OrderStatus.PREPARING);
+        assertThat(testOrder.getOrderStatus(), is(OrderStatus.PREPARING));
+        verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+
     }
 
 
@@ -134,7 +136,6 @@ class OrderUpdatesControllerIT {
         orderRepository.save(testOrder);
         OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
         orderUpdateRequest.setOrderId(testOrder.getId());
-        orderUpdateRequest.setNewOrderStatus(OrderStatus.READY);
 
         // act
         stompSession.send("/app/order_updates", orderUpdateRequest);
@@ -146,7 +147,8 @@ class OrderUpdatesControllerIT {
         });
 
         // assert
-        verify(orderServiceSpy, times(1)).changeOrderStatus(testOrder.getId(), OrderStatus.READY);
+        assertThat(testOrder.getOrderStatus(), is(OrderStatus.READY));
+        verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
     }
 
     @Test
@@ -156,7 +158,6 @@ class OrderUpdatesControllerIT {
         orderRepository.save(testOrder);
         OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
         orderUpdateRequest.setOrderId(testOrder.getId());
-        orderUpdateRequest.setNewOrderStatus(OrderStatus.PICKED_UP);
 
         // act
         stompSession.send("/app/order_updates", orderUpdateRequest);
@@ -168,168 +169,9 @@ class OrderUpdatesControllerIT {
         });
 
         // assert
-        verify(orderManagementServiceSpy, times(1)).removeOrder(any());
-        verify(orderServiceSpy, times(1)).changeOrderStatus(testOrder.getId(), OrderStatus.PICKED_UP);
+        assertThat(testOrder.getOrderStatus(), is(OrderStatus.PICKED_UP));
+        verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
         verify(orderNotifierServiceSpy, times(1)).sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP);
     }
 
-    @Test
-    void whenReceiveUpdateOrder_FromIDLE_toInvalidNewStatus_thenDontUpdate() {
-        // setup
-        testOrder.setOrderStatus(OrderStatus.IDLE);
-        orderRepository.save(testOrder);
-
-        List<OrderStatus> invalidNewStatuses = Arrays.asList(OrderStatus.NOT_PAID, OrderStatus.READY, OrderStatus.PICKED_UP);
-
-        for (OrderStatus invalidNewStatus : invalidNewStatuses) {
-            OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
-            orderUpdateRequest.setOrderId(testOrder.getId());
-            orderUpdateRequest.setNewOrderStatus(invalidNewStatus);
-
-            // act
-            stompSession.send("/app/order_updates", orderUpdateRequest);
-
-            // wait until message received 
-            Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-            });
-
-            // assert
-            verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(testOrder.getId(), invalidNewStatus);
-            verify(orderManagementServiceSpy, times(0)).addOrder(any());
-            verify(orderManagementServiceSpy, times(0)).removeOrder(any());
-
-            // reset for next iteration
-            reset(orderUpdatesControllerSpy, orderServiceSpy, orderNotifierServiceSpy);    
-        }
-    }
-
-    /*
-     * Updating a NOT_PAID order will probably be done with an endpoint in OrderController
-     * and not through messaging, as we decided in the architecture, so any requests to update
-     * NOT_PAID orders using the websockets server will be ignored
-     */
-    @Test
-    void whenReceiveUpdateOrder_FromNOT_PAID_toAnyNewStatus_thenDontUpdate() {
-        // setup
-        testOrder.setOrderStatus(OrderStatus.NOT_PAID);
-        orderRepository.save(testOrder);
-
-        List<OrderStatus> invalidNewStatuses = Arrays.asList(OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.PICKED_UP);
-
-        for (OrderStatus invalidNewStatus : invalidNewStatuses) {
-            OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
-            orderUpdateRequest.setOrderId(testOrder.getId());
-            orderUpdateRequest.setNewOrderStatus(invalidNewStatus);
-
-            // act
-            stompSession.send("/app/order_updates", orderUpdateRequest);
-
-            // wait until message received 
-            Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-            });
-
-            // assert
-            verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(testOrder.getId(), invalidNewStatus);
-            verify(orderManagementServiceSpy, times(0)).addOrder(any());
-            verify(orderManagementServiceSpy, times(0)).removeOrder(any());
-
-            // reset for next iteration
-            reset(orderUpdatesControllerSpy, orderServiceSpy, orderNotifierServiceSpy);    
-        }
-    }
-
-    @Test
-    void whenReceiveUpdateOrder_FromPREPARING_toInvalidNewStatus_thenDontUpdate() {
-        // setup
-        testOrder.setOrderStatus(OrderStatus.PREPARING);
-        orderRepository.save(testOrder);
-
-        List<OrderStatus> invalidNewStatuses = Arrays.asList(OrderStatus.IDLE, OrderStatus.NOT_PAID, OrderStatus.PICKED_UP);
-
-        for (OrderStatus invalidNewStatus : invalidNewStatuses) {
-            OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
-            orderUpdateRequest.setOrderId(testOrder.getId());
-            orderUpdateRequest.setNewOrderStatus(invalidNewStatus);
-
-            // act
-            stompSession.send("/app/order_updates", orderUpdateRequest);
-
-            // wait until message received 
-            Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-            });
-
-            // assert
-            verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(testOrder.getId(), invalidNewStatus);
-            verify(orderManagementServiceSpy, times(0)).addOrder(any());
-            verify(orderManagementServiceSpy, times(0)).removeOrder(any());
-
-            // reset for next iteration
-            reset(orderUpdatesControllerSpy, orderServiceSpy, orderNotifierServiceSpy);    
-        }
-    }
-
-    @Test
-    void whenReceiveUpdateOrder_FromREADY_toInvalidNewStatus_thenDontUpdate() {
-        // setup
-        testOrder.setOrderStatus(OrderStatus.READY);
-        orderRepository.save(testOrder);
-
-        List<OrderStatus> invalidNewStatuses = Arrays.asList(OrderStatus.IDLE, OrderStatus.NOT_PAID, OrderStatus.PREPARING);
-
-        for (OrderStatus invalidNewStatus : invalidNewStatuses) {
-            OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
-            orderUpdateRequest.setOrderId(testOrder.getId());
-            orderUpdateRequest.setNewOrderStatus(invalidNewStatus);
-
-            // act
-            stompSession.send("/app/order_updates", orderUpdateRequest);
-
-            // wait until message received 
-            Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-            });
-
-            // assert
-            verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(testOrder.getId(), invalidNewStatus);
-            verify(orderManagementServiceSpy, times(0)).addOrder(any());
-            verify(orderManagementServiceSpy, times(0)).removeOrder(any());
-
-            // reset for next iteration
-            reset(orderUpdatesControllerSpy, orderServiceSpy, orderNotifierServiceSpy);    
-        }
-    }
-
-    @Test
-    void whenReceiveUpdateOrder_FromPICKED_UP_toAnyNewStatus_thenDontUpdate() {
-        // setup
-        testOrder.setOrderStatus(OrderStatus.READY);
-        orderRepository.save(testOrder);
-
-        List<OrderStatus> invalidNewStatuses = Arrays.asList(OrderStatus.NOT_PAID, OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY);
-
-        for (OrderStatus invalidNewStatus : invalidNewStatuses) {
-            OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
-            orderUpdateRequest.setOrderId(testOrder.getId());
-            orderUpdateRequest.setNewOrderStatus(invalidNewStatus);
-
-            // act
-            stompSession.send("/app/order_updates", orderUpdateRequest);
-
-            // wait until message received 
-            Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-                verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-            });
-
-            // assert
-            verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(testOrder.getId(), invalidNewStatus);
-            verify(orderManagementServiceSpy, times(0)).addOrder(any());
-            verify(orderManagementServiceSpy, times(0)).removeOrder(any());
-
-            // reset for next iteration
-            reset(orderUpdatesControllerSpy, orderServiceSpy, orderNotifierServiceSpy);    
-        }
-    }
 }
