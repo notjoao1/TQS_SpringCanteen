@@ -1,7 +1,6 @@
 import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import OrderCard from "../components/employee_orders_page/OrderCard";
 import { IOrder, OrderStatus } from "../types/OrderTypes";
-import { IMenu } from "../types/MenuTypes";
 import { useEffect, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import config from "../config";
