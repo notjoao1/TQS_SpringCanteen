@@ -2,11 +2,11 @@ package pt.ua.deti.springcanteen.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pt.ua.deti.springcanteen.controllers.MenuController;
 import pt.ua.deti.springcanteen.dto.OrderEntry;
 import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.dto.cookresponse.OrderCookResponseDTO;
@@ -21,18 +21,19 @@ import java.util.Queue;
 
 @Service
 @Getter
+@Setter
 @AllArgsConstructor
 public class IOrderManagementService implements OrderManagementService {
 
     private static final Logger logger = LoggerFactory.getLogger(IOrderManagementService.class);
     private OrderNotifierService orderNotifierService;
     private OrderRepository orderRepository;
-    private final Queue<OrderEntry> regularIdleOrders;
-    private final Queue<OrderEntry> priorityIdleOrders;
-    private final Queue<OrderEntry> regularPreparingOrders;
-    private final Queue<OrderEntry> priorityPreparingOrders;
-    private final Queue<OrderEntry> regularReadyOrders;
-    private final Queue<OrderEntry> priorityReadyOrders;
+    private Queue<OrderEntry> regularIdleOrders;
+    private Queue<OrderEntry> priorityIdleOrders;
+    private Queue<OrderEntry> regularPreparingOrders;
+    private Queue<OrderEntry> priorityPreparingOrders;
+    private Queue<OrderEntry> regularReadyOrders;
+    private Queue<OrderEntry> priorityReadyOrders;
 
     public boolean manageOrder(Order order) {
         Queue<OrderEntry> oldOrderQueue;
@@ -41,9 +42,11 @@ public class IOrderManagementService implements OrderManagementService {
         logger.info("Order status {}", order.getOrderStatus());
         switch (order.getOrderStatus()){
             case NOT_PAID:
-                newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
-                order.setOrderStatus(OrderStatus.IDLE);
-                result = newOrderQueue.add(OrderEntry.fromOrderEntity(order));
+            
+            newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
+            order.setOrderStatus(OrderStatus.IDLE);
+            result = newOrderQueue.add(OrderEntry.fromOrderEntity(order));
+                logger.info("newOrderQueue = regularIdleOrders {}", newOrderQueue == regularIdleOrders);
                 if(result){
                     logger.info("order status {}", order.getOrderStatus());
                     logger.info("newOrderQueue = regularIdleOrders {}", newOrderQueue == regularIdleOrders);

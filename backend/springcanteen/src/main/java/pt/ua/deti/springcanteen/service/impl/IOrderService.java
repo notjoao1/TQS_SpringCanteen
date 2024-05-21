@@ -10,7 +10,6 @@ import com.google.gson.Gson;
 
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
-import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.entities.KioskTerminal;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
