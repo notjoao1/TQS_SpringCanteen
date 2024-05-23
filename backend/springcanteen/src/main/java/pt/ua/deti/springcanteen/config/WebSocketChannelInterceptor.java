@@ -22,8 +22,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-      return message;
-      /* System.out.println("Made it here!!! intercepting websocket stuff");
+      System.out.println("Made it here!!! intercepting websocket stuff");
       StompHeaderAccessor accessor =
           MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
       if (StompCommand.CONNECT.equals(accessor.getCommand())) {
@@ -37,6 +36,6 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
             accessor.setUser(authToken);
           }
       }
-      return message; */
+      return message;
     }
 }

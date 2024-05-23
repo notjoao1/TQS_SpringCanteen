@@ -5,8 +5,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import pt.ua.deti.springcanteen.entities.Employee;
 import pt.ua.deti.springcanteen.repositories.EmployeeRepository;
 import pt.ua.deti.springcanteen.service.EmployeeService;
+
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -24,5 +27,10 @@ public class IEmployeeService implements EmployeeService {
                         .orElseThrow(() -> new UsernameNotFoundException("User by that email not found"));
             }
         };
+    }
+
+    @Override
+    public Optional<Employee> getEmployeeByEmail(String email) {
+        return employeeRepository.findByEmail(email);
     }
 }

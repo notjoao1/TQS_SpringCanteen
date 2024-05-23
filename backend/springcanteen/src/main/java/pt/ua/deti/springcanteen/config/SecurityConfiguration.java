@@ -32,7 +32,7 @@ public class SecurityConfiguration {
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        request -> request.requestMatchers("/api/auth/**", "/error", "docs/**", "/swagger-ui/**" , "websocket**")
+                        request -> request.requestMatchers("/api/auth/**", "/error", "docs/**", "/swagger-ui/**" , "/websocket**")
                                 .permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/orders")
                                 .permitAll()

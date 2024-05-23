@@ -16,6 +16,7 @@ import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.OrderNotifierService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 
@@ -111,17 +112,21 @@ public class IOrderManagementService implements OrderManagementService {
 
     public QueueOrdersDTO getAllIdleOrders(){
         return new QueueOrdersDTO(
-                regularIdleOrders.stream()
-                        .map(orderEntry -> orderRepository.findById(orderEntry.getId()))
-                        .filter(Optional::isPresent)
-                        .map(orderOpt -> OrderCookResponseDTO.fromOrderEntity(orderOpt.get()))
-                        .toList(),
-                priorityIdleOrders.stream()
-                        .map(orderEntry -> orderRepository.findById(orderEntry.getId()))
-                        .filter(Optional::isPresent)
-                        .map(orderOpt -> OrderCookResponseDTO.fromOrderEntity(orderOpt.get()))
-                        .toList()
+                convertToOrderList(regularIdleOrders),
+                convertToOrderList(priorityIdleOrders),
+                convertToOrderList(regularPreparingOrders),
+                convertToOrderList(priorityPreparingOrders),
+                convertToOrderList(regularReadyOrders),
+                convertToOrderList(priorityReadyOrders)
         );
+    }
+
+    private List<OrderCookResponseDTO> convertToOrderList(Queue<OrderEntry> orderQueue){
+        return orderQueue.stream()
+                .map(orderEntry -> orderRepository.findById(orderEntry.getId()))
+                .filter(Optional::isPresent)
+                .map(orderOpt -> OrderCookResponseDTO.fromOrderEntity(orderOpt.get()))
+                .toList();
     }
 
 }

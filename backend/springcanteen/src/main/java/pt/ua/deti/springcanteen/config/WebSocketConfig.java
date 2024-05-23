@@ -1,6 +1,7 @@
 package pt.ua.deti.springcanteen.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -18,12 +19,12 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
 
-  @Autowired
-  private final WebSocketChannelInterceptor webSocketChannelInterceptor;
-  @Override
-  public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(webSocketChannelInterceptor);
-  }
+    private WebSocketChannelInterceptor webSocketChannelInterceptor;
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(webSocketChannelInterceptor);
+    }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
