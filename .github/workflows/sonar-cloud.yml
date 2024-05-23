@@ -28,6 +28,9 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+      - name: Google Java Format
+        uses: axel-op/googlejavaformat-action@v3.6.0
+            
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
