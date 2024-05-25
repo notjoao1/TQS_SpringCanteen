@@ -199,7 +199,7 @@ class OrderManagementServiceTest {
 
     @ParameterizedTest
     @MethodSource("providePriorityAndAllOrderStatusArgumentsForIdlePreparing")
-    void whenQueueFullAndManageOrderWithStatusIDLE_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS(
+    void whenQueueFullAndManageOrderWithWithCertainStatus_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS(
             boolean priority, OrderStatus oldOrderStatus, OrderStatus newOrderStatus
     ) {
         Queue<OrderEntry> oldOrdersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
@@ -227,6 +227,34 @@ class OrderManagementServiceTest {
         }
         verify(orderRepository, times(0)).save(any());
         verify(orderNotifierService, times(0)).sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenManageOrderWithStatusREADY_thenNewStatusPICKED_UP_andSentStatusUpdateThroughWS(boolean priority) {
+        Queue<OrderEntry> readyOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.READY);
+        order1.setOrderStatus(OrderStatus.READY);
+        order1.setPriority(priority);
+        updatedOrder1.setOrderStatus(OrderStatus.PICKED_UP);
+        updatedOrder1.setPriority(priority);
+
+        when(readyOrdersQueue.remove(any(OrderEntry.class))).thenReturn(true);
+        when(orderRepository.save(any())).thenReturn(updatedOrder1);
+
+        // act
+        orderManagementService.manageOrder(order1);
+
+        // should -> change order status and save it to DB
+        //           remove from READY orders queue depending on priority
+        //           send message through websockets notifying status update to PICKED_UP
+        verify(readyOrdersQueue, times(1)).remove(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(readyOrdersQueue))) {
+            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
+        }
+        verify(orderRepository, times(1)).save(any());
+        verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP);
     }
 
     @ParameterizedTest
@@ -259,34 +287,6 @@ class OrderManagementServiceTest {
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
         }
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void whenManageOrderWithStatusREADY_thenNewStatusPICKED_UP_andSentStatusUpdateThroughWS(boolean priority) {
-        Queue<OrderEntry> readyOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.READY);
-        order1.setOrderStatus(OrderStatus.READY);
-        order1.setPriority(priority);
-        updatedOrder1.setOrderStatus(OrderStatus.PICKED_UP);
-        updatedOrder1.setPriority(priority);
-
-        when(readyOrdersQueue.remove(any(OrderEntry.class))).thenReturn(true);
-        when(orderRepository.save(any())).thenReturn(updatedOrder1);
-
-        // act
-        orderManagementService.manageOrder(order1);
-
-        // should -> change order status and save it to DB
-        //           remove from READY orders queue depending on priority
-        //           send message through websockets notifying status update to PICKED_UP
-        verify(readyOrdersQueue, times(1)).remove(any(OrderEntry.class));
-        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(readyOrdersQueue))) {
-            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
-            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
-            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
-        }
-        verify(orderRepository, times(1)).save(any());
-        verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP);
     }
 
 }
