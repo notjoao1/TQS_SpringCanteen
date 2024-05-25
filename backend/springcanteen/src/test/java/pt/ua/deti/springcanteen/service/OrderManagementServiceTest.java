@@ -10,12 +10,11 @@ import java.util.Queue;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -56,7 +55,6 @@ class OrderManagementServiceTest {
 
     @BeforeEach
     void setup() {
-        logger.info("runs2");
         order1 = new Order();
         order1.setId(1L);
 
@@ -75,51 +73,52 @@ class OrderManagementServiceTest {
     }
 
 
-    private static Stream<Arguments> provideQueueAndPriorityArguments(){
+    private static Stream<Arguments> providePriorityAndAllOrderStatusArgumentsForIdlePreparing(){
         return Stream.of(
-                Arguments.of(true),
-                Arguments.of(false)
+                Arguments.of(true, OrderStatus.IDLE, OrderStatus.PREPARING),
+                Arguments.of(false, OrderStatus.IDLE, OrderStatus.PREPARING),
+                Arguments.of(true, OrderStatus.PREPARING, OrderStatus.READY),
+                Arguments.of(false, OrderStatus.PREPARING, OrderStatus.READY)
         );
     }
 
-    private Queue<OrderEntry> getOldQueueFromPriorityAndStatus(boolean priority, OrderStatus orderStatus) {
+    private static Stream<Arguments> providePriorityAndOldOrderStatusArgumentsForIdlePreparingReady(){
+        return Stream.of(
+                Arguments.of(true, OrderStatus.IDLE),
+                Arguments.of(false, OrderStatus.IDLE),
+                Arguments.of(true, OrderStatus.PREPARING),
+                Arguments.of(false, OrderStatus.PREPARING),
+                Arguments.of(true, OrderStatus.READY),
+                Arguments.of(false, OrderStatus.READY)
+        );
+    }
+
+    private Queue<OrderEntry> getQueueFromPriorityAndStatus(boolean priority, OrderStatus orderStatus) {
         return switch (orderStatus) {
-            case PREPARING -> priority ? priorityIdleOrders : regularIdleOrders;
-            case READY -> priority ? priorityPreparingOrders : regularPreparingOrders;
+            case IDLE -> priority ? priorityIdleOrders : regularIdleOrders;
+            case PREPARING -> priority ? priorityPreparingOrders : regularPreparingOrders;
+            case READY -> priority ? priorityReadyOrders : regularReadyOrders;
             default -> {
-                logger.info("Invalid Order Status {}", orderStatus);
+                logger.error("Invalid Order Status {}", orderStatus);
                 throw new IllegalArgumentException("Invalid Order Status");
             }
         };
     }
 
-    private Queue<OrderEntry> getNextQueueFromPriorityAndStatus(boolean priority, OrderStatus orderStatus) {
-        return switch (orderStatus) {
-            case IDLE -> priority ? priorityPreparingOrders : regularPreparingOrders;
-            case PREPARING -> priority ? priorityReadyOrders : regularReadyOrders;
-            default -> {
-                logger.info("Invalid Order Status {}", orderStatus);
-                throw new IllegalArgumentException("Invalid Order Status");
-            }
-        };
+    private List<Queue<OrderEntry>> getUnwantedQueues(List<Queue<OrderEntry>> queues) {
+        return Stream.of(regularIdleOrders, priorityIdleOrders, regularPreparingOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders)
+                .filter(queue -> !queues.contains(queue))
+                .toList();
     }
 
     @ParameterizedTest
-    @MethodSource("provideQueueAndPriorityArguments")
-    void whenQueueNotFullAndManageOrderWithStatusNOT_PAID_thenOrderAdded_andNewStatusIDLE_andSentNewOrderThroughWS(
-            boolean priority
-    ) {
-        Queue<OrderEntry> idleOrdersQueue = priority ? priorityIdleOrders : regularIdleOrders;
+    @ValueSource(booleans = {true, false})
+    void whenQueueNotFullAndManageOrderWithStatusNOT_PAID_thenOrderAdded_andNewStatusIDLE_andSentNewOrderThroughWS(boolean priority) {
+        Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
         order1.setOrderStatus(OrderStatus.NOT_PAID);
         order1.setPriority(priority);
         updatedOrder1.setOrderStatus(OrderStatus.IDLE);
         updatedOrder1.setPriority(priority);
-
-        logger.info("{}", priority);
-        logger.info("{}", idleOrdersQueue); // this is null
-        logger.info("{}", regularIdleOrders.size()); // this isn't
-        logger.info("{}", orderManagementService);
-
 
         when(orderRepository.save(any())).thenReturn(updatedOrder1);
         when(idleOrdersQueue.offer(any())).thenReturn(true);
@@ -127,11 +126,10 @@ class OrderManagementServiceTest {
         // act
         orderManagementService.manageOrder(order1);
 
-        // should -> change order status and save it to DB; offer to regular IDLE orders queue;
+        // should -> change order status and save it to DB; add to IDLE orders queue depending on priority;
         //           send message through websockets notifying new order exists;
         verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(regularPreparingOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
@@ -140,21 +138,22 @@ class OrderManagementServiceTest {
         verify(orderNotifierService, times(1)).sendNewOrder(any());
     }
 
-    @Test
-    void whenQueueFullAndManageOrderWithStatusNOT_PAID_thenOrderNotAdded_andMessageNotSentThroughWS() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenQueueFullAndManageOrderWithStatusNOT_PAID_thenOrderNotAdded_andMessageNotSentThroughWS(boolean priority) {
+        Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
         order1.setOrderStatus(OrderStatus.NOT_PAID);
-        order1.setPriority(false);
+        order1.setPriority(priority);
 
-        when(regularIdleOrders.offer(any())).thenReturn(false);
+        when(idleOrdersQueue.offer(any())).thenReturn(false);
 
         // act
         orderManagementService.manageOrder(order1);
 
-        // should -> not change order status and not save it to DB and not offer to IDLE orders queue;
+        // should -> not change order status and not save it to DB and not add to IDLE orders queue;
         //           not send message through websockets notifying new order exists;
-        verify(regularIdleOrders, times(1)).offer(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(priorityIdleOrders, regularPreparingOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
@@ -163,59 +162,65 @@ class OrderManagementServiceTest {
         verify(orderNotifierService, times(0)).sendNewOrder(any());
     }
 
-    @Test
-    void whenQueueNotFullAndManageOrderWithStatusIDLE_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS() {
-        order1.setOrderStatus(OrderStatus.IDLE);
-        order1.setPriority(false);
-        updatedOrder1.setOrderStatus(OrderStatus.PREPARING);
-        updatedOrder1.setPriority(false);
+    @ParameterizedTest
+    @MethodSource("providePriorityAndAllOrderStatusArgumentsForIdlePreparing")
+    void whenQueueNotFullAndManageOrderWithCertainStatus_thenOrderAdded_andNewStatusSet_andSentStatusUpdateThroughWS(
+            boolean priority, OrderStatus oldOrderStatus, OrderStatus newOrderStatus
+    ) {
+        Queue<OrderEntry> oldOrdersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
+        Queue<OrderEntry> nextOrdersQueue = getQueueFromPriorityAndStatus(priority, newOrderStatus);
+        order1.setOrderStatus(oldOrderStatus);
+        order1.setPriority(priority);
+        updatedOrder1.setOrderStatus(newOrderStatus);
+        updatedOrder1.setPriority(priority);
 
-        when(regularIdleOrders.contains(any(OrderEntry.class))).thenReturn(true);
-        when(regularPreparingOrders.offer(any(OrderEntry.class))).thenReturn(true);
-        when(regularIdleOrders.remove(any(OrderEntry.class))).thenReturn(true);
+        when(oldOrdersQueue.contains(any(OrderEntry.class))).thenReturn(true);
+        when(nextOrdersQueue.offer(any(OrderEntry.class))).thenReturn(true);
+        when(oldOrdersQueue.remove(any(OrderEntry.class))).thenReturn(true);
         when(orderRepository.save(any())).thenReturn(updatedOrder1);
 
         // act
         orderManagementService.manageOrder(order1);
 
-        // should ->
-        //           change order status and save it to DB; add to regular PREPARING orders queue;
-        //           remove from regular IDLE orders queue;
-        //           send message through websockets notifying status update to PREPARING
-        verify(regularIdleOrders, times(1)).contains(any(OrderEntry.class));
-        verify(regularPreparingOrders, times(1)).offer(any(OrderEntry.class));
-        verify(regularIdleOrders, times(1)).remove(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(priorityIdleOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        // should -> change order status and save it to DB; add to next orders queue according to priority;
+        //           remove from old orders queue;
+        //           send message through websockets notifying status update
+        verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
+        verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
+        verify(oldOrdersQueue, times(1)).remove(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(oldOrdersQueue, nextOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
         }
         verify(orderRepository, times(1)).save(any());
-        verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
+        verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, newOrderStatus);
     }
 
-    @Test
-    void whenQueueFullAndManageOrderWithStatusIDLE_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS() {
-        order1.setOrderStatus(OrderStatus.IDLE);
-        order1.setPriority(false);
-        updatedOrder1.setOrderStatus(OrderStatus.PREPARING);
-        updatedOrder1.setPriority(false);
+    @ParameterizedTest
+    @MethodSource("providePriorityAndAllOrderStatusArgumentsForIdlePreparing")
+    void whenQueueFullAndManageOrderWithStatusIDLE_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS(
+            boolean priority, OrderStatus oldOrderStatus, OrderStatus newOrderStatus
+    ) {
+        Queue<OrderEntry> oldOrdersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
+        Queue<OrderEntry> nextOrdersQueue = getQueueFromPriorityAndStatus(priority, newOrderStatus);
+        order1.setOrderStatus(oldOrderStatus);
+        order1.setPriority(priority);
+        updatedOrder1.setOrderStatus(newOrderStatus);
+        updatedOrder1.setPriority(priority);
 
-        when(regularIdleOrders.contains(any(OrderEntry.class))).thenReturn(true);
+        when(oldOrdersQueue.contains(any(OrderEntry.class))).thenReturn(true);
 
         // act
         orderManagementService.manageOrder(order1);
 
-        // should ->
-        //           change order status and save it to DB; add to regular PREPARING orders queue;
-        //           remove from regular IDLE orders queue;
-        //           send message through websockets notifying status update to PREPARING
-        verify(regularIdleOrders, times(1)).contains(any(OrderEntry.class));
-        verify(regularPreparingOrders, times(1)).offer(any(OrderEntry.class));
-        verify(regularIdleOrders, times(0)).remove(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(priorityIdleOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        // should -> not change order status and not save it to DB; not add to next orders queue according to priority;
+        //           stay in the same queue; not remove from old orders queue;
+        //           not send message through websockets notifying status update
+        verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
+        verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
+        verify(oldOrdersQueue, times(0)).remove(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(oldOrdersQueue, nextOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
@@ -224,83 +229,58 @@ class OrderManagementServiceTest {
         verify(orderNotifierService, times(0)).sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
     }
 
-    @Test
-    void whenQueueNotFullAndManageOrderWithStatusPREPARING_thenNewStatusREADY_andSentStatusUpdateThroughWS() {
-        order1.setOrderStatus(OrderStatus.PREPARING);
-        order1.setPriority(false);
-        updatedOrder1.setOrderStatus(OrderStatus.READY);
-        updatedOrder1.setPriority(false);
+    @ParameterizedTest
+    @MethodSource("providePriorityAndOldOrderStatusArgumentsForIdlePreparingReady")
+    void whenManageOrderEntryThatDoesntExist_thenDoNothing(
+            boolean priority, OrderStatus oldOrderStatus
+    ) {
+        Queue<OrderEntry> ordersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
+        order1.setOrderStatus(oldOrderStatus);
+        order1.setPriority(priority);
 
-        when(orderRepository.save(any())).thenReturn(updatedOrder1);
-        when(regularPreparingOrders.contains(any(OrderEntry.class))).thenReturn(true);
-        when(regularReadyOrders.offer(any(OrderEntry.class))).thenReturn(true);
-        when(regularPreparingOrders.remove(any(OrderEntry.class))).thenReturn(true);
-
-
-        // act
-        orderManagementService.manageOrder(order1);
-
-        // should -> change order status and save it to DB, add to regular READY orders queue
-        //           remove from regular PREPARING orders queue
-        //           send message through websockets notifying status update to READY
-        verify(regularPreparingOrders, times(1)).contains(any(OrderEntry.class));
-        verify(regularReadyOrders, times(1)).offer(any(OrderEntry.class));
-        verify(regularPreparingOrders, times(1)).remove(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(regularIdleOrders, priorityIdleOrders, priorityPreparingOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
-            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
-            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
-            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
-        }
-        verify(orderRepository, times(1)).save(any());
-        verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.READY);
-    }
-
-    @Test
-    void whenQueueFullAndManageOrderWithStatusPREPARING_thenNewStatusREADY_andSentStatusUpdateThroughWS() {
-        order1.setOrderStatus(OrderStatus.PREPARING);
-        order1.setPriority(false);
-
-        when(regularPreparingOrders.contains(any(OrderEntry.class))).thenReturn(false);
+        if (oldOrderStatus == OrderStatus.READY)
+            when(ordersQueue.remove(any(OrderEntry.class))).thenReturn(false);
+        else
+            when(ordersQueue.contains(any(OrderEntry.class))).thenReturn(false);
 
         // act
         orderManagementService.manageOrder(order1);
 
-        // should -> change order status and save it to DB, add to regular READY orders queue
-        //           remove from regular PREPARING orders queue
-        //           send message through websockets notifying status update to READY
-        verify(regularPreparingOrders, times(1)).contains(any(OrderEntry.class));
-        verify(regularReadyOrders, times(0)).offer(any(OrderEntry.class));
-        verify(regularPreparingOrders, times(0)).remove(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(regularIdleOrders, priorityIdleOrders, priorityPreparingOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        if (oldOrderStatus == OrderStatus.READY){
+            verify(ordersQueue, times(1)).remove(any(OrderEntry.class));
+            verify(ordersQueue, times(0)).contains(any(OrderEntry.class));
+        } else {
+            verify(ordersQueue, times(1)).contains(any(OrderEntry.class));
+            verify(ordersQueue, times(0)).remove(any(OrderEntry.class));
+        }
+        verify(ordersQueue, times(0)).offer(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(ordersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
         }
-        verify(orderRepository, times(0)).save(any());
-        verify(orderNotifierService, times(0)).sendOrderStatusUpdates(1L, OrderStatus.READY);
     }
 
-    @Test
-    void whenManageOrderWithStatusREADY_thenNewStatusPICKED_UP_andSentStatusUpdateThroughWS() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenManageOrderWithStatusREADY_thenNewStatusPICKED_UP_andSentStatusUpdateThroughWS(boolean priority) {
+        Queue<OrderEntry> readyOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.READY);
         order1.setOrderStatus(OrderStatus.READY);
-        order1.setPriority(false);
+        order1.setPriority(priority);
         updatedOrder1.setOrderStatus(OrderStatus.PICKED_UP);
-        updatedOrder1.setPriority(false);
+        updatedOrder1.setPriority(priority);
 
-        when(regularReadyOrders.remove(any(OrderEntry.class))).thenReturn(true);
+        when(readyOrdersQueue.remove(any(OrderEntry.class))).thenReturn(true);
         when(orderRepository.save(any())).thenReturn(updatedOrder1);
 
         // act
         orderManagementService.manageOrder(order1);
 
         // should -> change order status and save it to DB
-        //           remove from regular PREPARING orders queue
+        //           remove from READY orders queue depending on priority
         //           send message through websockets notifying status update to PICKED_UP
-        verify(regularReadyOrders, times(1)).remove(any(OrderEntry.class));
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(regularIdleOrders, priorityIdleOrders, regularPreparingOrders, priorityPreparingOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
+        verify(readyOrdersQueue, times(1)).remove(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(readyOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
@@ -309,29 +289,4 @@ class OrderManagementServiceTest {
         verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP);
     }
 
-    @Test
-    void whenManagePRIORITYOrderWithStatusNOT_READY_thenNewStatusIDLE_andSentStatusUpdateThroughWS() {
-        order1.setOrderStatus(OrderStatus.NOT_PAID);
-        order1.setPriority(true);
-        updatedOrder1.setOrderStatus(OrderStatus.IDLE);
-        updatedOrder1.setPriority(true);
-
-        when(orderRepository.save(any())).thenReturn(updatedOrder1);
-        when(priorityIdleOrders.offer(any())).thenReturn(true);
-
-        // act
-        orderManagementService.manageOrder(order1);
-
-        // should -> change order status and save it to DB
-        //           add to priority IDLE orders queue
-        //           send message through websockets notifying status update to IDLE
-        verify(priorityIdleOrders, times(1)).offer(any());
-        List<Queue<OrderEntry>> unwantedCallQueues = List.of(regularIdleOrders, regularPreparingOrders, priorityPreparingOrders, regularReadyOrders, priorityReadyOrders);
-        for (Queue<OrderEntry> unwantedQueue : unwantedCallQueues) {
-            verify(unwantedQueue, times(0)).offer(any());
-            verify(unwantedQueue, times(0)).remove(any());
-        }
-        verify(orderRepository, times(1)).save(any());
-        verify(orderNotifierService, times(1)).sendNewOrder(any());
-    }
 }
