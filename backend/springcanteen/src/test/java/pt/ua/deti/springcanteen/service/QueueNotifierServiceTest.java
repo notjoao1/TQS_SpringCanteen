@@ -3,16 +3,11 @@ package pt.ua.deti.springcanteen.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,10 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
-import pt.ua.deti.springcanteen.dto.cookresponse.OrderCookResponseDTO;
+import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderMenu;

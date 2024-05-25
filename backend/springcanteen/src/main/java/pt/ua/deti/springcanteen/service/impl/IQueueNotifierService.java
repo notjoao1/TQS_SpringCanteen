@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import pt.ua.deti.springcanteen.entities.Employee;
+import pt.ua.deti.springcanteen.entities.EmployeeRole;
 import pt.ua.deti.springcanteen.service.EmployeeService;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.QueueNotifierService;
@@ -30,12 +31,16 @@ public class IQueueNotifierService implements QueueNotifierService {
     @EventListener
     public void sendExistingOrderQueues(SessionSubscribeEvent event) {
         Principal user = event.getUser();
-        logger.info("{}", user);
         if (user != null){
-            logger.info(user.getName());
             Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(user.getName());
             if (employeeOpt.isPresent()){
-                websocketClient.convertAndSendToUser(user.getName(), ORDER_TOPIC, orderManagementService.getAllIdleOrders());
+                EmployeeRole employeeRole = employeeOpt.get().getRole();
+                if (employeeRole != EmployeeRole.COOK && employeeRole != EmployeeRole.DESK_ORDERS){
+                    logger.info("Employee role is not COOK or DESK_ORDERS. No need to send all orders");
+                } else {
+                    websocketClient.convertAndSendToUser(user.getName(), ORDER_TOPIC, orderManagementService.getAllOrders());
+                    logger.info("Sent all orders to user {}", user.getName());
+                }
             } else {
                 logger.info("Employee corresponding to the user received in websocket is null");
             }

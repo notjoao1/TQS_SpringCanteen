@@ -1,4 +1,4 @@
-package pt.ua.deti.springcanteen.dto.clientresponse;
+package pt.ua.deti.springcanteen.dto.response.clientresponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

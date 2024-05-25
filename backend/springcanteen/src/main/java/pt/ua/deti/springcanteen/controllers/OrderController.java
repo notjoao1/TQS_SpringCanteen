@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
-import pt.ua.deti.springcanteen.dto.clientresponse.OrderClientResponseDTO;
+import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
 import pt.ua.deti.springcanteen.service.OrderService;
 
 @RestController

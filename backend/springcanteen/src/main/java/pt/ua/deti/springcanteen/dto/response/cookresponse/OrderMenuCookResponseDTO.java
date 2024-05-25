@@ -1,8 +1,8 @@
-package pt.ua.deti.springcanteen.dto.cookresponse;
+package pt.ua.deti.springcanteen.dto.response.cookresponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import pt.ua.deti.springcanteen.dto.clientresponse.MenuClientResponseDTO;
+import pt.ua.deti.springcanteen.dto.response.clientresponse.MenuClientResponseDTO;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 
 @Data

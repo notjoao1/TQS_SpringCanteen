@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 import pt.ua.deti.springcanteen.dto.OrderUpdateResponseDTO;
-import pt.ua.deti.springcanteen.dto.cookresponse.OrderCookResponseDTO;
+import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 import pt.ua.deti.springcanteen.service.OrderNotifierService;
