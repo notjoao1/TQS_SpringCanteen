@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import pt.ua.deti.springcanteen.dto.*;
 import pt.ua.deti.springcanteen.entities.Employee;
-import pt.ua.deti.springcanteen.entities.EmployeeRole;
 import pt.ua.deti.springcanteen.repositories.EmployeeRepository;
 import pt.ua.deti.springcanteen.service.AuthenticationService;
 import pt.ua.deti.springcanteen.service.EmployeeService;
