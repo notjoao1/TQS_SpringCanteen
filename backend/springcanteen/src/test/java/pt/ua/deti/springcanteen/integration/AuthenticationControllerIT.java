@@ -58,7 +58,7 @@ class AuthenticationControllerIT {
     void givenValidCredentials_whenCreateEmployee_thenEmployeeCreatedAndTokenReturned() {
         String signUpRequest = "{" +
         "    \"username\": \"hello_world_test\"," +
-        "    \"email\": \"test_email@gmail.com\"," +
+        "    \"email\": \"test@gmail.com\"," +
         "    \"password\": \"person\"," +
         "    \"role\": \"COOK\"}";
 
@@ -72,7 +72,7 @@ class AuthenticationControllerIT {
                 .and()
             .body("username", is("hello_world_test"))
                 .and()
-            .body("email", is("test_email@gmail.com"))
+            .body("email", is("test@gmail.com"))
                 .and()
             .body("userRole", is("COOK"))
                 .and()
@@ -85,12 +85,12 @@ class AuthenticationControllerIT {
     
     @Test
     void givenInvalidCredentials_whenCreateEmployee_thenReturn403() {
-        // setup DB to have a user with email "testemail@gmail.com"
-        employeeRepository.save(new Employee("testname", "testemail@gmail.com", "testpassword", EmployeeRole.COOK));
+        // setup DB to have a user with email "testemai1l@gmail.com"
+        employeeRepository.save(new Employee("testname", "testemail1@gmail.com", "testpassword", EmployeeRole.COOK));
         
         String signUpRequest = "{" +
         "    \"username\": \"testname\"," +
-        "    \"email\": \"testemail@gmail.com\"," +
+        "    \"email\": \"testemail1@gmail.com\"," +
         "    \"password\": \"a\"," +
         "    \"role\": \"COOK\"}";
 
@@ -105,24 +105,34 @@ class AuthenticationControllerIT {
 
     @Test
     void givenValidCredentials_whenLogin_thenReturnEmployeeAndToken() {
-        // setup DB to have a user with email "testemail@gmail.com"
-        employeeRepository.save(new Employee("testname", "testemail@gmail.com", "testpassword", EmployeeRole.COOK));
-
+        // create user before we try to log in
         String signUpRequest = "{" +
-        "    \"email\": \"testemail@gmail.com\"," +
-        "    \"password\": \"a\"}";
+        "    \"username\": \"verycoolname\"," +
+        "    \"email\": \"testemail2@gmail.com\"," +
+        "    \"password\": \"testpassword\"," +
+        "    \"role\": \"COOK\"}";
 
         given()
             .contentType(ContentType.JSON)
             .body(signUpRequest)
         .when()
-            .post("api/auth/signup")
+            .post("api/auth/signup");
+
+        String signInRequest = "{" +
+        "    \"email\": \"testemail2@gmail.com\"," +
+        "    \"password\": \"testpassword\"}";
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(signInRequest)
+        .when()
+            .post("api/auth/signin")
         .then()
-            .statusCode(HttpStatus.SC_CREATED)
+            .statusCode(HttpStatus.SC_OK)
                 .and()
-            .body("username", is("testname"))
+            .body("username", is("verycoolname"))
                 .and()
-            .body("email", is("testemail@gmail.com"))
+            .body("email", is("testemail2@gmail.com"))
                 .and()
             .body("userRole", is("COOK"))
                 .and()
@@ -135,20 +145,48 @@ class AuthenticationControllerIT {
     }
 
     @Test
-    void givenInvalidCredentials_whenLogin_thenReturn403() {
+    void givenInvalidEmail_whenLogin_thenReturn403() {
         // trying to login with credentials that don't correspond to any existing user
-        String signUpRequest = "{" +
+        String signInRequest = "{" +
         "    \"email\": \"no_one@gmail.com\"," +
         "    \"password\": \"1234\"}";
 
         given()
             .contentType(ContentType.JSON)
-            .body(signUpRequest)
+            .body(signInRequest)
         .when()
-            .post("api/auth/signup")
+            .post("api/auth/signin")
         .then()
             .statusCode(HttpStatus.SC_FORBIDDEN);
     
     }
 
+    @Test
+    void givenValidEmailWrongPassword_whenLogin_thenReturn403() {
+        // create user before we try to log in
+        String signUpRequest = "{" +
+        "    \"username\": \"hello_world_test\"," +
+        "    \"email\": \"testemail3@gmail.com\"," +
+        "    \"password\": \"testpassword\"," +
+        "    \"role\": \"COOK\"}";
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(signUpRequest)
+        .when()
+            .post("api/auth/signup");
+
+        // setup request with wrong password
+        String signInRequest = "{" +
+        "    \"email\": \"testemail3@gmail.com\"," +
+        "    \"password\": \"wrongpassword\"}";
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(signInRequest)
+        .when()
+            .post("api/auth/signin")
+        .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN);
+    }
 }
