@@ -1,11 +1,13 @@
 package pt.ua.deti.springcanteen.service;
 
+import java.util.Optional;
+
 import pt.ua.deti.springcanteen.dto.*;
 
 public interface AuthenticationService {
-    JwtAuthenticationResponseDTO signup(SignUpRequestDTO request);
+    Optional<JwtAuthenticationResponseDTO> signup(SignUpRequestDTO request);
 
     JwtAuthenticationResponseDTO signin(SignInRequestDTO request);
 
-    JwtRefreshResponseDTO refreshToken(JwtRefreshRequestDTO request);
+    Optional<JwtRefreshResponseDTO> refreshToken(JwtRefreshRequestDTO request);
 }

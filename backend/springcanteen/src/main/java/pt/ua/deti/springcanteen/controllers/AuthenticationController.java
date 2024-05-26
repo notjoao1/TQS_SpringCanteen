@@ -2,6 +2,9 @@ package pt.ua.deti.springcanteen.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +27,11 @@ public class AuthenticationController {
       schema = @Schema(implementation = JwtAuthenticationResponseDTO.class)) })
     @PostMapping("signup")
     public ResponseEntity<JwtAuthenticationResponseDTO> signUp(@Valid @RequestBody SignUpRequestDTO req) {
-        return ResponseEntity.ok(authenticationService.signup(req));
+        Optional<JwtAuthenticationResponseDTO> optSignUpResponse = authenticationService.signup(req);
+        if (optSignUpResponse.isEmpty())
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            
+        return ResponseEntity.status(HttpStatus.CREATED).body(optSignUpResponse.get());
     }
 
     @Operation(summary = "Authenticate an account and log in.")
@@ -43,11 +50,11 @@ public class AuthenticationController {
     })
     @PostMapping("refreshToken")
     public ResponseEntity<JwtRefreshResponseDTO> refreshToken(@RequestBody @Valid JwtRefreshRequestDTO req) {
-        JwtRefreshResponseDTO res = authenticationService.refreshToken(req);
-        if (res == null) {
+        Optional<JwtRefreshResponseDTO> refreshTokenOpt = authenticationService.refreshToken(req);
+        if (refreshTokenOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(authenticationService.refreshToken(req));
+        return ResponseEntity.ok(refreshTokenOpt.get());
     }
 
 }

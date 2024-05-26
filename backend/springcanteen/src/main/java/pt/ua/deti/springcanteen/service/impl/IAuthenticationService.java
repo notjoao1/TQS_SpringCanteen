@@ -1,5 +1,7 @@
 package pt.ua.deti.springcanteen.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,15 +26,17 @@ public class IAuthenticationService implements AuthenticationService {
         private final AuthenticationManager authenticationManager;
 
         @Override
-        public JwtAuthenticationResponseDTO signup(SignUpRequestDTO request) {
+        public Optional<JwtAuthenticationResponseDTO> signup(SignUpRequestDTO request) {
+                if (employeeRepository.findByEmail(request.getEmail()).isPresent())
+                        return Optional.empty();
                 Employee user = new Employee(
                         request.getUsername(),
                         request.getEmail(),
                         passwordEncoder.encode(request.getPassword()),
-                        EmployeeRole.COOK
+                        request.getRole()
                 );
                 employeeRepository.save(user);
-                return JwtAuthenticationResponseDTO.fromEmployeeEntityAndTokens(user, jwtService.generateToken(user), jwtService.generateRefreshToken(user));
+                return Optional.of(JwtAuthenticationResponseDTO.fromEmployeeEntityAndTokens(user, jwtService.generateToken(user), jwtService.generateRefreshToken(user)));
         }
 
         @Override
@@ -46,13 +50,13 @@ public class IAuthenticationService implements AuthenticationService {
         }
 
         @Override
-        public JwtRefreshResponseDTO refreshToken(JwtRefreshRequestDTO request) {
+        public Optional<JwtRefreshResponseDTO> refreshToken(JwtRefreshRequestDTO request) {
                 String userEmail = jwtService.extractSubject(request.getRefreshToken());
                 UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
 
                 if (!jwtService.isRefreshTokenValid(userDetails, request.getRefreshToken()))
-                        return null;
-                return new JwtRefreshResponseDTO(jwtService.generateToken(userDetails));
+                        return Optional.empty();
+                return Optional.of(new JwtRefreshResponseDTO(jwtService.generateToken(userDetails)));
         }
 
 }
