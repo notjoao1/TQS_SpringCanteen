@@ -1,17 +1,56 @@
-import { LockOutlined } from "@mui/icons-material";
-import { Avatar, Box, Button, Checkbox, Container, FormControlLabel, Grid, TextField, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Close, LockOutlined } from "@mui/icons-material";
+import { Alert, AlertTitle, Avatar, Box, Button, Container, Fade, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 import Copyright from "../components/Copyright";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { signIn } from "../api/auth.service";
+import { IEmployee } from "../types/EmployeeTypes";
+
+export interface SignInRequest {
+  email: string;
+  password: string;
+}
 
 const SignIn = () => {
+  const {auth, setAuth} = useContext(AuthContext);
+
+  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [error, setError] = useState<boolean>(false);
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    // check if all values were input
+    if ((data.get("email") as string).length == 0 || (data.get("password") as string).length == 0) {
+      setError(true);
+      setErrorMessage("Invalid form data! Make sure you fill required fields!");
+      return;
+    }
+    setErrorMessage('');
+    setError(false);
+    const sendSignInRequest = async () => {
+      try {
+        const userData: IEmployee = await signIn({
+          email: data.get("email") as string,
+          password: data.get("password") as string,
+        });
+        setAuth(userData);
+        navigate("/");
+      } catch (error) {
+        setError(true);
+        setErrorMessage("Invalid credentials.");
+      }
+    };
+
+    sendSignInRequest();
+
   };
+
+  useEffect(() => {
+    if (auth !== undefined)
+      navigate("/")
+  }, [])
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
@@ -68,6 +107,29 @@ const SignIn = () => {
       <Box sx={{mt: 8, mb: 4}}>
         <Copyright /* sx={{ mt: 8, mb: 4 }} */ />
       </Box>
+      <Fade in={error} unmountOnExit>
+        <Alert 
+          severity="error" 
+          variant="filled" 
+          sx={{position: "fixed", bottom: 10, right: 10, width: '30%'}} 
+          id="error-alert"
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => {
+                setError(false);
+              }}
+            >
+              <Close fontSize="inherit" />
+            </IconButton>
+          }
+        >
+          <AlertTitle>Error while signing in:</AlertTitle>
+            {errorMessage}
+        </Alert>
+      </Fade>
     </Container>
   );
 }

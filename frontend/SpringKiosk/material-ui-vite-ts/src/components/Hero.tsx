@@ -7,8 +7,11 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Hero() {
+  const {auth} = React.useContext(AuthContext);
+
   return (
     <Box
       id="hero"
@@ -60,7 +63,11 @@ export default function Hero() {
             color="text.secondary"
             sx={{ alignSelf: 'center', width: { sm: '100%', md: '80%' } }}
           >
-            Tried and true healthy food items for the busy person!
+            {auth === undefined ? "Tried and true healthy food items for the busy person!" : 
+              auth.userRole === "COOK" ? `Welcome back Cook ${auth.username}!` : 
+              auth.userRole === "DESK_PAYMENTS" ? `Welcome back, ${auth.username}, get back to handling Desk Payments,` : 
+              auth.userRole === "DESK_ORDERS" ? `Welcome back, ${auth.username}, get back to confirming ready orders,` : "Tried and true healthy food items for the busy person!"
+            }
           </Typography>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
@@ -76,9 +83,17 @@ export default function Hero() {
                     fontSize: '2rem', // increases the font size
                     padding: '1em 1em' // increases the padding
                 }}
-                href="/order"
+                href={auth === undefined ? "/order" : 
+                  auth.userRole === "COOK" ? "/employee/orders" : 
+                  auth.userRole === "DESK_PAYMENTS" ? "/employee/payments" : 
+                  auth.userRole === "DESK_ORDERS" ? "/employee/ready_orders" : "/"
+                }
             >
-              Order now
+              {auth === undefined ? "Order now" : 
+                auth.userRole === "COOK" ? "Cook orders" : 
+                auth.userRole === "DESK_PAYMENTS" ? "Desk payments" : 
+                auth.userRole === "DESK_ORDERS" ? "Ready orders" : "Home"
+              }
             </Button>
           </Stack>
         </Stack>

@@ -1,10 +1,11 @@
 import { Alert, AlertTitle, Avatar, Box, Button, Container, CssBaseline, Fade, FormControl, FormControlLabel, FormLabel, Grid, IconButton, Radio, RadioGroup, TextField, Typography } from "@mui/material";
 import Copyright from "../components/Copyright";
 import { Close, LockOutlined } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EmployeeRole, IEmployee } from "../types/EmployeeTypes";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { signUp } from "../api/auth.service";
+import { AuthContext } from "../context/AuthContext";
 
 export interface SignUpRequest {
   username: string;
@@ -14,9 +15,12 @@ export interface SignUpRequest {
 }
 
 const SignUp = () => {
+  const {auth, setAuth} = useContext(AuthContext);
+
+  const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
-  const [errorMessage, setErrorMesage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const validateEmail = (email: string): boolean => {
     // something@something.something
@@ -31,10 +35,10 @@ const SignUp = () => {
     if (!Object.values(EmployeeRole).includes(selectedRole as EmployeeRole) || !validateEmail(data.get("email") as string)
         || (data.get("password") as string).length == 0 || (data.get("username") as string).length == 0) {
       setError(true);
-      setErrorMesage("Invalid form data! Make sure you fill required fields and email has correct format.");
+      setErrorMessage("Invalid form data! Make sure you fill required fields and email has correct format.");
       return;
     }
-    setErrorMesage('');
+    setErrorMessage('');
     setError(false);
     const sendSignUpRequest = async () => {
       try {
@@ -44,16 +48,21 @@ const SignUp = () => {
           password: data.get("password") as string,
           role: selectedRole as EmployeeRole
         });
-        console.log("received User data:", userData)
+        setAuth(userData);
+        navigate("/");
       } catch (error) {
         setError(true);
-        setErrorMesage("Invalid credentials.");
-        //console.error('Error creating account:', error);
+        setErrorMessage("Invalid credentials.");
       }
     };
 
     sendSignUpRequest();
   };
+
+  useEffect(() => {
+    if (auth !== undefined)
+      navigate("/");
+  }, [])
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
