@@ -24,7 +24,7 @@ public class IQueueNotifierService implements QueueNotifierService {
     private static final Logger logger = LoggerFactory.getLogger(IQueueNotifierService.class);
     private SimpMessagingTemplate websocketClient;
     private OrderManagementService orderManagementService;
-    private final EmployeeService employeeService;
+    private EmployeeService employeeService;
 
 
     @Override
