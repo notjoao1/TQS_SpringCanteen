@@ -1,15 +1,21 @@
 package pt.ua.deti.springcanteen.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static pt.ua.deti.springcanteen.service.Utils.getMenuNamesFromOrder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,7 +28,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ua.deti.springcanteen.dto.OrderEntry;
+import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
+import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
+import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
+import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.impl.IOrderManagementService;
@@ -287,6 +297,94 @@ class OrderManagementServiceTest {
             verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
             verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
         }
+    }
+
+    @Test
+    void whenGetAllOrders_thenReturnAllOrders(){
+        // test getAllOrders + convertToOrderList
+        // setup
+        OrderMenu orderMenu1, orderMenu2, orderMenu3, orderMenu4;
+        Menu menu1, menu2, menu3, menu4;
+
+        menu1 = new Menu(1L, "Beef with Rice", null, null, null, null);
+        menu2 = new Menu(2L, "Vegan Rissois", null, null, null, null);
+        menu3 = new Menu(3L, "Meat of pig Alentejana style", null, null, null, null);
+        menu4 = new Menu(4L, "Chicken", null, null, null, null);
+        orderMenu1 = new OrderMenu(null, menu1, "{}");
+        orderMenu2 = new OrderMenu(null, menu2, "{}");
+        orderMenu3 = new OrderMenu(null, menu3, "{}");
+        orderMenu4 = new OrderMenu(null, menu4, "{}");
+        Order order2  = new Order(2L, OrderStatus.IDLE, true, 10.0f, false, null, null, Set.of(orderMenu1, orderMenu2));
+        Order order3 = new Order(3L, OrderStatus.IDLE, true, 5.0f, false, null, null, Set.of(orderMenu3));
+        Order order4 = new Order(4L, OrderStatus.IDLE, true, 5.0f, true, null, null, Set.of(orderMenu2));
+        Order order5 = new Order(5L, OrderStatus.PREPARING, true, 5.0f, false, null, null, Set.of(orderMenu3));
+        Order order6 = new Order(6L, OrderStatus.PREPARING, true, 5.0f, true, null, null, Set.of(orderMenu1, orderMenu2));
+        Order order7 = new Order(7L, OrderStatus.PREPARING, true, 5.0f, true, null, null, Set.of(orderMenu2, orderMenu4));
+        Order order8 = new Order(8L, OrderStatus.READY, true, 5.0f, false, null, null, Set.of(orderMenu3));
+        Order order9 = new Order(9L, OrderStatus.READY, true, 5.0f, true, null, null, Set.of(orderMenu3, orderMenu4));
+        Stream.of(order2, order3, order4, order5, order6, order7, order8, order9)
+                        .forEach(order -> when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order)));
+        when(regularIdleOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order2), OrderEntry.fromOrderEntity(order3)));
+        when(priorityIdleOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order4)));
+        when(regularPreparingOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order5)));
+        when(priorityPreparingOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order6), OrderEntry.fromOrderEntity(order7)));
+        when(regularReadyOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order8)));
+        when(priorityReadyOrders.stream()).thenReturn(Stream.of(OrderEntry.fromOrderEntity(order9)));
+
+        // act
+        QueueOrdersDTO result = orderManagementService.getAllOrders();
+
+        // assert
+        assertThat(result.getRegularIdleOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order2.getId(), getMenuNamesFromOrder(order2)),
+                        tuple(order3.getId(), getMenuNamesFromOrder(order3))
+                );
+        assertThat(result.getPriorityIdleOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order4.getId(), getMenuNamesFromOrder(order4))
+                );
+        assertThat(result.getRegularPreparingOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order5.getId(), getMenuNamesFromOrder(order5))
+                );
+        assertThat(result.getPriorityPreparingOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order6.getId(), getMenuNamesFromOrder(order6)),
+                        tuple(order7.getId(), getMenuNamesFromOrder(order7))
+                );
+        assertThat(result.getRegularReadyOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order8.getId(), getMenuNamesFromOrder(order8))
+                );
+        assertThat(result.getPriorityReadyOrders())
+                .extracting(
+                        OrderCookResponseDTO::getId,
+                        Utils::getMenuNamesFromDTO
+                )
+                .containsExactly(
+                        tuple(order9.getId(), getMenuNamesFromOrder(order9))
+                );
     }
 
 }

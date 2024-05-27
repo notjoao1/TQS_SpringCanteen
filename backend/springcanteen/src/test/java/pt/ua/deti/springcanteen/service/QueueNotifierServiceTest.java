@@ -135,61 +135,53 @@ class QueueNotifierServiceTest {
         assertThat(sentOrders.getRegularIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order1.getId(), getMenuNamesFromOrder(order1)),
-                        tuple(order2.getId(), getMenuNamesFromOrder(order2))
+                        tuple(order1.getId(), Utils.getMenuNamesFromOrder(order1)),
+                        tuple(order2.getId(), Utils.getMenuNamesFromOrder(order2))
                 );
         assertThat(sentOrders.getPriorityIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order3.getId(), getMenuNamesFromOrder(order3))
+                        tuple(order3.getId(), Utils.getMenuNamesFromOrder(order3))
                 );
         assertThat(sentOrders.getRegularPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order4.getId(), getMenuNamesFromOrder(order4))
+                        tuple(order4.getId(), Utils.getMenuNamesFromOrder(order4))
                 );
         assertThat(sentOrders.getPriorityPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order5.getId(), getMenuNamesFromOrder(order5)),
-                        tuple(order6.getId(), getMenuNamesFromOrder(order6))
+                        tuple(order5.getId(), Utils.getMenuNamesFromOrder(order5)),
+                        tuple(order6.getId(), Utils.getMenuNamesFromOrder(order6))
                 );
         assertThat(sentOrders.getRegularReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order7.getId(), getMenuNamesFromOrder(order7))
+                        tuple(order7.getId(), Utils.getMenuNamesFromOrder(order7))
                 );
         assertThat(sentOrders.getPriorityReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        QueueNotifierServiceTest::getMenuNamesFromDTO
+                        Utils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order8.getId(), getMenuNamesFromOrder(order8))
+                        tuple(order8.getId(), Utils.getMenuNamesFromOrder(order8))
                 );
-    }
-
-    private static List<String> getMenuNamesFromDTO(OrderCookResponseDTO orderCookResponseDTO){
-        return orderCookResponseDTO.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getName()).sorted().toList();
-    }
-
-    private static List<String> getMenuNamesFromOrder(Order order){
-        return order.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getName()).sorted().toList();
     }
 
 }
