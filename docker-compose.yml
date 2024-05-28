@@ -50,8 +50,8 @@ services:
   kiosk:
     build: ./frontend/SpringKiosk/material-ui-vite-ts
     restart: on-failure
-    ports:
-      - 5173:5173
+    # ports:
+    #   - 5173:5173
     depends_on:
       backend:
         condition: service_healthy
@@ -66,8 +66,8 @@ services:
   digital-signage:
     build: ./frontend/DigitalSignage
     restart: on-failure
-    ports:
-      - 5050:5050
+    # ports:
+    #   - 5050:5050
     depends_on:
       backend:
         condition: service_healthy
@@ -78,6 +78,20 @@ services:
       retries: 20
     networks:
       - frontend
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - kiosk
+      - digital-signage
+    networks:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
   db_file:
