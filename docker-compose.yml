@@ -50,8 +50,6 @@ services:
   kiosk:
     build: ./frontend/SpringKiosk/material-ui-vite-ts
     restart: on-failure
-    # ports:
-    #   - 5173:5173
     depends_on:
       backend:
         condition: service_healthy
@@ -66,8 +64,6 @@ services:
   digital-signage:
     build: ./frontend/DigitalSignage
     restart: on-failure
-    # ports:
-    #   - 5050:5050
     depends_on:
       backend:
         condition: service_healthy
