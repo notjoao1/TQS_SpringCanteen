@@ -21,7 +21,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -37,11 +36,9 @@ import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasKey;
@@ -51,6 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWithHeaders;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -77,6 +75,8 @@ class OrderUpdatesControllerIT {
 
     @LocalServerPort
     Integer port;
+
+    private String websocketURL;
 
     @SpyBean
     OrderNotifierService orderNotifierServiceSpy;
@@ -106,6 +106,7 @@ class OrderUpdatesControllerIT {
     @BeforeAll
     void beforeAllSetup(){
         RestAssured.port = port;
+        websocketURL = String.format("ws://localhost:%d/websocket", port);
 
         KioskTerminal kioskTerminal = kioskTerminalRepository.save(new KioskTerminal());
         Order testOrder = new Order();
@@ -165,12 +166,6 @@ class OrderUpdatesControllerIT {
     }
 
 
-    private StompSession connectAsync(WebSocketStompClient webSocketStompClient, StompHeaders userHandshakeHeaders) throws ExecutionException, InterruptedException, TimeoutException {
-        return webSocketStompClient.connectAsync(
-                "ws://localhost:" + port + "/websocket", new WebSocketHttpHeaders(), userHandshakeHeaders, new StompSessionHandlerAdapter() {}
-        ).get(1, TimeUnit.SECONDS);
-    }
-
     private Stream<Arguments> provideAllTokenHeaders(){
         return employeeOrderAndUpdateRequestAndToken.stream().map(arguments -> {
             Object[] argumentsObjects = arguments.get();
@@ -189,7 +184,7 @@ class OrderUpdatesControllerIT {
         // act
         // try to connect and verify it failed
         ExecutionException exception = assertThrows(ExecutionException.class, () -> {
-            webSocketStompClient.connectAsync("ws://localhost:" + port + "/websocket", new StompSessionHandlerAdapter() {})
+            webSocketStompClient.connectAsync(websocketURL, new StompSessionHandlerAdapter() {})
                     .get(1, TimeUnit.SECONDS);
         });
 
@@ -205,7 +200,7 @@ class OrderUpdatesControllerIT {
     ) throws ExecutionException, InterruptedException, TimeoutException {
         // setup
         logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}", testOrder, orderUpdateRequest, userHandshakeHeaders);
-        stompSession = connectAsync(webSocketStompClient, userHandshakeHeaders);
+        stompSession = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
         // act
         stompSession.send("/app/order_updates", orderUpdateRequest);
@@ -235,7 +230,7 @@ class OrderUpdatesControllerIT {
     ) throws ExecutionException, InterruptedException, TimeoutException {
         // setup
         logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}", testOrder, orderUpdateRequest, userHandshakeHeaders);
-        stompSession = connectAsync(webSocketStompClient, userHandshakeHeaders);
+        stompSession = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
         // act
         stompSession.send("/app/order_updates", orderUpdateRequest);
@@ -264,7 +259,7 @@ class OrderUpdatesControllerIT {
     ) throws ExecutionException, InterruptedException, TimeoutException {
         // setup
         logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
-        stompSession = connectAsync(webSocketStompClient, userHandshakeHeaders);
+        stompSession = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
         // setup (have to change the status of the object because the reference isn't the same)
         testOrder.setOrderStatus(OrderStatus.PREPARING);
@@ -294,7 +289,7 @@ class OrderUpdatesControllerIT {
     ) throws ExecutionException, InterruptedException, TimeoutException {
         // setup
         logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
-        stompSession = connectAsync(webSocketStompClient, userHandshakeHeaders);
+        stompSession = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
         // setup (have to change the status of the object because the reference isn't the same)
         testOrder.setOrderStatus(OrderStatus.READY);

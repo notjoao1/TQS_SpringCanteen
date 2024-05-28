@@ -1,13 +1,13 @@
 package pt.ua.deti.springcanteen.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class QueueOrdersDTO {
 
     private List<OrderCookResponseDTO> regularIdleOrders;
