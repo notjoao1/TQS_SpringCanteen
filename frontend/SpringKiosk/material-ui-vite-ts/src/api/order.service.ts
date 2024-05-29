@@ -35,8 +35,8 @@ interface CustomizedIngredient {
 
 export const createOrder = async (order: ICreateOrder, isPaid: boolean, isPriority: boolean, nif: string): Promise<IOrderResponse> => {
     const postObject = createOrderCreateObject(order, isPaid, isPriority, nif);
-
-    const res = await axios.post<IOrderResponse>("http://localhost:8080/api/orders", postObject);
+    const VITE_HOST = import.meta.env.VITE_HOST as string;
+    const res = await axios.post<IOrderResponse>(`http://${VITE_HOST}/api/orders`, postObject);
 
     return res.data;
 }
