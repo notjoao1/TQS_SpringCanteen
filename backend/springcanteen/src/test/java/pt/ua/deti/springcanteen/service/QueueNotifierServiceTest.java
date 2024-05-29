@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import pt.ua.deti.springcanteen.ConvertUtils;
 import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 import pt.ua.deti.springcanteen.entities.*;
@@ -135,52 +136,52 @@ class QueueNotifierServiceTest {
         assertThat(sentOrders.getRegularIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order1.getId(), Utils.getMenuNamesFromOrder(order1)),
-                        tuple(order2.getId(), Utils.getMenuNamesFromOrder(order2))
+                        tuple(order1.getId(), ConvertUtils.getMenuNamesFromOrder(order1)),
+                        tuple(order2.getId(), ConvertUtils.getMenuNamesFromOrder(order2))
                 );
         assertThat(sentOrders.getPriorityIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order3.getId(), Utils.getMenuNamesFromOrder(order3))
+                        tuple(order3.getId(), ConvertUtils.getMenuNamesFromOrder(order3))
                 );
         assertThat(sentOrders.getRegularPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order4.getId(), Utils.getMenuNamesFromOrder(order4))
+                        tuple(order4.getId(), ConvertUtils.getMenuNamesFromOrder(order4))
                 );
         assertThat(sentOrders.getPriorityPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order5.getId(), Utils.getMenuNamesFromOrder(order5)),
-                        tuple(order6.getId(), Utils.getMenuNamesFromOrder(order6))
+                        tuple(order5.getId(), ConvertUtils.getMenuNamesFromOrder(order5)),
+                        tuple(order6.getId(), ConvertUtils.getMenuNamesFromOrder(order6))
                 );
         assertThat(sentOrders.getRegularReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order7.getId(), Utils.getMenuNamesFromOrder(order7))
+                        tuple(order7.getId(), ConvertUtils.getMenuNamesFromOrder(order7))
                 );
         assertThat(sentOrders.getPriorityReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
-                        tuple(order8.getId(), Utils.getMenuNamesFromOrder(order8))
+                        tuple(order8.getId(), ConvertUtils.getMenuNamesFromOrder(order8))
                 );
     }
 

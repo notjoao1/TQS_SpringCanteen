@@ -2,11 +2,13 @@ package pt.ua.deti.springcanteen.dto.response.cookresponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import pt.ua.deti.springcanteen.dto.response.clientresponse.MenuClientResponseDTO;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class OrderMenuCookResponseDTO {
     private MenuClientResponseDTO menu;
     private String customization;

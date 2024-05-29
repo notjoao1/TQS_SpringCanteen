@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.is;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -19,14 +18,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import jakarta.persistence.EntityManager;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-it.properties")
 class OrderControllerIT {
-    @Autowired
-    EntityManager entityManager;
     
     @Container
     public static PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:latest")

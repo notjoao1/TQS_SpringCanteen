@@ -1,11 +1,14 @@
-package pt.ua.deti.springcanteen.service;
+package pt.ua.deti.springcanteen;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 
 import java.util.List;
 
-public class Utils {
+public class ConvertUtils {
+
     public static List<String> getMenuNamesFromDTO(OrderCookResponseDTO orderCookResponseDTO) {
         return orderCookResponseDTO.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getName()).sorted().toList();
     }

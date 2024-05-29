@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static pt.ua.deti.springcanteen.service.Utils.getMenuNamesFromOrder;
+import static pt.ua.deti.springcanteen.ConvertUtils.getMenuNamesFromOrder;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.ua.deti.springcanteen.ConvertUtils;
 import pt.ua.deti.springcanteen.dto.OrderEntry;
 import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
@@ -338,7 +339,7 @@ class OrderManagementServiceTest {
         assertThat(result.getRegularIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order2.getId(), getMenuNamesFromOrder(order2)),
@@ -347,7 +348,7 @@ class OrderManagementServiceTest {
         assertThat(result.getPriorityIdleOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order4.getId(), getMenuNamesFromOrder(order4))
@@ -355,7 +356,7 @@ class OrderManagementServiceTest {
         assertThat(result.getRegularPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order5.getId(), getMenuNamesFromOrder(order5))
@@ -363,7 +364,7 @@ class OrderManagementServiceTest {
         assertThat(result.getPriorityPreparingOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order6.getId(), getMenuNamesFromOrder(order6)),
@@ -372,7 +373,7 @@ class OrderManagementServiceTest {
         assertThat(result.getRegularReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order8.getId(), getMenuNamesFromOrder(order8))
@@ -380,7 +381,7 @@ class OrderManagementServiceTest {
         assertThat(result.getPriorityReadyOrders())
                 .extracting(
                         OrderCookResponseDTO::getId,
-                        Utils::getMenuNamesFromDTO
+                        ConvertUtils::getMenuNamesFromDTO
                 )
                 .containsExactly(
                         tuple(order9.getId(), getMenuNamesFromOrder(order9))

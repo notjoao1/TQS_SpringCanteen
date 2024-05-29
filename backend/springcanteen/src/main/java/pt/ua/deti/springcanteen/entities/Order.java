@@ -53,6 +53,4 @@ public class Order {
         this.kioskTerminal = kioskTerminal;
     }
 
-
-
 }
