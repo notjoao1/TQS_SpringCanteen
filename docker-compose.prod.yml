@@ -57,8 +57,6 @@ services:
       context: ./frontend/SpringKiosk/material-ui-vite-ts
       dockerfile: Dockerfile.prod
     restart: on-failure
-    ports:
-      - 5173:5173
     depends_on:
       backend:
         condition: service_healthy
@@ -77,8 +75,6 @@ services:
       context: ./frontend/DigitalSignage
       dockerfile: Dockerfile.prod
     restart: on-failure
-    ports:
-      - 5050:5050
     depends_on:
       backend:
         condition: service_healthy
