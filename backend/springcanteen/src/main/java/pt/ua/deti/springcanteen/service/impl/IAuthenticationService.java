@@ -2,6 +2,8 @@ package pt.ua.deti.springcanteen.service.impl;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,10 +26,15 @@ public class IAuthenticationService implements AuthenticationService {
         private final EmployeeService employeeService;
         private final AuthenticationManager authenticationManager;
 
+        private static final Logger logger = LoggerFactory.getLogger(IAuthenticationService.class);
+
+
         @Override
         public Optional<JwtAuthenticationResponseDTO> signup(SignUpRequestDTO request) {
-                if (employeeRepository.findByEmail(request.getEmail()).isPresent())
-                        return Optional.empty();
+                if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
+                        logger.error("Failed to find user with email {} in DB", request.getEmail());
+                        return Optional.empty();        
+                }
                 Employee user = new Employee(
                         request.getUsername(),
                         request.getEmail(),
@@ -53,8 +60,10 @@ public class IAuthenticationService implements AuthenticationService {
                 String userEmail = jwtService.extractSubject(request.getRefreshToken());
                 UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
 
-                if (!jwtService.isRefreshTokenValid(userDetails, request.getRefreshToken()))
+                if (!jwtService.isRefreshTokenValid(userDetails, request.getRefreshToken())) {
+                        logger.error("Refresh token is invalid");
                         return Optional.empty();
+                }
                 return Optional.of(new JwtRefreshResponseDTO(jwtService.generateToken(userDetails)));
         }
 
