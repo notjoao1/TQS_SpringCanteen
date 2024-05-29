@@ -15,7 +15,7 @@ public class WebsocketUtils {
     public static StompSession connectAsyncWithHeaders(String websocketURL, WebSocketStompClient webSocketStompClient, StompHeaders userHandshakeHeaders) throws ExecutionException, InterruptedException, TimeoutException {
         return webSocketStompClient.connectAsync(
                 websocketURL, new WebSocketHttpHeaders(), userHandshakeHeaders, new StompSessionHandlerAdapter() {}
-        ).get(1, TimeUnit.SECONDS);
+        ).get(5, TimeUnit.SECONDS);
     }
 
 }

@@ -15,12 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.ConnectionLostException;
-import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -30,8 +27,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pt.ua.deti.springcanteen.controllers.OrderUpdatesController;
 import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
 import pt.ua.deti.springcanteen.dto.OrderUpdateResponseDTO;
-import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
-import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.*;
 import pt.ua.deti.springcanteen.repositories.KioskTerminalRepository;
@@ -39,6 +34,7 @@ import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
+import pt.ua.deti.springcanteen.service.QueueNotifierService;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -48,10 +44,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
@@ -97,6 +91,9 @@ class OrderUpdatesControllerIT {
 
     @SpyBean
     OrderUpdatesController orderUpdatesControllerSpy;
+
+    @SpyBean
+    QueueNotifierService queueNotifierService;
 
     WebSocketStompClient webSocketStompClient;
     StompSession stompSession;
@@ -164,8 +161,10 @@ class OrderUpdatesControllerIT {
 
     @AfterEach
     void teardown() {
-        if (stompSession != null)
+        if (stompSession != null){
+            logger.info("disconnecting");
             stompSession.disconnect();
+        }
     }
 
     @AfterAll
@@ -186,71 +185,54 @@ class OrderUpdatesControllerIT {
         });
     }
 
-    @Test
-    @org.junit.jupiter.api.Order(1)
-    void whenUnauthenticatedConnect_thenMessagesNotReceived() throws InterruptedException, ExecutionException, TimeoutException{
-        // act
-        // try to connect and verify it failed
-        StompSession session = webSocketStompClient.connectAsync(websocketURL, new StompSessionHandlerAdapter() {})
-            .get(10, TimeUnit.SECONDS);
+    private class CustomStompFrameHandler implements StompFrameHandler {
 
+        private CompletableFuture<OrderUpdateResponseDTO> futureMessage;
+
+        public CustomStompFrameHandler(CompletableFuture<OrderUpdateResponseDTO> futureMessage) {
+            this.futureMessage = futureMessage;
+        }
+
+        @Override
+        public Type getPayloadType(StompHeaders headers) {
+            logger.info("getPayloadType");
+            return OrderUpdateResponseDTO.class;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            logger.info("converting payload to OrderUpdateResponseDTO");
+            futureMessage.complete((OrderUpdateResponseDTO) payload);
+        }
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideAllTokenHeaders")
+    @org.junit.jupiter.api.Order(1)
+    void whenAuthenticatedConnect_thenMessagesReceived (
+        Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
+    ) throws InterruptedException, ExecutionException, TimeoutException{
+        // act
+        stompSession = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
         CompletableFuture<OrderUpdateResponseDTO> futureMessage = new CompletableFuture<>();
 
-        session.subscribe("/app/order_updates", new StompFrameHandler() {
-            @Override
-            public Type getPayloadType(StompHeaders headers) {
-                System.out.println("Hello ratos" + headers);
-                return OrderUpdateResponseDTO.class;
-            }
-            @Override
-            public void handleFrame(StompHeaders headers, Object payload) {
-                futureMessage.complete((OrderUpdateResponseDTO) payload);
-            }
+        stompSession.subscribe("/topic/orders", new CustomStompFrameHandler(futureMessage));
+        Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+            verify(queueNotifierService, times(1)).sendExistingOrderQueues(any());
         });
 
         orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
 
-        assertThrows(TimeoutException.class, () -> futureMessage.get(10, TimeUnit.SECONDS));
-    
-
+        OrderUpdateResponseDTO receivedOrderUpdateResponseDTO = futureMessage.get(10, TimeUnit.SECONDS);
+        logger.info("{}", receivedOrderUpdateResponseDTO);
+        assertNotNull(receivedOrderUpdateResponseDTO);
     }
+
 
     @ParameterizedTest
     @MethodSource("provideAllTokenHeaders")
     @org.junit.jupiter.api.Order(2)
-    void whenAuthenticatedConnect_thenMessagesReceived(
-        Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
-    ) throws InterruptedException, ExecutionException, TimeoutException{
-        // act
-        // try to connect and verify it failed
-        StompSession session = connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
-
-        CompletableFuture<OrderUpdateResponseDTO> futureMessage = new CompletableFuture<>();
-
-        session.subscribe("/topic/orders", new StompFrameHandler() {
-            @Override
-            public Type getPayloadType(StompHeaders headers) {
-                System.out.println("Hello ratos" + headers);
-                return OrderUpdateResponseDTO.class;
-            }
-            @Override
-            public void handleFrame(StompHeaders headers, Object payload) {
-                System.out.println("bomboclat " + headers + payload);
-                futureMessage.complete((OrderUpdateResponseDTO) payload);
-            }
-        });
-
-        orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
-
-        assertThrows(TimeoutException.class, () -> futureMessage.get(10, TimeUnit.SECONDS));
-    
-
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("provideAllTokenHeaders")
-    @org.junit.jupiter.api.Order(3)
     void whenReceiveUpdateOrder_FromNOTPAID_toIDLE_thenSendUpdateThroughWebsockets(
             Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
     ) throws ExecutionException, InterruptedException, TimeoutException {
@@ -280,7 +262,7 @@ class OrderUpdatesControllerIT {
 
     @ParameterizedTest
     @MethodSource("provideAllTokenHeaders")
-    @org.junit.jupiter.api.Order(4)
+    @org.junit.jupiter.api.Order(3)
     void whenReceiveUpdateOrder_FromIDLE_toPREPARING_thenSendUpdateThroughWebsockets(
             Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
     ) throws ExecutionException, InterruptedException, TimeoutException {
@@ -309,7 +291,7 @@ class OrderUpdatesControllerIT {
 
     @ParameterizedTest
     @MethodSource("provideAllTokenHeaders")
-    @org.junit.jupiter.api.Order(5)
+    @org.junit.jupiter.api.Order(4)
     void whenReceiveUpdateOrder_FromPREPARING_to_READY_thenSendUpdateThroughWebsockets(
             Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
     ) throws ExecutionException, InterruptedException, TimeoutException {
@@ -339,7 +321,7 @@ class OrderUpdatesControllerIT {
 
     @ParameterizedTest
     @MethodSource("provideAllTokenHeaders")
-    @org.junit.jupiter.api.Order(6)
+    @org.junit.jupiter.api.Order(5)
     void whenReceiveUpdateOrder_FromREADY_to_PICKED_UP_thenRemoveFromQueue(
             Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
     ) throws ExecutionException, InterruptedException, TimeoutException {

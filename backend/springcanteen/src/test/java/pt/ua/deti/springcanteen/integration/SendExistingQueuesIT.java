@@ -245,7 +245,7 @@ public class SendExistingQueuesIT {
     }
 
     private Stream<StompHeaders> provideAuthorizedUsersTokenHeaders(){
-        return Stream.of(authorizedEmployeesHeaders.toList().get(0));
+        return authorizedEmployeesHeaders.toList().stream();
     }
 
     private Stream<StompHeaders> provideUnauthorizedUsersTokenHeaders(){
