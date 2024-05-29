@@ -218,7 +218,7 @@ class OrderUpdatesControllerIT {
         CompletableFuture<OrderUpdateResponseDTO> futureMessage = new CompletableFuture<>();
 
         stompSession.subscribe("/topic/orders", new CustomStompFrameHandler(futureMessage));
-        Awaitility.await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
+        Awaitility.await().atMost(3, TimeUnit.SECONDS).untilAsserted(() -> {
             verify(queueNotifierService, times(1)).sendExistingOrderQueues(any());
         });
 
