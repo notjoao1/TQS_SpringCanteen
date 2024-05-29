@@ -20,10 +20,10 @@ services:
       - backend
 
   backend:
-    build: ./backend/springcanteen
+    build:
+      context: ./backend/springcanteen
+      dockerfile: Dockerfile.prod
     restart: on-failure
-    ports:
-      - 8080:8080
     volumes:
       - ./backend/springcanteen:/app
       - backend_data:/app/data
@@ -46,37 +46,70 @@ services:
     networks:
       - backend
       - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=PathPrefix(`/api`)
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+      - traefik.http.routers.backend.entrypoints=web
 
   kiosk:
-    build: ./frontend/SpringKiosk/material-ui-vite-ts
+    build:
+      context: ./frontend/SpringKiosk/material-ui-vite-ts
+      dockerfile: Dockerfile.prod
     restart: on-failure
     ports:
       - 5173:5173
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173"]
-      interval: 1s
-      timeout: 5s
-      retries: 20
     networks:
       - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kiosk.rule=PathPrefix(`/`)
+      - traefik.http.services.kiosk.loadbalancer.server.port=5173
+      - traefik.http.routers.kiosk.entrypoints=web
+    environment:
+      - VITE_HOST=http://deti-tqs-02.ua.pt
 
   digital-signage:
-    build: ./frontend/DigitalSignage
+    build:
+      context: ./frontend/DigitalSignage
+      dockerfile: Dockerfile.prod
     restart: on-failure
     ports:
       - 5050:5050
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5050"]
-      interval: 1s
-      timeout: 5s
-      retries: 20
     networks:
+      - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.digital-signage.rule=PathPrefix(`/signage`)
+      - traefik.http.services.digital-signage.loadbalancer.server.port=5173
+      - traefik.http.routers.digital-signage.entrypoints=web
+    environment:
+      - VITE_HOST=http://deti-tqs-02.ua.pt
+
+  traefik:
+    image: traefik:v2.11
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+      kiosk:
+        condition: service_started
+      digital-signage:
+        condition: service_started
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./proxy/traefik.yml:/etc/traefik/traefik.yml"
+    restart: unless-stopped
+    networks:
+      - backend
       - frontend
 
 volumes:
