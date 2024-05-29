@@ -5,10 +5,13 @@ import { useContext, useEffect, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import config from "../config";
 import { AuthContext } from "../context/AuthContext";
+import { refreshToken } from "../api/auth.service";
+import { useNavigate } from "react-router-dom";
 
 
 const EmployeeOrders = () => {
-  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { auth, setAuth, logout } = useContext(AuthContext);
   const [regularIdleOrders, setRegularIdleOrders] = useState<CookOrder[]>([]);
   const [priorityIdleOrders, setPriorityIdleOrders] = useState<CookOrder[]>([]);
   const [regularPreparingOrders, setRegularPreparingOrders] = useState<CookOrder[]>([]);
@@ -22,6 +25,8 @@ const EmployeeOrders = () => {
       connectHeaders: {
         Authorization: `Bearer ${auth?.token}`,
       },
+      reconnectDelay: 5000,
+      connectionTimeout: 10000,
 
       onConnect: (frame) => {
         console.log("Connected to WebSocket: ", frame);
@@ -57,6 +62,23 @@ const EmployeeOrders = () => {
       onDisconnect: () => {
         console.log("Disconnected from WebSocket");
       },
+      onStompError: () => {
+        if (auth?.refreshToken) {
+          refreshToken(auth?.refreshToken).then((refreshResponse) => {
+            setAuth((auth) => {
+              if (auth)
+                return {
+                  ...auth,
+                  token: refreshResponse.accessToken,
+                } 
+            })
+          }).catch(() => {
+            // on error, simply log user out, since refresh token probably expired
+            logout();
+            navigate("/signin");
+          })
+        }
+      }
     });
 
     client.activate();
@@ -64,7 +86,7 @@ const EmployeeOrders = () => {
     return () => {
       client.deactivate();
     };
-  }, []);
+  }, [auth]);
 
 
   return (

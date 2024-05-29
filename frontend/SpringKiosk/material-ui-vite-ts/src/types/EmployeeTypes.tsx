@@ -13,3 +13,7 @@ export interface IEmployee {
     refreshToken: string;
     userRole: EmployeeRole;
 }
+
+export interface JwtRefreshResponse {
+    accessToken: string;
+}
