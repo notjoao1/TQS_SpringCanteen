@@ -33,8 +33,7 @@ public class OrderMenu {
     @JoinColumn(name = "menu_id")
     private Menu menu;
 
-    // does not get serialized
-    @Transient
+    @NotNull
     private float calculatedPrice;
 
     @JdbcTypeCode(SqlTypes.JSON)
