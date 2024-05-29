@@ -13,6 +13,10 @@ public class ConvertUtils {
         return orderCookResponseDTO.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getName()).sorted().toList();
     }
 
+    public static List<Float> getMenuPricesFromDTO(OrderCookResponseDTO orderCookResponseDTO) {
+        return orderCookResponseDTO.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getPrice()).sorted().toList();
+    }
+
     public static List<String> getMenuNamesFromOrder(Order order) {
         return order.getOrderMenus().stream().map(orderMenu -> orderMenu.getMenu().getName()).sorted().toList();
     }

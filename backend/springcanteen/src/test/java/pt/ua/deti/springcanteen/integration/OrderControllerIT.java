@@ -1,13 +1,18 @@
 package pt.ua.deti.springcanteen.integration;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -16,8 +21,19 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import pt.ua.deti.springcanteen.ConvertUtils;
+import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
+import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
+import pt.ua.deti.springcanteen.service.OrderManagementService;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -45,13 +61,17 @@ class OrderControllerIT {
         RestAssured.port = serverPort;
     }
 
-    @Test
-    void whenCreateOrderSuccessfully_thenReturnCorrectResponse() {
+    @SpyBean
+    OrderManagementService orderManagementServiceSpy;
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenCreateUnpaidOrderSuccessfully_thenReturnCorrectResponse_AndNotAddToIdleQueue(boolean priority) {
         // order with drink as Lemonade (2€) + main dish as 'Sandwich' (3€) with 1 extra ham (+2.5€)
-        String orderRequest = "{" +
+        String orderRequest = String.format("{" +
         "    \"kioskId\": 1," +
         "    \"isPaid\": false," +
-        "    \"isPriority\": false," +
+        "    \"isPriority\": %b," +
         "    \"nif\": \"123456789\"," +
         "    \"orderMenus\": [" +
         "        {" +
@@ -80,7 +100,7 @@ class OrderControllerIT {
         "            }" +
         "        }" +
         "    ]" +
-        "}";        
+        "}", priority);
         
         given()
             .contentType(ContentType.JSON)
@@ -95,6 +115,90 @@ class OrderControllerIT {
             .body("orderMenus[0].menu.name", is("Sandwich & Drink"))
                 .and()
             .body("orderMenus[0].menu.price", is(7.5f));
+
+        verify(orderManagementServiceSpy, times(0)).addNewIdleOrder(any());
+        QueueOrdersDTO allOrders = orderManagementServiceSpy.getAllOrders();
+        assertThat(allOrders).isNotNull();
+        assertThat(List.of(
+                allOrders.getRegularIdleOrders(), allOrders.getPriorityIdleOrders(),
+                allOrders.getRegularPreparingOrders(), allOrders.getPriorityPreparingOrders(),
+                allOrders.getRegularReadyOrders(), allOrders.getPriorityReadyOrders()
+        )).isNotEmpty()
+                .allSatisfy(queue -> assertThat(queue).isNotNull().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenCreatePaidOrderSuccessfully_thenReturnCorrectResponse_AndAddToIdleQueue(boolean priority) {
+        // order with drink as Lemonade (2€) + main dish as 'Sandwich' (3€) with 1 extra ham (+2.5€)
+        String orderRequest = String.format("{" +
+                "    \"kioskId\": 1," +
+                "    \"isPaid\": true," +
+                "    \"isPriority\": %b," +
+                "    \"nif\": \"123456789\"," +
+                "    \"orderMenus\": [" +
+                "        {" +
+                "            \"menuId\": 1," +
+                "            \"customization\": {" +
+                "                \"customizedDrink\": {" +
+                "                    \"itemId\": 8" +
+                "                }," +
+                "                \"customizedMainDish\": {" +
+                "                    \"itemId\": 1," +
+                "                    \"customizedIngredients\": [" +
+                "                        {" +
+                "                            \"ingredientId\": 1," +
+                "                            \"quantity\": 1" +
+                "                        }," +
+                "                        {" +
+                "                            \"ingredientId\": 3," +
+                "                            \"quantity\": 2" +
+                "                        }," +
+                "                        {" +
+                "                            \"ingredientId\": 4," +
+                "                            \"quantity\": 2" +
+                "                        }" +
+                "                    ]" +
+                "                }" +
+                "            }" +
+                "        }" +
+                "    ]" +
+                "}", priority);
+
+        given()
+            .contentType(ContentType.JSON)
+            .body(orderRequest)
+        .when()
+            .post("api/orders")
+        .then()
+            .statusCode(HttpStatus.SC_CREATED)
+                .and()
+            .body("orderMenus.size()", is(1))
+                .and()
+            .body("orderMenus[0].menu.name", is("Sandwich & Drink"))
+                .and()
+            .body("orderMenus[0].menu.price", is(7.5f));
+
+        verify(orderManagementServiceSpy, times(1)).addNewIdleOrder(any());
+        QueueOrdersDTO allOrders = orderManagementServiceSpy.getAllOrders();
+        assertThat(allOrders).isNotNull();
+        List<OrderCookResponseDTO> orderQueueCookResponseDTO = priority ? allOrders.getPriorityIdleOrders() : allOrders.getRegularIdleOrders();
+        assertThat(orderQueueCookResponseDTO)
+                .extracting(
+                        (OrderCookResponseDTO order) -> order.getOrderMenus().size(),
+                        ConvertUtils::getMenuNamesFromDTO,
+                        ConvertUtils::getMenuPricesFromDTO
+                )
+                .containsExactly(
+                        tuple(1, List.of("Sandwich & Drink"), List.of(7.5f))
+                );;
+        assertThat(Stream.of(
+                allOrders.getRegularIdleOrders(), allOrders.getPriorityIdleOrders(),
+                allOrders.getRegularPreparingOrders(), allOrders.getPriorityPreparingOrders(),
+                allOrders.getRegularReadyOrders(), allOrders.getPriorityReadyOrders()
+        ).filter(orderCookResponseDTOS -> orderCookResponseDTOS != orderQueueCookResponseDTO))
+                .isNotEmpty()
+                .allSatisfy(queue -> assertThat(queue).isNotNull().isEmpty());
     }
 
     @Test
