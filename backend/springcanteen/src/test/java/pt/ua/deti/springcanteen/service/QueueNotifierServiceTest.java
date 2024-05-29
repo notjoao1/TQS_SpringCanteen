@@ -35,7 +35,6 @@ import pt.ua.deti.springcanteen.service.impl.IQueueNotifierService;
  */
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest
 class QueueNotifierServiceTest {
     @Mock
     SimpMessagingTemplate websocketClient;
