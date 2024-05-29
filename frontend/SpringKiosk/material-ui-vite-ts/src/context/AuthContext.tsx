@@ -18,7 +18,6 @@ export const AuthContext = createContext<AuthContextType>(defaultContextState);
 export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<IEmployee | undefined>(() => {
     const storedAuth = localStorage.getItem("auth_springcanteen");
-    console.log("storedAuth bomboclat", storedAuth)
     return storedAuth ? JSON.parse(storedAuth) : undefined;
   }); 
 
