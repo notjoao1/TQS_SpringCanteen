@@ -1,0 +1,1 @@
+ALTER TABLE order_menus ADD COLUMN calculated_price DECIMAL(7,2) NOT NULL DEFAULT 0;

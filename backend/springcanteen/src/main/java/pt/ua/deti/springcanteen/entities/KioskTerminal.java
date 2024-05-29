@@ -1,7 +1,6 @@
 package pt.ua.deti.springcanteen.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +11,6 @@ import java.util.Set;
 @Setter
 @Getter
 @Table(name = "kiosk_terminals")
-@AllArgsConstructor
 @NoArgsConstructor
 public class KioskTerminal {
 
@@ -21,6 +19,6 @@ public class KioskTerminal {
     private Long id;
 
     @OneToMany(mappedBy = "kioskTerminal")
-    private Set<Order> orders;
+    private Set<Order> orders = Set.of();
 
 }

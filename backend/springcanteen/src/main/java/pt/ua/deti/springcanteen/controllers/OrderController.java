@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
-import pt.ua.deti.springcanteen.dto.OrderClientResponseDTO;
+import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
 import pt.ua.deti.springcanteen.service.OrderService;
 
 @RestController
@@ -21,7 +21,6 @@ public class OrderController {
     @PostMapping("")
     public ResponseEntity<OrderClientResponseDTO> createOrder(@Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
         logger.info("POST /api/orders - create order");
-
 
         return orderService.createOrder(customizeOrderDTO)
                 .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(OrderClientResponseDTO.fromOrderEntity(order)))

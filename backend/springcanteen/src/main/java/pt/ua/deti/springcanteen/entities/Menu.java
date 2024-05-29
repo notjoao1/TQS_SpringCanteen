@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Setter
 @Getter
@@ -27,6 +29,7 @@ public class Menu {
     private String imageLink;
 
     @OneToMany(mappedBy = "menu")
+    @JsonIgnore
     private Set<OrderMenu> menuOrders;
 
     @ManyToMany

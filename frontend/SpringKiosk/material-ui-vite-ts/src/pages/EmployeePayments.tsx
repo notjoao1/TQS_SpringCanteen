@@ -10,7 +10,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { mockOrders } from "./EmployeeOrders";
+import mockOrders from "../tests/mock/mockOrders";
 import { Payments } from "@mui/icons-material";
 import { useState } from "react";
 import { IOrder } from "../types/OrderTypes";

@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import MenuItem from "@mui/material/MenuItem";
 import Drawer from "@mui/material/Drawer";
 import MenuIcon from "@mui/icons-material/Menu";
+import { AuthContext } from "../context/AuthContext";
 
 const logoStyle = {
   width: "140px",
@@ -23,25 +24,12 @@ interface AppAppBarProps {
 }
 
 function TopBar({ mode }: AppAppBarProps) {
+  const { auth, logout } = React.useContext(AuthContext);
   const [open, setOpen] = React.useState(false);
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
-
-  // const scrollToSection = (sectionId: string) => {
-  //   const sectionElement = document.getElementById(sectionId);
-  //   const offset = 128;
-  //   if (sectionElement) {
-  //     const targetScroll = sectionElement.offsetTop - offset;
-  //     sectionElement.scrollIntoView({ behavior: 'smooth' });
-  //     window.scrollTo({
-  //       top: targetScroll,
-  //       behavior: 'smooth',
-  //     });
-  //     setOpen(false);
-  //   }
-  // };
 
   return (
     <div>
@@ -95,13 +83,21 @@ function TopBar({ mode }: AppAppBarProps) {
                 />
               </Link>
               <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                <Link href="/order">
+                
+                <Link href={auth === undefined ? "/order" : 
+                  auth.userRole === "COOK" ? "/employee/orders" : 
+                  auth.userRole === "DESK_PAYMENTS" ? "/employee/payments" : 
+                  auth.userRole === "DESK_ORDERS" ? "/employee/ready_orders" : "/"}
+                >
                   <MenuItem
-                    // onClick={() => scrollToSection('features')}
                     sx={{ py: "6px", px: "12px" }}
                   >
                     <Typography variant="body2" color="text.primary">
-                      Order now
+                      {auth === undefined ? "Order now" : 
+                        auth.userRole === "COOK" ? "Cook orders" : 
+                        auth.userRole === "DESK_PAYMENTS" ? "Desk payments" : 
+                        auth.userRole === "DESK_ORDERS" ? "Ready orders" : "Home"
+                      }
                     </Typography>
                   </MenuItem>
                 </Link>
@@ -114,24 +110,39 @@ function TopBar({ mode }: AppAppBarProps) {
                 alignItems: "center",
               }}
             >
-              <Button
-                color="primary"
-                variant="text"
-                size="small"
-                component="a"
-                target="_blank"
-              >
-                <Link href={"/signin"}>Sign in</Link>
-              </Button>
-              <Button
-                color="primary"
-                variant="contained"
-                size="small"
-                component="a"
-                target="_blank"
-              >
-                <Link href={"/signup"}>Sign up</Link>
-              </Button>
+              {auth !== undefined ? (
+                <Button
+                  color="primary"
+                  variant="text"
+                  size="small"
+                  component="a"
+                  target="_blank"
+                  onClick={() => logout()}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    color="primary"
+                    variant="text"
+                    size="small"
+                    component="a"
+                    target="_blank"
+                  >
+                    <Link href={"/signin"}>Sign in</Link>
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    size="small"
+                    component="a"
+                    target="_blank"
+                  >
+                    <Link href={"/signup"}>Sign up</Link>
+                  </Button>
+                </>
+              )}
             </Box>
             <Box sx={{ display: { sm: "", md: "none" } }}>
               <Button

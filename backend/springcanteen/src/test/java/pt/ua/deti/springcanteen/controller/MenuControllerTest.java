@@ -13,6 +13,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,12 +26,21 @@ import pt.ua.deti.springcanteen.entities.Ingredient;
 import pt.ua.deti.springcanteen.entities.MainDish;
 import pt.ua.deti.springcanteen.entities.MainDishIngredients;
 import pt.ua.deti.springcanteen.entities.Menu;
+import pt.ua.deti.springcanteen.service.EmployeeService;
+import pt.ua.deti.springcanteen.service.JwtService;
 import pt.ua.deti.springcanteen.service.impl.IMenuService;
 
 @WebMvcTest(MenuController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class MenuControllerTest {
     @Autowired
     MockMvc mockMvc;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private EmployeeService employeeService;
 
     @MockBean
     private IMenuService menuService;
@@ -130,7 +140,7 @@ class MenuControllerTest {
             given().
                 mockMvc(mockMvc).
             when().
-                get("api/menus").
+                get("/api/menus").
             then().
                 statusCode(HttpStatus.SC_OK).
                 body("size()", is(2)).

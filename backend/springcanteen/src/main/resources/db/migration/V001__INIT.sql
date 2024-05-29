@@ -81,12 +81,6 @@ CREATE TABLE order_menus(
     customization pg_catalog.jsonb not null
 );
 
-
-INSERT INTO employees (name, email, password, role) VALUES
-    ('João', 'joao@gmai.com', 'joaopassword', 'COOK'),
-    ('Miguel', 'miguel@gmail.com', 'miguelpassword', 'DESK_PAYMENTS'),
-    ('José', 'jose@gmail.com', 'josepassword', 'DESK_ORDERS');
-
 do
 $$
 BEGIN

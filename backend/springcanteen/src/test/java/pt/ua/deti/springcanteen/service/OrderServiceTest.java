@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -43,6 +45,9 @@ class OrderServiceTest {
     @Mock
     PriceService priceService;
 
+    @Mock
+    OrderManagementService orderManagementService;
+
     @InjectMocks
     IOrderService orderService;
 
@@ -65,25 +70,30 @@ class OrderServiceTest {
     }
 
     @Test
-    void whenCreateValidPaidOrder_thenShouldBePaid_andStatusIdle() {
+    void whenCreateValidPaidOrder_thenShouldBePaid_andStatusIdleAndInQueue() {
         // ordering menu 1, and already paid for it
         orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(true);
         customizeOrderDTO.setIsPriority(false);
         when(menuService.getMenuById(1L)).thenReturn(Optional.of(menu1));
+        when(orderManagementService.addNewIdleOrder(any())).thenReturn(true);
 
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
+        // assert order
         assertThat(orderOpt.isPresent(), is(true));
         assertThat(orderOpt.get().getOrderStatus(), is(OrderStatus.IDLE));
         assertThat(orderOpt.get().isPriority(), is(false));
         assertThat(orderOpt.get().isPaid(), is(true)); // paid
+        verify(orderRepository, times(1)).save(any()); // was saved in DB
+        verify(orderManagementService, times(1)).addNewIdleOrder(any()); // was saved in the order queue
+        verify(orderManagementService, times(0)).manageOrder(any());
     }
 
 
     @Test
-    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusNotPaid() {
+    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusNotPaid_andNotInQueue() {
         // ordering menu 1, and already paid for it
         orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
@@ -99,6 +109,9 @@ class OrderServiceTest {
         assertThat(orderOpt.get().isPriority(), is(true));
         assertThat(orderOpt.get().getPrice(), is(3.0f));
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
+        verify(orderRepository, times(1)).save(any()); // was saved in DB
+        verify(orderManagementService, times(0)).addNewIdleOrder(any()); // not was saved in the order queue
+        verify(orderManagementService, times(0)).manageOrder(any());
     }
 
     @Test
@@ -113,6 +126,7 @@ class OrderServiceTest {
         Exception actualException = assertThrows(InvalidOrderException.class, () -> orderService.createOrder(customizeOrderDTO));
 
         assertThat(actualException.getMessage(), containsString("Order has an invalid menu that does not exist with id '99'"));
+        verify(orderRepository, times(0)).save(any());
     }
 
     @Test

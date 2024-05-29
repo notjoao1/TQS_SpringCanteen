@@ -74,7 +74,6 @@ export default function Order() {
     navigate("/order/customize")
   }
 
-  console.log("new state, order: ", order)
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
       <Typography component="h2" variant="h4" color="text.primary">
@@ -99,7 +98,6 @@ export default function Order() {
               <Chip
                 key={menu.id}
                 label={menu.name}
-                onClick={() => console.log("hi")}
                 sx={{
                   borderColor: (theme) => {
                     if (theme.palette.mode === "light") {
