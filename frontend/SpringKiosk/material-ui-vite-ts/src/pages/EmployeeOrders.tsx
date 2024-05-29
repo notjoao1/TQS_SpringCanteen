@@ -1,28 +1,58 @@
 import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import OrderCard from "../components/employee_orders_page/OrderCard";
-import { IOrder, OrderStatus } from "../types/OrderTypes";
-import { useEffect, useState } from "react";
+import { CookOrder, OrderStatus, WebsocketConnectMessage } from "../types/OrderTypes";
+import { useContext, useEffect, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import config from "../config";
+import { AuthContext } from "../context/AuthContext";
+
 
 const EmployeeOrders = () => {
-  const [orders, setOrders] = useState<IOrder[]>([]); 
+  const { auth } = useContext(AuthContext);
+  const [regularIdleOrders, setRegularIdleOrders] = useState<CookOrder[]>([]);
+  const [priorityIdleOrders, setPriorityIdleOrders] = useState<CookOrder[]>([]);
+  const [regularPreparingOrders, setRegularPreparingOrders] = useState<CookOrder[]>([]);
+  const [priorityPreparingOrders, setPriorityPreparingOrders] = useState<CookOrder[]>([]);
 
   // Websocket connection
   useEffect(() => { 
     const client = new Client({
 
       brokerURL: config.ordersWebSocketUrl, 
+      connectHeaders: {
+        Authorization: `Bearer ${auth?.token}`,
+      },
 
-      onConnect: () => {
-        console.log("Connected to WebSocket");
+      onConnect: (frame) => {
+        console.log("Connected to WebSocket: ", frame);
 
-        client.subscribe("/topic/orders", (message: IMessage) => {
-          console.log("Received message:", message.body); // debug
-
-          const newOrder: IOrder = JSON.parse(message.body);
-          setOrders((prevOrders) => [...prevOrders, newOrder]);
+        // receive existing orders
+        client.subscribe("/user/topic/orders", (message: IMessage) => {
+          const existingOrders: WebsocketConnectMessage = JSON.parse(message.body);
+          setRegularIdleOrders(existingOrders.regularIdleOrders);
+          setPriorityIdleOrders(existingOrders.priorityIdleOrders);
+          setRegularPreparingOrders(existingOrders.regularPreparingOrders);
+          setPriorityPreparingOrders(existingOrders.priorityPreparingOrders);
         });
+
+        // for receiving order status updates
+        client.subscribe("/order_updates", (message: IMessage) => {
+          console.log("received @ order_updates message ->", message)
+        });
+
+        // for receiving new orders -> this topic ALWAYS receives orders in the IDLE state
+        client.subscribe("/topic/orders", (message: IMessage) => {
+          const newOrder: CookOrder = JSON.parse(message.body);
+          if (newOrder.priority) {
+            setPriorityIdleOrders((oldState) => {
+              return [...oldState, newOrder];  
+            })
+          } else {
+            setRegularIdleOrders((oldState) => {
+              return [...oldState, newOrder];
+            })
+          }
+        })
       },
       onDisconnect: () => {
         console.log("Disconnected from WebSocket");
@@ -43,7 +73,7 @@ const EmployeeOrders = () => {
         Current Orders
       </Typography>
       <Grid container sx={{ width: "100%" }}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Paper
             elevation={10}
             sx={{ maxHeight: "600px", minHeight: "600px", m: 2, p: 2, overflowY: "auto"  }}
@@ -51,16 +81,23 @@ const EmployeeOrders = () => {
             <Typography variant="h5" sx={{ fontStyle: "italic" }}>
               Ready to cook
             </Typography>
-            {orders
-              .filter((o) => o.order_status === OrderStatus.IDLE)
-              .map((order: IOrder) => (
+            {priorityIdleOrders
+              .map((order: CookOrder) => (
                 <Box pt={2} key={order.id}>
-                  <OrderCard order={order} />
+                  <OrderCard order={order} isPriority={true} orderStatus={OrderStatus.IDLE}/>
                 </Box>
-              ))}
+              ))
+            }
+            {regularIdleOrders
+              .map((order: CookOrder) => (
+                <Box pt={2} key={order.id}>
+                  <OrderCard order={order} isPriority={false} orderStatus={OrderStatus.IDLE}/>
+                </Box>
+              ))
+            }
           </Paper>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Paper
             elevation={10}
             sx={{ maxHeight: "600px", minHeight: "600px", m: 2, p: 2, overflowY: "auto"  }}
@@ -68,42 +105,20 @@ const EmployeeOrders = () => {
             <Typography variant="h5" sx={{ fontStyle: "italic" }}>
               Cooking
             </Typography>
-            {orders
-              .filter((o) => o.order_status === OrderStatus.PREPARING)
-              .map((order: IOrder) => (
+            {priorityPreparingOrders
+              .map((order: CookOrder) => (
                 <Box pt={2} key={order.id}>
-                  <OrderCard order={order} />
+                  <OrderCard order={order} isPriority={true} orderStatus={OrderStatus.PREPARING}/>
                 </Box>
-              ))}
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Paper
-            elevation={10}
-            sx={{ maxHeight: "600px", minHeight: "600px", m: 2, p: 2, overflowY: "auto" }}
-          >
-            <Typography variant="h5" sx={{ fontStyle: "italic" }}>
-              Ready to deliver
-            </Typography>
-            {orders
-              .filter((o) => o.order_status === OrderStatus.READY)
-              .map((order: IOrder) => (
+              ))
+            }
+            {regularPreparingOrders
+              .map((order: CookOrder) => (
                 <Box pt={2} key={order.id}>
-                  <OrderCard order={order} />
+                  <OrderCard order={order} isPriority={false} orderStatus={OrderStatus.PREPARING}/>
                 </Box>
-              ))}
-            {/* <Box pt={2}>
-                <OrderCard order={mockOrders[0]} />
-              </Box>
-              <Box pt={2}>
-                <OrderCard order={mockOrders[0]} />
-              </Box>
-              <Box pt={2}>
-                <OrderCard order={mockOrders[0]} />
-              </Box>
-              <Box pt={2}>
-                <OrderCard order={mockOrders[0]} />
-              </Box> */}
+              ))
+            }
           </Paper>
         </Grid>
       </Grid>

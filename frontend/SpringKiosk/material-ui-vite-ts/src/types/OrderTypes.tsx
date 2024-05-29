@@ -44,3 +44,37 @@ interface IOrderMenuResponse {
     menu: {name: string, price: number};
     customization: string;
 }
+
+// only menu data, without customization, see use bellow
+interface CookOrderMenuData {
+    name: string;
+    price: number;
+}
+
+// menu data + customization of that particular menu
+interface CookOrderMenu {
+    menu: CookOrderMenuData;
+    customization: string;
+
+}
+
+
+export interface CookOrder {
+    id: number;
+    priority: boolean;
+    orderMenus: CookOrderMenu[];
+}
+
+export interface WebsocketConnectMessage {
+  regularIdleOrders: CookOrder[];
+  priorityIdleOrders: CookOrder[];
+  regularPreparingOrders: CookOrder[];
+  priorityPreparingOrders: CookOrder[];
+  regularReadyOrders: CookOrder[];
+  priorityReadyOrders: CookOrder[];
+}
+
+export interface OrderUpdateMessage {
+    orderId: number;
+    newOrderStatus: OrderStatus;
+}
