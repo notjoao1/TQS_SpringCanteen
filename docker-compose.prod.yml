@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: springcanteen
-    ports:
-      - "5432:5432"
     volumes:
       - db_file:/var/lib/postgresql/data
     restart: always
