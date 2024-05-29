@@ -38,6 +38,8 @@ public class SecurityConfiguration {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/menus")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/actuator/health")
+                                .permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
