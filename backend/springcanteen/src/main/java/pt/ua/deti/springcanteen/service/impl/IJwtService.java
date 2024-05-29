@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -25,28 +22,20 @@ public class IJwtService implements JwtService {
     @Value("${jwt.expirationtime.refresh}")
     private int refreshExpTime; // 2 days
 
-    private static final Logger logger = LoggerFactory.getLogger(IJwtService.class);
-
-
     @Override
     public String extractSubject(String token) {
-        String subject = extractClaim(token, Claims::getSubject);
-        logger.info("Extracting subject from JWT... value = {}", subject);
-        return subject;
+        return extractClaim(token, Claims::getSubject);
     }
 
     @Override
     public String generateToken(UserDetails user) {
-        logger.info("Generating new JWT for user with email '{}'", user.getUsername());
         return generateToken(new HashMap<>(), user, accessExpTime);
     }
 
     @Override
     public boolean isTokenValid(String token, UserDetails user) {
         final String username = user.getUsername();
-        String tokenSubject = extractSubject(token);
-        logger.info("Checking if token is valid... is the subject the same? '{}'; is the token expired? '{}'", tokenSubject.equals(username), isTokenExpired(tokenSubject));
-        return tokenSubject.equals(username) && !isTokenExpired(token);
+        return extractSubject(token).equals(username) && !isTokenExpired(token);
     }
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails user, int expirationTime) {
