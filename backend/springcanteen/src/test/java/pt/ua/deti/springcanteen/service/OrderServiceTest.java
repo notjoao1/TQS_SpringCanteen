@@ -46,9 +46,6 @@ class OrderServiceTest {
     PriceService priceService;
 
     @Mock
-    OrderNotifierService orderNotifierService;
-
-    @Mock
     OrderManagementService orderManagementService;
 
     @InjectMocks
@@ -73,14 +70,14 @@ class OrderServiceTest {
     }
 
     @Test
-    void whenCreateValidPaidOrder_thenShouldBePaid_andStatusIdle() {
+    void whenCreateValidPaidOrder_thenShouldBePaid_andStatusIdleAndInQueue() {
         // ordering menu 1, and already paid for it
         orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
         customizeOrderDTO.setIsPaid(true);
         customizeOrderDTO.setIsPriority(false);
         when(menuService.getMenuById(1L)).thenReturn(Optional.of(menu1));
-        when(orderManagementService.manageOrder(any())).thenReturn(true);
+        when(orderManagementService.addNewIdleOrder(any())).thenReturn(true);
 
         Optional<Order> orderOpt = orderService.createOrder(customizeOrderDTO);
         
@@ -90,13 +87,13 @@ class OrderServiceTest {
         assertThat(orderOpt.get().isPriority(), is(false));
         assertThat(orderOpt.get().isPaid(), is(true)); // paid
         verify(orderRepository, times(1)).save(any()); // was saved in DB
-        verify(orderNotifierService, times(1)).sendNewOrder(any()); // was sent through websockets
-        verify(orderManagementService, times(1)).manageOrder(any()); // was saved in the order queue
+        verify(orderManagementService, times(1)).addNewIdleOrder(any()); // was saved in the order queue
+        verify(orderManagementService, times(0)).manageOrder(any());
     }
 
 
     @Test
-    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusNotPaid() {
+    void whenCreateValidUnpaidOrder_thenShouldBeUnpaid_andStatusNotPaid_andNotInQueue() {
         // ordering menu 1, and already paid for it
         orderMenuDTO.setMenuId(1L);
         customizeOrderDTO.setOrderMenus(Set.of(orderMenuDTO));
@@ -113,8 +110,8 @@ class OrderServiceTest {
         assertThat(orderOpt.get().getPrice(), is(3.0f));
         assertThat(orderOpt.get().isPaid(), is(false)); // not paid
         verify(orderRepository, times(1)).save(any()); // was saved in DB
-        verify(orderNotifierService, times(0)).sendNewOrder(any()); // was not sent through websockets
-        verify(orderManagementService, times(0)).manageOrder(any()); // was not saved in the order queue
+        verify(orderManagementService, times(0)).addNewIdleOrder(any()); // not was saved in the order queue
+        verify(orderManagementService, times(0)).manageOrder(any());
     }
 
     @Test

@@ -25,6 +25,8 @@ public interface OrderManagementService {
         return false;
     }
 
+    boolean addNewIdleOrder(Order order);
+
     boolean manageNotPaidOrder(Order order);
     boolean manageIdleOrder(Order order);
     boolean managePreparingOrder(Order order);

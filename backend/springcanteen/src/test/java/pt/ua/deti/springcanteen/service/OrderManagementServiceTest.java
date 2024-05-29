@@ -2,6 +2,8 @@ package pt.ua.deti.springcanteen.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
@@ -104,6 +107,19 @@ class OrderManagementServiceTest {
         );
     }
 
+    private static Stream<Arguments> provideAllPriorityAndOrderStatusArgumentsButIdle(){
+        return Stream.of(
+                Arguments.of(true, OrderStatus.NOT_PAID),
+                Arguments.of(false, OrderStatus.NOT_PAID),
+                Arguments.of(true, OrderStatus.PREPARING),
+                Arguments.of(false, OrderStatus.PREPARING),
+                Arguments.of(true, OrderStatus.READY),
+                Arguments.of(false, OrderStatus.READY),
+                Arguments.of(true, OrderStatus.PICKED_UP),
+                Arguments.of(false, OrderStatus.PICKED_UP)
+        );
+    }
+
     private Queue<OrderEntry> getQueueFromPriorityAndStatus(boolean priority, OrderStatus orderStatus) {
         return switch (orderStatus) {
             case IDLE -> priority ? priorityIdleOrders : regularIdleOrders;
@@ -123,8 +139,81 @@ class OrderManagementServiceTest {
     }
 
     @ParameterizedTest
+    @MethodSource("provideAllPriorityAndOrderStatusArgumentsButIdle")
+    void whenAddNewIdleOrderWithNotIdleOrder_thenOrderNotAdded_andNotSentNewOrderThroughWS(boolean priority, OrderStatus orderStatus) {
+        boolean result;
+        order1.setOrderStatus(orderStatus);
+        order1.setPriority(priority);
+
+        // act
+        result = orderManagementService.addNewIdleOrder(order1);
+
+        // should -> add to IDLE orders queue depending on priority;
+        //           send message through websockets notifying new order exists;
+        assertFalse(result);
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of())) {
+            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
+        }
+        verify(orderNotifierService, times(0)).sendNewOrder(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenQueueNotFullAndAddNewIdleOrder_thenIdleOrderAdded_andSentNewOrderThroughWS(boolean priority) {
+        boolean result;
+        Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
+        order1.setOrderStatus(OrderStatus.IDLE);
+        order1.setPriority(priority);
+
+        when(idleOrdersQueue.offer(any())).thenReturn(true);
+
+        // act
+        result = orderManagementService.addNewIdleOrder(order1);
+
+        // should -> add to IDLE orders queue depending on priority;
+        //           send message through websockets notifying new order exists;
+        assertTrue(result);
+        verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
+            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
+        }
+        verify(orderNotifierService, times(1)).sendNewOrder(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void whenQueueFullAndAddNewIdleOrder_thenIdleOrderNotAdded_andNotSentNewOrderThroughWS(boolean priority) {
+        boolean result;
+        Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
+        order1.setOrderStatus(OrderStatus.IDLE);
+        order1.setPriority(priority);
+
+        when(idleOrdersQueue.offer(any())).thenReturn(false);
+
+        // act
+        result = orderManagementService.addNewIdleOrder(order1);
+
+        // should -> try but not add to IDLE orders queue;
+        //           not send message through websockets notifying new order exists;
+        assertFalse(result);
+        verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+        for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
+            verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
+            verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
+        }
+        verify(orderNotifierService, times(0)).sendNewOrder(any());
+    }
+
+
+    @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void whenQueueNotFullAndManageOrderWithStatusNOT_PAID_thenOrderAdded_andNewStatusIDLE_andSentNewOrderThroughWS(boolean priority) {
+        boolean result;
         Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
         order1.setOrderStatus(OrderStatus.NOT_PAID);
         order1.setPriority(priority);
@@ -135,10 +224,11 @@ class OrderManagementServiceTest {
         when(idleOrdersQueue.offer(any())).thenReturn(true);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
         // should -> change order status and save it to DB; add to IDLE orders queue depending on priority;
         //           send message through websockets notifying new order exists;
+        assertTrue(result);
         verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
         for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
@@ -152,6 +242,7 @@ class OrderManagementServiceTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void whenQueueFullAndManageOrderWithStatusNOT_PAID_thenOrderNotAdded_andMessageNotSentThroughWS(boolean priority) {
+        boolean result;
         Queue<OrderEntry> idleOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.IDLE);
         order1.setOrderStatus(OrderStatus.NOT_PAID);
         order1.setPriority(priority);
@@ -159,10 +250,11 @@ class OrderManagementServiceTest {
         when(idleOrdersQueue.offer(any())).thenReturn(false);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
         // should -> not change order status and not save it to DB and not add to IDLE orders queue;
         //           not send message through websockets notifying new order exists;
+        assertFalse(result);
         verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
         for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
@@ -178,6 +270,7 @@ class OrderManagementServiceTest {
     void whenQueueNotFullAndManageOrderWithCertainStatus_thenOrderAdded_andNewStatusSet_andSentStatusUpdateThroughWS(
             boolean priority, OrderStatus oldOrderStatus, OrderStatus newOrderStatus
     ) {
+        boolean result;
         Queue<OrderEntry> oldOrdersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
         Queue<OrderEntry> nextOrdersQueue = getQueueFromPriorityAndStatus(priority, newOrderStatus);
         order1.setOrderStatus(oldOrderStatus);
@@ -191,11 +284,12 @@ class OrderManagementServiceTest {
         when(orderRepository.save(any())).thenReturn(updatedOrder1);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
         // should -> change order status and save it to DB; add to next orders queue according to priority;
         //           remove from old orders queue;
         //           send message through websockets notifying status update
+        assertTrue(result);
         verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
         verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
         verify(oldOrdersQueue, times(1)).remove(any(OrderEntry.class));
@@ -210,9 +304,10 @@ class OrderManagementServiceTest {
 
     @ParameterizedTest
     @MethodSource("providePriorityAndAllOrderStatusArgumentsForIdlePreparing")
-    void whenQueueFullAndManageOrderWithWithCertainStatus_thenOrderAdded_andNewStatusPREPARING_andSentStatusUpdateThroughWS(
+    void whenQueueFullAndManageOrderWithWithCertainStatus_thenOrderNotAdded_andNotNewStatus_andNotSentStatusUpdateThroughWS(
             boolean priority, OrderStatus oldOrderStatus, OrderStatus newOrderStatus
     ) {
+        boolean result;
         Queue<OrderEntry> oldOrdersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
         Queue<OrderEntry> nextOrdersQueue = getQueueFromPriorityAndStatus(priority, newOrderStatus);
         order1.setOrderStatus(oldOrderStatus);
@@ -221,13 +316,15 @@ class OrderManagementServiceTest {
         updatedOrder1.setPriority(priority);
 
         when(oldOrdersQueue.contains(any(OrderEntry.class))).thenReturn(true);
+        when(nextOrdersQueue.offer(any(OrderEntry.class))).thenReturn(false);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
         // should -> not change order status and not save it to DB; not add to next orders queue according to priority;
         //           stay in the same queue; not remove from old orders queue;
         //           not send message through websockets notifying status update
+        assertFalse(result);
         verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
         verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
         verify(oldOrdersQueue, times(0)).remove(any(OrderEntry.class));
@@ -243,6 +340,7 @@ class OrderManagementServiceTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void whenManageOrderWithStatusREADY_thenNewStatusPICKED_UP_andSentStatusUpdateThroughWS(boolean priority) {
+        boolean result;
         Queue<OrderEntry> readyOrdersQueue = getQueueFromPriorityAndStatus(priority, OrderStatus.READY);
         order1.setOrderStatus(OrderStatus.READY);
         order1.setPriority(priority);
@@ -253,11 +351,12 @@ class OrderManagementServiceTest {
         when(orderRepository.save(any())).thenReturn(updatedOrder1);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
         // should -> change order status and save it to DB
         //           remove from READY orders queue depending on priority
         //           send message through websockets notifying status update to PICKED_UP
+        assertTrue(result);
         verify(readyOrdersQueue, times(1)).remove(any(OrderEntry.class));
         for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(readyOrdersQueue))) {
             verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
@@ -273,6 +372,7 @@ class OrderManagementServiceTest {
     void whenManageOrderEntryThatDoesntExist_thenDoNothing(
             boolean priority, OrderStatus oldOrderStatus
     ) {
+        boolean result;
         Queue<OrderEntry> ordersQueue = getQueueFromPriorityAndStatus(priority, oldOrderStatus);
         order1.setOrderStatus(oldOrderStatus);
         order1.setPriority(priority);
@@ -283,8 +383,9 @@ class OrderManagementServiceTest {
             when(ordersQueue.contains(any(OrderEntry.class))).thenReturn(false);
 
         // act
-        orderManagementService.manageOrder(order1);
+        result = orderManagementService.manageOrder(order1);
 
+        assertFalse(result);
         if (oldOrderStatus == OrderStatus.READY){
             verify(ordersQueue, times(1)).remove(any(OrderEntry.class));
             verify(ordersQueue, times(0)).contains(any(OrderEntry.class));

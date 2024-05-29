@@ -37,6 +37,21 @@ public class IOrderManagementService implements OrderManagementService {
     private Queue<OrderEntry> priorityReadyOrders;
 
     @Override
+    public boolean addNewIdleOrder(Order order) {
+        boolean result;
+        Queue<OrderEntry> newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
+        if (order.getOrderStatus() != OrderStatus.IDLE){
+            logger.info("Order status must be IDLE. Not {}", order.getOrderStatus());
+            return false;
+        }
+        result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
+        if (result) {
+            orderNotifierService.sendNewOrder(order);
+        }
+        return result;
+    }
+
+    @Override
     public boolean manageNotPaidOrder(Order order){
         boolean result;
         Queue<OrderEntry> newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;

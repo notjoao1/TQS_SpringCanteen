@@ -20,7 +20,6 @@ import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
-import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
@@ -37,7 +36,6 @@ public class IOrderService implements OrderService {
     private OrderManagementService orderManagementService;
     private OrderRepository orderRepository;
     private OrderMenuRepository orderMenuRepository;
-    private OrderNotifierService orderNotifierService;
 
     @Override
     @Transactional
@@ -57,15 +55,12 @@ public class IOrderService implements OrderService {
         order.setPrice(totalOrderPrice);
         orderRepository.save(order);
         // add order to queue that is paid and therefore, ready to be cooked (idle status)
-            if (order.getOrderStatus() == OrderStatus.IDLE) {
+        if (order.getOrderStatus() == OrderStatus.IDLE) {
             logger.info("Created order is in IDLE status, ready to cook -> adding it to the queue...");
-            if (orderManagementService.manageOrder(order)) {
+            if (orderManagementService.addNewIdleOrder(order)) {
                 logger.info("Successfully added IDLE order to queue. Sending it through Websockets...");
-                orderNotifierService.sendNewOrder(order);
-            }
-            else
+            } else
                 logger.error("Could not add IDLE order to queue...");
-            
         }
         orderMenuRepository.saveAll(orderMenus);
         return Optional.of(order);
@@ -74,13 +69,13 @@ public class IOrderService implements OrderService {
     private Order orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
         KioskTerminal kioskTerminal = new KioskTerminal();
         kioskTerminal.setId(customizeOrderDTO.getKioskId());
-        
+
         Order order;
         if (Boolean.TRUE.equals(customizeOrderDTO.getIsPaid()))
             order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
-        else 
+        else
             order = new Order(OrderStatus.NOT_PAID, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
-        
+
         Set<OrderMenu> orderMenus = new HashSet<>();
         // check if all menus provided exist and add them to orderMenus set
         for (OrderMenuDTO orderMenuDTO : customizeOrderDTO.getOrderMenus()) {
