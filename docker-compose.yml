@@ -22,8 +22,6 @@ services:
   backend:
     build: ./backend/springcanteen
     restart: on-failure
-    ports:
-      - 8080:8080
     volumes:
       - ./backend/springcanteen:/app
       - backend_data:/app/data
@@ -46,6 +44,11 @@ services:
     networks:
       - backend
       - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=PathPrefix(`/api`)
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+      - traefik.http.routers.backend.entrypoints=web
 
   kiosk:
     build: ./frontend/SpringKiosk/material-ui-vite-ts
@@ -53,13 +56,13 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173"]
-      interval: 1s
-      timeout: 5s
-      retries: 20
     networks:
       - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kiosk.rule=PathPrefix(`/`)
+      - traefik.http.services.kiosk.loadbalancer.server.port=5173
+      - traefik.http.routers.kiosk.entrypoints=web
 
   digital-signage:
     build: ./frontend/DigitalSignage
@@ -67,27 +70,47 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5050"]
-      interval: 1s
-      timeout: 5s
-      retries: 20
     networks:
       - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.digital-signage.rule=PathPrefix(`/signage`)
+      - traefik.http.services.digital-signage.loadbalancer.server.port=5173
+      - traefik.http.routers.digital-signage.entrypoints=web
 
-  nginx:
-    image: nginx:latest
+  traefik:
+    image: traefik:v2.11
     ports:
       - "80:80"
+      - "8080:8080"
     depends_on:
-      - backend
-      - kiosk
-      - digital-signage
+      backend:
+        condition: service_healthy
+      kiosk:
+        condition: service_started
+      digital-signage:
+        condition: service_started
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./proxy/traefik.yml:/etc/traefik/traefik.yml"
+    restart: unless-stopped
     networks:
       - backend
       - frontend
-    volumes:
-      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - backend
+  #     - kiosk
+  #     - digital-signage
+  #   networks:
+  #     - backend
+  #     - frontend
+  #   volumes:
+  #     - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
   db_file:
