@@ -34,7 +34,6 @@ public class Employee implements UserDetails {
     @NotNull
     private String email;
 
-    // TODO password security
     @NotNull
     private String password;
 

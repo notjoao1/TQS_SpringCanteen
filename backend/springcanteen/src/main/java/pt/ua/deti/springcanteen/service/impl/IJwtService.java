@@ -73,7 +73,7 @@ public class IJwtService implements JwtService {
     public String generateRefreshToken(UserDetails user) {
         Map<String, Object> extraClaims = new HashMap<>();
         // extra claim to distinguish it from the access token with this claim
-        extraClaims.put("type", new String("refresh"));
+        extraClaims.put("type", "refresh");
         return this.generateToken(extraClaims, user, refreshExpTime);
     }
 
