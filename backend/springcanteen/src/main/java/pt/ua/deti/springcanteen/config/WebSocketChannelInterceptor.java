@@ -25,19 +25,22 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-      logger.info("Made it here!!! intercepting websocket stuff");
+      logger.info("Intercepting websocket message to check authentication...");
       StompHeaderAccessor accessor =
           MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-      if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-        String jwt = accessor.getFirstNativeHeader("Authorization").substring(7);
-        String userEmail = jwtService.extractSubject(jwt);
-
-        UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
-        if (userEmail != null && !userEmail.isEmpty() && jwtService.isTokenValid(jwt, userDetails)) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                    null, userDetails.getAuthorities());
-            accessor.setUser(authToken);
-          }
+      if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+        String authHeader = accessor.getFirstNativeHeader("Authorization");
+        if (authHeader != null) {
+          String jwt = authHeader.substring(7);
+          String userEmail = jwtService.extractSubject(jwt);
+          UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
+          if (userEmail != null && !userEmail.isEmpty() && jwtService.isTokenValid(jwt, userDetails)) {
+              logger.info("Setting authentication for intercepted message for user with email {}", userEmail);
+              UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                      null, userDetails.getAuthorities());
+              accessor.setUser(authToken);
+            }
+        }
       }
       return message;
     }

@@ -210,7 +210,7 @@ class OrderUpdatesControllerIT {
             verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
             verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
             verify(orderManagementServiceSpy, times(1)).manageOrder(argThat((Order order) ->
-                    order.getId().equals(testOrder.getId()) // TODO: couldn't verify orderStatus because it uses reference
+                    order.getId().equals(testOrder.getId())
             ));
             verify(orderNotifierServiceSpy, times(1)).sendNewOrder(argThat((Order order) ->
                 order.getId().equals(testOrder.getId()) && order.getOrderStatus() == OrderStatus.IDLE
@@ -240,7 +240,7 @@ class OrderUpdatesControllerIT {
             verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
             verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
             verify(orderManagementServiceSpy, times(1)).manageOrder(argThat((Order order) ->
-                    order.getId().equals(testOrder.getId()) // TODO: couldn't verify orderStatus because it uses reference
+                    order.getId().equals(testOrder.getId())
             ));
             verify(orderNotifierServiceSpy, times(1)).sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PREPARING);
         });
@@ -272,7 +272,7 @@ class OrderUpdatesControllerIT {
             verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
             verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
             verify(orderManagementServiceSpy, times(1)).manageOrder(argThat((Order order) ->
-                    order.getId().equals(testOrder.getId()) // TODO: couldn't verify orderStatus because it uses reference
+                    order.getId().equals(testOrder.getId())
             ));
             verify(orderNotifierServiceSpy, times(1)).sendOrderStatusUpdates(testOrder.getId(), OrderStatus.READY);
         });
@@ -302,7 +302,7 @@ class OrderUpdatesControllerIT {
             verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
             verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
             verify(orderManagementServiceSpy, times(1)).manageOrder(argThat((Order order) ->
-                    order.getId().equals(testOrder.getId()) // TODO: couldn't verify orderStatus because it uses reference
+                    order.getId().equals(testOrder.getId())
             ));
             verify(orderNotifierServiceSpy, times(1)).sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP);
         });
