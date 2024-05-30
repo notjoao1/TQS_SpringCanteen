@@ -12,9 +12,8 @@ import {
 } from "@mui/material";
 import { Payments } from "@mui/icons-material";
 import { useState } from "react";
-import { IOrder, OrderStatus } from "../types/OrderTypes";
+import { IOrder } from "../types/OrderTypes";
 import RequestPaymentModal from "../components/employee_payments_page/RequestPaymentModal";
-import { IMenu } from "../types/MenuTypes";
 
 
 const EmployeePayments = () => {
