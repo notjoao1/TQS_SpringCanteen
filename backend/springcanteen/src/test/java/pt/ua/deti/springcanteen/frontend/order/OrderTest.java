@@ -13,5 +13,4 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasspathResource("pt/ua/deti/springcanteen/frontend/order")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "pt.ua.deti.springcanteen.frontend.order")
-public class OrderTest {
-}
+public class OrderTest {}

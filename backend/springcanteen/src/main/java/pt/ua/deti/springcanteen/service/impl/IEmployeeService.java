@@ -15,22 +15,23 @@ import java.util.Optional;
 @AllArgsConstructor
 public class IEmployeeService implements EmployeeService {
 
-    private EmployeeRepository employeeRepository;
+  private EmployeeRepository employeeRepository;
 
-    @Override
-    public UserDetailsService userDetailsService() {
-        return new UserDetailsService() {
-            // username -> our email
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return employeeRepository.findByEmail(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("User by that email not found"));
-            }
-        };
-    }
+  @Override
+  public UserDetailsService userDetailsService() {
+    return new UserDetailsService() {
+      // username -> our email
+      @Override
+      public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return employeeRepository
+            .findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User by that email not found"));
+      }
+    };
+  }
 
-    @Override
-    public Optional<Employee> getEmployeeByEmail(String email) {
-        return employeeRepository.findByEmail(email);
-    }
+  @Override
+  public Optional<Employee> getEmployeeByEmail(String email) {
+    return employeeRepository.findByEmail(email);
+  }
 }

@@ -6,12 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class OrderUpdateResponseDTO {
-    private Long orderId;
-    private OrderStatus newOrderStatus; 
+  private Long orderId;
+  private OrderStatus newOrderStatus;
 }

@@ -20,32 +20,32 @@ import java.util.Optional;
 @AllArgsConstructor
 public class IQueueNotifierService implements QueueNotifierService {
 
-    private static final String ORDER_TOPIC = "/topic/orders";
-    private static final Logger logger = LoggerFactory.getLogger(IQueueNotifierService.class);
-    private SimpMessagingTemplate websocketClient;
-    private OrderManagementService orderManagementService;
-    private EmployeeService employeeService;
+  private static final String ORDER_TOPIC = "/topic/orders";
+  private static final Logger logger = LoggerFactory.getLogger(IQueueNotifierService.class);
+  private SimpMessagingTemplate websocketClient;
+  private OrderManagementService orderManagementService;
+  private EmployeeService employeeService;
 
-
-    @Override
-    @EventListener
-    public void sendExistingOrderQueues(SessionSubscribeEvent event) {
-        Principal user = event.getUser();
-        if (user != null){
-            Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(user.getName());
-            if (employeeOpt.isPresent()){
-                EmployeeRole employeeRole = employeeOpt.get().getRole();
-                if (employeeRole != EmployeeRole.COOK && employeeRole != EmployeeRole.DESK_ORDERS){
-                    logger.info("Employee role is not COOK or DESK_ORDERS. No need to send all orders");
-                } else {
-                    websocketClient.convertAndSendToUser(user.getName(), ORDER_TOPIC, orderManagementService.getAllOrders());
-                    logger.info("Sent all orders to user {}", user.getName());
-                }
-            } else {
-                logger.info("Employee corresponding to the user received in websocket is null");
-            }
+  @Override
+  @EventListener
+  public void sendExistingOrderQueues(SessionSubscribeEvent event) {
+    Principal user = event.getUser();
+    if (user != null) {
+      Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(user.getName());
+      if (employeeOpt.isPresent()) {
+        EmployeeRole employeeRole = employeeOpt.get().getRole();
+        if (employeeRole != EmployeeRole.COOK && employeeRole != EmployeeRole.DESK_ORDERS) {
+          logger.info("Employee role is not COOK or DESK_ORDERS. No need to send all orders");
         } else {
-            logger.info("User received in websocket is null");
+          websocketClient.convertAndSendToUser(
+              user.getName(), ORDER_TOPIC, orderManagementService.getAllOrders());
+          logger.info("Sent all orders to user {}", user.getName());
         }
+      } else {
+        logger.info("Employee corresponding to the user received in websocket is null");
+      }
+    } else {
+      logger.info("User received in websocket is null");
     }
+  }
 }

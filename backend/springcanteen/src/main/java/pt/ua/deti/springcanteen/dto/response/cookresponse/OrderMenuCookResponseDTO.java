@@ -10,12 +10,12 @@ import pt.ua.deti.springcanteen.entities.OrderMenu;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderMenuCookResponseDTO {
-    private MenuClientResponseDTO menu;
-    private String customization;
+  private MenuClientResponseDTO menu;
+  private String customization;
 
-    public static OrderMenuCookResponseDTO fromOrderMenuEntity(OrderMenu orderMenu){
-        return new OrderMenuCookResponseDTO(
-                MenuClientResponseDTO.fromMenuEntity(orderMenu.getMenu(), orderMenu.getCalculatedPrice()), orderMenu.getCustomization()
-        );
-    }
+  public static OrderMenuCookResponseDTO fromOrderMenuEntity(OrderMenu orderMenu) {
+    return new OrderMenuCookResponseDTO(
+        MenuClientResponseDTO.fromMenuEntity(orderMenu.getMenu(), orderMenu.getCalculatedPrice()),
+        orderMenu.getCustomization());
+  }
 }

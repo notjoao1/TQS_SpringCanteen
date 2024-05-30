@@ -15,17 +15,13 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Ingredient {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @NotNull
-    private String name;
+  @NotNull private String name;
 
-    @NotNull
-    private float price;
+  @NotNull private float price;
 
-    @NotNull
-    private int calories;
-
+  @NotNull private int calories;
 }

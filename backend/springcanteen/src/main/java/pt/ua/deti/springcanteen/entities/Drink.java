@@ -10,5 +10,4 @@ import lombok.Setter;
 @Getter
 @Table(name = "drinks")
 @NoArgsConstructor
-public class Drink extends Item {
-}
+public class Drink extends Item {}

@@ -17,12 +17,12 @@ import pt.ua.deti.springcanteen.service.MenuService;
 @RequestMapping("/api/menus")
 @AllArgsConstructor
 public class MenuController {
-    private static final Logger logger = LoggerFactory.getLogger(MenuController.class);
-    private MenuService menuService;
+  private static final Logger logger = LoggerFactory.getLogger(MenuController.class);
+  private MenuService menuService;
 
-    @GetMapping("")
-    public ResponseEntity<List<MenuResponseDTO>> getMenus() {
-        logger.info("GET /api/menus - all menus");
-        return ResponseEntity.ok(menuService.getAvailableMenus());
-    }
+  @GetMapping("")
+  public ResponseEntity<List<MenuResponseDTO>> getMenus() {
+    logger.info("GET /api/menus - all menus");
+    return ResponseEntity.ok(menuService.getAvailableMenus());
+  }
 }

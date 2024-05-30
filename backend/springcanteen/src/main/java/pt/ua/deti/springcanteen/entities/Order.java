@@ -17,40 +17,40 @@ import java.util.Set;
 @NoArgsConstructor
 public class Order {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
+  @Enumerated(EnumType.STRING)
+  private OrderStatus orderStatus;
 
-    @NotNull
-    private boolean isPaid;
+  @NotNull private boolean isPaid;
 
-    // calculated based on the customizations for each OrderMenu in this order
-    @NotNull
-    private float price;
+  // calculated based on the customizations for each OrderMenu in this order
+  @NotNull private float price;
 
-    @NotNull
-    private boolean isPriority;
+  @NotNull private boolean isPriority;
 
-    @NotNull
-    private String nif;
+  @NotNull private String nif;
 
-    @ManyToOne
-    @JoinColumn(name = "kiosk_id", nullable = false)
-    private KioskTerminal kioskTerminal;
+  @ManyToOne
+  @JoinColumn(name = "kiosk_id", nullable = false)
+  private KioskTerminal kioskTerminal;
 
-    @OneToMany(mappedBy = "order")
-    @Fetch(FetchMode.JOIN)
-    private Set<OrderMenu> orderMenus;
+  @OneToMany(mappedBy = "order")
+  @Fetch(FetchMode.JOIN)
+  private Set<OrderMenu> orderMenus;
 
-    public Order(OrderStatus orderStatus, boolean isPaid, boolean isPriority, String nif, KioskTerminal kioskTerminal) {
-        this.orderStatus = orderStatus;
-        this.isPaid = isPaid;
-        this.isPriority = isPriority;
-        this.nif = nif;
-        this.kioskTerminal = kioskTerminal;
-    }
-
+  public Order(
+      OrderStatus orderStatus,
+      boolean isPaid,
+      boolean isPriority,
+      String nif,
+      KioskTerminal kioskTerminal) {
+    this.orderStatus = orderStatus;
+    this.isPaid = isPaid;
+    this.isPriority = isPriority;
+    this.nif = nif;
+    this.kioskTerminal = kioskTerminal;
+  }
 }

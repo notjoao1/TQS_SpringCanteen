@@ -12,15 +12,16 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderCookResponseDTO {
-    private long id;
-    private boolean isPriority;
-    private Set<OrderMenuCookResponseDTO> orderMenus;
+  private long id;
+  private boolean isPriority;
+  private Set<OrderMenuCookResponseDTO> orderMenus;
 
-    public static OrderCookResponseDTO fromOrderEntity(Order order){
-        return new OrderCookResponseDTO(
-                order.getId(),
-                order.isPriority(),
-                order.getOrderMenus().stream().map(OrderMenuCookResponseDTO::fromOrderMenuEntity).collect(Collectors.toSet())
-        );
-    }
+  public static OrderCookResponseDTO fromOrderEntity(Order order) {
+    return new OrderCookResponseDTO(
+        order.getId(),
+        order.isPriority(),
+        order.getOrderMenus().stream()
+            .map(OrderMenuCookResponseDTO::fromOrderMenuEntity)
+            .collect(Collectors.toSet()));
+  }
 }

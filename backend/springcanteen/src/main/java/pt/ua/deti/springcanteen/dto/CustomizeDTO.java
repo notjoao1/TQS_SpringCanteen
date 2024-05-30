@@ -6,11 +6,7 @@ import lombok.Data;
 
 @Data
 public class CustomizeDTO {
-    @Valid
-    @NotNull
-    private CustomizeDrinkDTO customizedDrink;
+  @Valid @NotNull private CustomizeDrinkDTO customizedDrink;
 
-    @Valid
-    @NotNull
-    private CustomizeMainDishDTO customizedMainDish;
+  @Valid @NotNull private CustomizeMainDishDTO customizedMainDish;
 }

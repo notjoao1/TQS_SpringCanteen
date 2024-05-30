@@ -15,14 +15,14 @@ import lombok.AllArgsConstructor;
 @EnableWebSocketMessageBroker
 @Order(Ordered.HIGHEST_PRECEDENCE + 99) // verify websocket auth early on chain
 @AllArgsConstructor
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private WebSocketChannelInterceptor webSocketChannelInterceptor;
+  private WebSocketChannelInterceptor webSocketChannelInterceptor;
 
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(webSocketChannelInterceptor);
-    }
+  @Override
+  public void configureClientInboundChannel(ChannelRegistration registration) {
+    registration.interceptors(webSocketChannelInterceptor);
+  }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {

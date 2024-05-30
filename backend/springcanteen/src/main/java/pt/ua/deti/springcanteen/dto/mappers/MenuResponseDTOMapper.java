@@ -7,14 +7,13 @@ import pt.ua.deti.springcanteen.entities.Menu;
 
 @Component
 public class MenuResponseDTOMapper {
-    public MenuResponseDTO toDTO(Menu menu) {
-        var menuDTO = new MenuResponseDTO();
-        menuDTO.setId(menu.getId());
-        menuDTO.setName(menu.getName());
-        menuDTO.setImageLink(menu.getImageLink());
-        menuDTO.setDrinkOptions(menu.getDrinkOptions());
-        menuDTO.setMainDishOptions(menu.getMainDishOptions());
-        return menuDTO;
-    }
-
+  public MenuResponseDTO toDTO(Menu menu) {
+    var menuDTO = new MenuResponseDTO();
+    menuDTO.setId(menu.getId());
+    menuDTO.setName(menu.getName());
+    menuDTO.setImageLink(menu.getImageLink());
+    menuDTO.setDrinkOptions(menu.getDrinkOptions());
+    menuDTO.setMainDishOptions(menu.getMainDishOptions());
+    return menuDTO;
+  }
 }

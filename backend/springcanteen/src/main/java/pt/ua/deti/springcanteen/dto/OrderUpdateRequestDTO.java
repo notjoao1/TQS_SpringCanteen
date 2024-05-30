@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class OrderUpdateRequestDTO {
-    private Long orderId;
+  private Long orderId;
 }

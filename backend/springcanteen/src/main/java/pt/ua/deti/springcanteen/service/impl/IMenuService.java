@@ -16,27 +16,26 @@ import pt.ua.deti.springcanteen.service.MenuService;
 
 @Service
 public class IMenuService implements MenuService {
-    private static final Logger logger = LoggerFactory.getLogger(IMenuService.class);
-    private MenuRepository menuRepository;
-    private MenuResponseDTOMapper mapper;
+  private static final Logger logger = LoggerFactory.getLogger(IMenuService.class);
+  private MenuRepository menuRepository;
+  private MenuResponseDTOMapper mapper;
 
-    @Autowired
-    public IMenuService(MenuRepository menuRepository, MenuResponseDTOMapper mapper) {
-        this.menuRepository = menuRepository;
-        this.mapper = mapper;
-    }
+  @Autowired
+  public IMenuService(MenuRepository menuRepository, MenuResponseDTOMapper mapper) {
+    this.menuRepository = menuRepository;
+    this.mapper = mapper;
+  }
 
-    @Override
-    public List<MenuResponseDTO> getAvailableMenus() {
-        logger.info("Getting all menus...");
-        List<Menu> menusDb = menuRepository.findAll();
+  @Override
+  public List<MenuResponseDTO> getAvailableMenus() {
+    logger.info("Getting all menus...");
+    List<Menu> menusDb = menuRepository.findAll();
 
-        return menusDb.stream().map(mapper::toDTO).toList();
-    }
+    return menusDb.stream().map(mapper::toDTO).toList();
+  }
 
-    @Override
-    public Optional<Menu> getMenuById(Long menuId) {
-        return menuRepository.findById(menuId);
-    }
-
+  @Override
+  public Optional<Menu> getMenuById(Long menuId) {
+    return menuRepository.findById(menuId);
+  }
 }

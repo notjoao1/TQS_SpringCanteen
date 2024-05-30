@@ -7,8 +7,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SignInRequestDTO {
-    @NotNull
-    private String email;
-    @NotNull
-    private String password;
+  @NotNull private String email;
+  @NotNull private String password;
 }

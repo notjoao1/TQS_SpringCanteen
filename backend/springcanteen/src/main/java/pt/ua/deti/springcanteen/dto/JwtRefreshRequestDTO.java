@@ -9,6 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtRefreshRequestDTO {
-    @NotNull
-    private String refreshToken;
+  @NotNull private String refreshToken;
 }

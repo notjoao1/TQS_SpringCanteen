@@ -16,7 +16,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class MainDish extends Item {
 
-    @OneToMany(mappedBy = "mainDish")
-    private Set<MainDishIngredients> mainDishIngredients;
-
+  @OneToMany(mappedBy = "mainDish")
+  private Set<MainDishIngredients> mainDishIngredients;
 }

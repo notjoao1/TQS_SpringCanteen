@@ -5,6 +5,4 @@ import org.springframework.stereotype.Repository;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 
 @Repository
-public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long>{
-
-}
+public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {}

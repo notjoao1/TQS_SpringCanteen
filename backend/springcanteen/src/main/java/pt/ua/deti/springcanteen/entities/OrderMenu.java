@@ -20,29 +20,28 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @NoArgsConstructor
 public class OrderMenu {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    @JsonIgnore
-    private Order order;
+  @ManyToOne
+  @JoinColumn(name = "order_id")
+  @JsonIgnore
+  private Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "menu_id")
-    private Menu menu;
+  @ManyToOne
+  @JoinColumn(name = "menu_id")
+  private Menu menu;
 
-    @NotNull
-    private float calculatedPrice;
+  @NotNull private float calculatedPrice;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @NotNull
-    private String customization;
+  @JdbcTypeCode(SqlTypes.JSON)
+  @NotNull
+  private String customization;
 
-    public OrderMenu(Order order, Menu menu, String customization) {
-        this.order = order;
-        this.menu = menu;
-        this.customization = customization;
-    }
+  public OrderMenu(Order order, Menu menu, String customization) {
+    this.order = order;
+    this.menu = menu;
+    this.customization = customization;
+  }
 }

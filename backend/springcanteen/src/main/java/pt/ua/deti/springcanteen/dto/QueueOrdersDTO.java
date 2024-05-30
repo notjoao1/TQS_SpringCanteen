@@ -10,11 +10,10 @@ import java.util.List;
 @NoArgsConstructor
 public class QueueOrdersDTO {
 
-    private List<OrderCookResponseDTO> regularIdleOrders;
-    private List<OrderCookResponseDTO> priorityIdleOrders;
-    private List<OrderCookResponseDTO> regularPreparingOrders;
-    private List<OrderCookResponseDTO> priorityPreparingOrders;
-    private List<OrderCookResponseDTO> regularReadyOrders;
-    private List<OrderCookResponseDTO> priorityReadyOrders;
-
+  private List<OrderCookResponseDTO> regularIdleOrders;
+  private List<OrderCookResponseDTO> priorityIdleOrders;
+  private List<OrderCookResponseDTO> regularPreparingOrders;
+  private List<OrderCookResponseDTO> priorityPreparingOrders;
+  private List<OrderCookResponseDTO> regularReadyOrders;
+  private List<OrderCookResponseDTO> priorityReadyOrders;
 }

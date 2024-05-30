@@ -6,10 +6,7 @@ import lombok.Data;
 @Data
 public class CustomizeIngredientDTO {
 
-    @NotNull
-    private Long ingredientId;
-    
-    @NotNull
-    private Integer quantity;
+  @NotNull private Long ingredientId;
 
+  @NotNull private Integer quantity;
 }

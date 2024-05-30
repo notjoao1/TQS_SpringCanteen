@@ -12,6 +12,7 @@ import org.junit.platform.suite.api.Suite;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("pt/ua/deti/springcanteen/frontend/customize")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "pt.ua.deti.springcanteen.frontend.customize")
-public class CustomizeTest {
-}
+@ConfigurationParameter(
+    key = GLUE_PROPERTY_NAME,
+    value = "pt.ua.deti.springcanteen.frontend.customize")
+public class CustomizeTest {}

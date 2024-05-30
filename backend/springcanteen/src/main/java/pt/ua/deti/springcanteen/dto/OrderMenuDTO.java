@@ -7,10 +7,6 @@ import lombok.Data;
 @Data
 public class OrderMenuDTO {
 
-    @NotNull
-    private Long menuId;
-    @Valid
-    @NotNull
-    private CustomizeDTO customization;
-
+  @NotNull private Long menuId;
+  @Valid @NotNull private CustomizeDTO customization;
 }

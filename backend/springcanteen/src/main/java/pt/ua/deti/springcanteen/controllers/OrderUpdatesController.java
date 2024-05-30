@@ -12,12 +12,14 @@ import pt.ua.deti.springcanteen.service.OrderService;
 @Controller
 @AllArgsConstructor
 public class OrderUpdatesController {
-    private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesController.class);
-    private OrderService orderService;
-    
-    @MessageMapping("/order_updates")
-    public void receiveOrderUpdates(OrderUpdateRequestDTO orderUpdateRequest) {
-        logger.info("STOMP MESSAGE RECEIVED AT /order_updates: Update order with body - {}", orderUpdateRequest);
-        orderService.changeToNextOrderStatus(orderUpdateRequest.getOrderId());
-    }
+  private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesController.class);
+  private OrderService orderService;
+
+  @MessageMapping("/order_updates")
+  public void receiveOrderUpdates(OrderUpdateRequestDTO orderUpdateRequest) {
+    logger.info(
+        "STOMP MESSAGE RECEIVED AT /order_updates: Update order with body - {}",
+        orderUpdateRequest);
+    orderService.changeToNextOrderStatus(orderUpdateRequest.getOrderId());
+  }
 }

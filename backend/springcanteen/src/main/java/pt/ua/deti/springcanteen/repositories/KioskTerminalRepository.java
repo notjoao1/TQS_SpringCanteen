@@ -5,6 +5,4 @@ import org.springframework.stereotype.Repository;
 import pt.ua.deti.springcanteen.entities.KioskTerminal;
 
 @Repository
-public interface KioskTerminalRepository extends JpaRepository<KioskTerminal, Long>{
-
-}
+public interface KioskTerminalRepository extends JpaRepository<KioskTerminal, Long> {}

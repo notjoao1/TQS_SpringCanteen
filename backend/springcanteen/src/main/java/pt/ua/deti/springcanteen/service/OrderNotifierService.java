@@ -4,7 +4,7 @@ import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 
 public interface OrderNotifierService {
-    void sendNewOrder(Order order);
+  void sendNewOrder(Order order);
 
-    void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus);
+  void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus);
 }

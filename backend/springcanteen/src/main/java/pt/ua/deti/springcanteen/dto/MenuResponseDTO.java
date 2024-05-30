@@ -8,10 +8,10 @@ import java.util.Set;
 
 @Data
 public class MenuResponseDTO {
-    private Long id;
-    private String name;
-    private float price;
-    private String imageLink;
-    private Set<Drink> drinkOptions;
-    private Set<MainDish> mainDishOptions;
+  private Long id;
+  private String name;
+  private float price;
+  private String imageLink;
+  private Set<Drink> drinkOptions;
+  private Set<MainDish> mainDishOptions;
 }

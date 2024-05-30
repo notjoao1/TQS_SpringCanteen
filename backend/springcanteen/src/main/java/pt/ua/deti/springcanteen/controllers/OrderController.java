@@ -15,15 +15,20 @@ import pt.ua.deti.springcanteen.service.OrderService;
 @RequestMapping("/api/orders")
 @AllArgsConstructor
 public class OrderController {
-    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
-    private final OrderService orderService;
+  private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+  private final OrderService orderService;
 
-    @PostMapping("")
-    public ResponseEntity<OrderClientResponseDTO> createOrder(@Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
-        logger.info("POST /api/orders - create order");
+  @PostMapping("")
+  public ResponseEntity<OrderClientResponseDTO> createOrder(
+      @Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
+    logger.info("POST /api/orders - create order");
 
-        return orderService.createOrder(customizeOrderDTO)
-                .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(OrderClientResponseDTO.fromOrderEntity(order)))
-                .orElse(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build());
-    }
+    return orderService
+        .createOrder(customizeOrderDTO)
+        .map(
+            order ->
+                ResponseEntity.status(HttpStatus.CREATED)
+                    .body(OrderClientResponseDTO.fromOrderEntity(order)))
+        .orElse(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build());
+  }
 }

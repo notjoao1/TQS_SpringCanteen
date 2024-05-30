@@ -16,14 +16,11 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Item {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @NotNull
-    private String name;
+  @NotNull private String name;
 
-    @NotNull
-    private float price;
-
+  @NotNull private float price;
 }

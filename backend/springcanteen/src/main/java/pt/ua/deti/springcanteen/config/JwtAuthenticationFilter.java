@@ -22,37 +22,41 @@ import pt.ua.deti.springcanteen.service.JwtService;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtService jwtService;
-    private final EmployeeService employeeService;
+  private final JwtService jwtService;
+  private final EmployeeService employeeService;
 
-    @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-        if (authHeader == null || authHeader.isEmpty() || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        jwt = authHeader.substring(7);
-        userEmail = jwtService.extractSubject(jwt);
-        // if not authenticated yet
-        if (userEmail != null && !userEmail.isEmpty()
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails) && !jwtService.isRefreshTokenValid(userDetails, jwt)) {
-                SecurityContext context = SecurityContextHolder.createEmptyContext();
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                context.setAuthentication(authToken);
-                SecurityContextHolder.setContext(context);
-            }
-        }
-        filterChain.doFilter(request, response);
+  @Override
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
+    final String authHeader = request.getHeader("Authorization");
+    final String jwt;
+    final String userEmail;
+    if (authHeader == null || authHeader.isEmpty() || !authHeader.startsWith("Bearer ")) {
+      filterChain.doFilter(request, response);
+      return;
     }
 
+    jwt = authHeader.substring(7);
+    userEmail = jwtService.extractSubject(jwt);
+    // if not authenticated yet
+    if (userEmail != null
+        && !userEmail.isEmpty()
+        && SecurityContextHolder.getContext().getAuthentication() == null) {
+      UserDetails userDetails = employeeService.userDetailsService().loadUserByUsername(userEmail);
+      if (jwtService.isTokenValid(jwt, userDetails)
+          && !jwtService.isRefreshTokenValid(userDetails, jwt)) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UsernamePasswordAuthenticationToken authToken =
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        context.setAuthentication(authToken);
+        SecurityContextHolder.setContext(context);
+      }
+    }
+    filterChain.doFilter(request, response);
+  }
 }

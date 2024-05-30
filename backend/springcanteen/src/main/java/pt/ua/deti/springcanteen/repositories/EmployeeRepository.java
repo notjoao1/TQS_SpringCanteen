@@ -6,5 +6,5 @@ import pt.ua.deti.springcanteen.entities.Employee;
 import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    Optional<Employee> findByEmail(String email);
+  Optional<Employee> findByEmail(String email);
 }

@@ -12,10 +12,10 @@ import pt.ua.deti.springcanteen.entities.OrderStatus;
 @Getter
 @Setter
 public class OrderEntry {
-    Long id;
-    OrderStatus orderStatus;
+  Long id;
+  OrderStatus orderStatus;
 
-    public static OrderEntry fromOrderEntity(Order order) {
-        return new OrderEntry(order.getId(), order.getOrderStatus());
-    }
+  public static OrderEntry fromOrderEntity(Order order) {
+    return new OrderEntry(order.getId(), order.getOrderStatus());
+  }
 }

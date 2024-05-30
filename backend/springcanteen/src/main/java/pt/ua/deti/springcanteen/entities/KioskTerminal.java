@@ -14,11 +14,10 @@ import java.util.Set;
 @NoArgsConstructor
 public class KioskTerminal {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @OneToMany(mappedBy = "kioskTerminal")
-    private Set<Order> orders = Set.of();
-
+  @OneToMany(mappedBy = "kioskTerminal")
+  private Set<Order> orders = Set.of();
 }

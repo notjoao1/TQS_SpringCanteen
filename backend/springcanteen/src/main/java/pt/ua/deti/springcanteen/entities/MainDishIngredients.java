@@ -17,19 +17,16 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MainDishIngredients {
 
-    @Id
-    private Long id;
+  @Id private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    @JsonIgnore
-    private MainDish mainDish;
+  @ManyToOne
+  @JoinColumn(name = "item_id")
+  @JsonIgnore
+  private MainDish mainDish;
 
-    @ManyToOne
-    @JoinColumn(name = "ingredient_id")
-    private Ingredient ingredient;
+  @ManyToOne
+  @JoinColumn(name = "ingredient_id")
+  private Ingredient ingredient;
 
-    @NotNull
-    private int quantity;
-
+  @NotNull private int quantity;
 }

@@ -12,10 +12,17 @@ import java.util.concurrent.TimeoutException;
 
 public class WebsocketUtils {
 
-    public static StompSession connectAsyncWithHeaders(String websocketURL, WebSocketStompClient webSocketStompClient, StompHeaders userHandshakeHeaders) throws ExecutionException, InterruptedException, TimeoutException {
-        return webSocketStompClient.connectAsync(
-                websocketURL, new WebSocketHttpHeaders(), userHandshakeHeaders, new StompSessionHandlerAdapter() {}
-        ).get(5, TimeUnit.SECONDS);
-    }
-
+  public static StompSession connectAsyncWithHeaders(
+      String websocketURL,
+      WebSocketStompClient webSocketStompClient,
+      StompHeaders userHandshakeHeaders)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    return webSocketStompClient
+        .connectAsync(
+            websocketURL,
+            new WebSocketHttpHeaders(),
+            userHandshakeHeaders,
+            new StompSessionHandlerAdapter() {})
+        .get(5, TimeUnit.SECONDS);
+  }
 }

@@ -6,6 +6,7 @@ import pt.ua.deti.springcanteen.entities.Order;
 import java.util.Optional;
 
 public interface OrderService {
-    Optional<Order> createOrder(CustomizeOrderDTO customizeOrderDTO);
-    Optional<Order> changeToNextOrderStatus(Long orderId);
+  Optional<Order> createOrder(CustomizeOrderDTO customizeOrderDTO);
+
+  Optional<Order> changeToNextOrderStatus(Long orderId);
 }

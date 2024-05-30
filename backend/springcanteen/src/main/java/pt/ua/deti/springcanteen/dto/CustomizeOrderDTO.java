@@ -10,15 +10,13 @@ import java.util.Set;
 @Data
 public class CustomizeOrderDTO {
 
-    @NotNull
-    private Long kioskId;
-    @NotNull
-    private Boolean isPaid;
-    @NotNull
-    private Boolean isPriority;
-    @NotNull
-    @Pattern(regexp = "^\\d{9}$")
-    private String nif;
-    @Valid
-    private Set<OrderMenuDTO> orderMenus;
+  @NotNull private Long kioskId;
+  @NotNull private Boolean isPaid;
+  @NotNull private Boolean isPriority;
+
+  @NotNull
+  @Pattern(regexp = "^\\d{9}$")
+  private String nif;
+
+  @Valid private Set<OrderMenuDTO> orderMenus;
 }

@@ -8,12 +8,8 @@ import pt.ua.deti.springcanteen.entities.EmployeeRole;
 @Data
 @AllArgsConstructor
 public class SignUpRequestDTO {
-    @NotNull
-    private String username;
-    @NotNull
-    private String email;
-    @NotNull
-    private String password;
-    @NotNull
-    private EmployeeRole role;
+  @NotNull private String username;
+  @NotNull private String email;
+  @NotNull private String password;
+  @NotNull private EmployeeRole role;
 }

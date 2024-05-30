@@ -32,113 +32,122 @@ import pt.ua.deti.springcanteen.service.impl.IAuthenticationService;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
-    @Mock
-    PasswordEncoder passwordEncoder;
+  @Mock PasswordEncoder passwordEncoder;
 
-    @Mock
-    EmployeeRepository employeeRepository;
+  @Mock EmployeeRepository employeeRepository;
 
-    @Mock
-    UserDetails userDetails;
+  @Mock UserDetails userDetails;
 
-    @Mock
-    JwtService jwtService;
+  @Mock JwtService jwtService;
 
-    @Mock
-    EmployeeService employeeService;
+  @Mock EmployeeService employeeService;
 
-    @Mock
-    AuthenticationManager authenticationManager;
+  @Mock AuthenticationManager authenticationManager;
 
-    @InjectMocks
-    IAuthenticationService authenticationService;
+  @InjectMocks IAuthenticationService authenticationService;
 
-    SignUpRequestDTO signUpRequestDTO;
+  SignUpRequestDTO signUpRequestDTO;
 
-    SignInRequestDTO signInRequestDTO;
+  SignInRequestDTO signInRequestDTO;
 
-    JwtRefreshRequestDTO jwtRefreshRequestDTO;
+  JwtRefreshRequestDTO jwtRefreshRequestDTO;
 
+  @Test
+  void givenSignUpNonExistentCredentials_thenShouldCreateNewEmployee() {
+    signUpRequestDTO =
+        new SignUpRequestDTO("person1", "person1@gmail.com", "secure", EmployeeRole.DESK_PAYMENTS);
+    when(employeeRepository.findByEmail("person1@gmail.com"))
+        .thenReturn(Optional.empty()); // no users with this email
+    when(jwtService.generateToken(any())).thenReturn("verysecuretoken");
+    when(jwtService.generateRefreshToken(any())).thenReturn("verysecurerefreshtoken");
 
-    @Test
-    void givenSignUpNonExistentCredentials_thenShouldCreateNewEmployee() {
-        signUpRequestDTO = new SignUpRequestDTO("person1", "person1@gmail.com", "secure", EmployeeRole.DESK_PAYMENTS);
-        when(employeeRepository.findByEmail("person1@gmail.com")).thenReturn(Optional.empty()); // no users with this email
-        when(jwtService.generateToken(any())).thenReturn("verysecuretoken");
-        when(jwtService.generateRefreshToken(any())).thenReturn("verysecurerefreshtoken");
-        
-        Optional<JwtAuthenticationResponseDTO> optResponse = authenticationService.signup(signUpRequestDTO);
+    Optional<JwtAuthenticationResponseDTO> optResponse =
+        authenticationService.signup(signUpRequestDTO);
 
-        assertThat(optResponse.isPresent(), is(true));
-        JwtAuthenticationResponseDTO response = optResponse.get();
-        assertThat(response.getToken(), is("verysecuretoken"));
-        assertThat(response.getRefreshToken(), is("verysecurerefreshtoken"));
-        assertThat(response.getEmail(), is("person1@gmail.com"));
-        assertThat(response.getUserRole(), is(EmployeeRole.DESK_PAYMENTS.toString()));
-        verify(employeeRepository, times(1)).save(any());
-    }
+    assertThat(optResponse.isPresent(), is(true));
+    JwtAuthenticationResponseDTO response = optResponse.get();
+    assertThat(response.getToken(), is("verysecuretoken"));
+    assertThat(response.getRefreshToken(), is("verysecurerefreshtoken"));
+    assertThat(response.getEmail(), is("person1@gmail.com"));
+    assertThat(response.getUserRole(), is(EmployeeRole.DESK_PAYMENTS.toString()));
+    verify(employeeRepository, times(1)).save(any());
+  }
 
-    @Test
-    void givenSignUpExistentCredentials_thenShouldReturnEmpty() {
-        signUpRequestDTO = new SignUpRequestDTO("person1", "person1@gmail.com", "secure", EmployeeRole.COOK);
-        when(employeeRepository.findByEmail("person1@gmail.com")).thenReturn(Optional.of(new Employee("1", "person1@gmail.com", "1", EmployeeRole.COOK))); // no users with this email
-        
-        Optional<JwtAuthenticationResponseDTO> optResponse = authenticationService.signup(signUpRequestDTO);
+  @Test
+  void givenSignUpExistentCredentials_thenShouldReturnEmpty() {
+    signUpRequestDTO =
+        new SignUpRequestDTO("person1", "person1@gmail.com", "secure", EmployeeRole.COOK);
+    when(employeeRepository.findByEmail("person1@gmail.com"))
+        .thenReturn(
+            Optional.of(
+                new Employee(
+                    "1", "person1@gmail.com", "1", EmployeeRole.COOK))); // no users with this email
 
-        assertThat(optResponse.isEmpty(), is(true));
-        // nothing saved to db
-        verify(employeeRepository, times(0)).save(any());
-    }
+    Optional<JwtAuthenticationResponseDTO> optResponse =
+        authenticationService.signup(signUpRequestDTO);
 
-    @Test
-    void givenSignInExistentCredentials_thenShouldReturnValidResponse() {
-        signInRequestDTO = new SignInRequestDTO("person1@gmail.com", "password123");
-        when(employeeRepository.findByEmail("person1@gmail.com")).thenReturn(Optional.of(new Employee("1", "person1@gmail.com", "password123", EmployeeRole.COOK)));
-        when(jwtService.generateToken(any())).thenReturn("verysecuretoken");
-        when(jwtService.generateRefreshToken(any())).thenReturn("verysecurerefreshtoken");
+    assertThat(optResponse.isEmpty(), is(true));
+    // nothing saved to db
+    verify(employeeRepository, times(0)).save(any());
+  }
 
-        JwtAuthenticationResponseDTO response = authenticationService.signin(signInRequestDTO);
-        
-        assertThat(response.getEmail(), is("person1@gmail.com"));
-        assertThat(response.getToken(), is("verysecuretoken"));
-        assertThat(response.getRefreshToken(), is("verysecurerefreshtoken"));
-        assertThat(response.getUserRole(), is(EmployeeRole.COOK.toString()));
-    }
+  @Test
+  void givenSignInExistentCredentials_thenShouldReturnValidResponse() {
+    signInRequestDTO = new SignInRequestDTO("person1@gmail.com", "password123");
+    when(employeeRepository.findByEmail("person1@gmail.com"))
+        .thenReturn(
+            Optional.of(new Employee("1", "person1@gmail.com", "password123", EmployeeRole.COOK)));
+    when(jwtService.generateToken(any())).thenReturn("verysecuretoken");
+    when(jwtService.generateRefreshToken(any())).thenReturn("verysecurerefreshtoken");
 
+    JwtAuthenticationResponseDTO response = authenticationService.signin(signInRequestDTO);
 
-    @Test
-    void givenValidRefreshToken_thenShouldReturnNewToken() {
-        jwtRefreshRequestDTO = new JwtRefreshRequestDTO("somerefreshtoken");
-        when(employeeService.userDetailsService()).thenReturn(new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    assertThat(response.getEmail(), is("person1@gmail.com"));
+    assertThat(response.getToken(), is("verysecuretoken"));
+    assertThat(response.getRefreshToken(), is("verysecurerefreshtoken"));
+    assertThat(response.getUserRole(), is(EmployeeRole.COOK.toString()));
+  }
+
+  @Test
+  void givenValidRefreshToken_thenShouldReturnNewToken() {
+    jwtRefreshRequestDTO = new JwtRefreshRequestDTO("somerefreshtoken");
+    when(employeeService.userDetailsService())
+        .thenReturn(
+            new UserDetailsService() {
+              @Override
+              public UserDetails loadUserByUsername(String username)
+                  throws UsernameNotFoundException {
                 return userDetails;
-            }
-        });
-        when(jwtService.isRefreshTokenValid(userDetails, "somerefreshtoken")).thenReturn(true);
-        when(jwtService.generateToken(userDetails)).thenReturn("newtoken");
+              }
+            });
+    when(jwtService.isRefreshTokenValid(userDetails, "somerefreshtoken")).thenReturn(true);
+    when(jwtService.generateToken(userDetails)).thenReturn("newtoken");
 
-        Optional<JwtRefreshResponseDTO> optResponse = authenticationService.refreshToken(jwtRefreshRequestDTO);
+    Optional<JwtRefreshResponseDTO> optResponse =
+        authenticationService.refreshToken(jwtRefreshRequestDTO);
 
-        assertThat(optResponse.isPresent(), is(true));
-        JwtRefreshResponseDTO response = optResponse.get();
-        assertThat(response.getAccessToken(), is("newtoken"));
-    }
+    assertThat(optResponse.isPresent(), is(true));
+    JwtRefreshResponseDTO response = optResponse.get();
+    assertThat(response.getAccessToken(), is("newtoken"));
+  }
 
-    @Test
-    void givenInvalidRefreshToken_thenShouldReturnEmpty() {
-        jwtRefreshRequestDTO = new JwtRefreshRequestDTO("somerefreshtoken");
-        when(employeeService.userDetailsService()).thenReturn(new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  @Test
+  void givenInvalidRefreshToken_thenShouldReturnEmpty() {
+    jwtRefreshRequestDTO = new JwtRefreshRequestDTO("somerefreshtoken");
+    when(employeeService.userDetailsService())
+        .thenReturn(
+            new UserDetailsService() {
+              @Override
+              public UserDetails loadUserByUsername(String username)
+                  throws UsernameNotFoundException {
                 return userDetails;
-            }
-        });
-        when(jwtService.isRefreshTokenValid(userDetails, "somerefreshtoken")).thenReturn(false);
+              }
+            });
+    when(jwtService.isRefreshTokenValid(userDetails, "somerefreshtoken")).thenReturn(false);
 
-        Optional<JwtRefreshResponseDTO> optResponse = authenticationService.refreshToken(jwtRefreshRequestDTO);
+    Optional<JwtRefreshResponseDTO> optResponse =
+        authenticationService.refreshToken(jwtRefreshRequestDTO);
 
-        assertThat(optResponse.isEmpty(), is(true));
-    }
-
+    assertThat(optResponse.isEmpty(), is(true));
+  }
 }
