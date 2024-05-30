@@ -10,11 +10,12 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import mockOrders from "../tests/mock/mockOrders";
 import { Payments } from "@mui/icons-material";
 import { useState } from "react";
-import { IOrder } from "../types/OrderTypes";
+import { IOrder, OrderStatus } from "../types/OrderTypes";
 import RequestPaymentModal from "../components/employee_payments_page/RequestPaymentModal";
+import { IMenu } from "../types/MenuTypes";
+
 
 const EmployeePayments = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState<boolean>(false);
@@ -38,7 +39,7 @@ const EmployeePayments = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {mockOrders
+            {/* {mockOrders
               .filter((o) => !o.isPaid)
               .map((order) => (
                 <TableRow
@@ -63,7 +64,7 @@ const EmployeePayments = () => {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))} */}
           </TableBody>
         </Table>
       </TableContainer>
