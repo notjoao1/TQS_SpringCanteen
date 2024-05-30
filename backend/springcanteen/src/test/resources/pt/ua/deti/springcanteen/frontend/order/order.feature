@@ -3,7 +3,7 @@ Feature: Make an order on SpringCanteen
     
     @order_basic
     Scenario: User wants to make an order
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -12,7 +12,7 @@ Feature: Make an order on SpringCanteen
 
     @order_with_2_menus
     Scenario: User wants to make an order adding 2 menus
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -26,7 +26,7 @@ Feature: Make an order on SpringCanteen
 
     @order_cancel
     Scenario: User wants to make an order but cancels it
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "1"
         And I select the Main Dish number "1"
         And I select the Drink number "2"
@@ -36,7 +36,7 @@ Feature: Make an order on SpringCanteen
 
     @order_remove_a_menu
     Scenario: User wants to make an order, and then remove a menu
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -47,7 +47,7 @@ Feature: Make an order on SpringCanteen
 
     @order_full_flow
     Scenario: User wants to make an order with a menu, and see his order number
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "3"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -65,7 +65,7 @@ Feature: Make an order on SpringCanteen
 
     @order_modify_at_end
     Scenario: User was about to complete an order, but decided to remove a menu from the order
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
