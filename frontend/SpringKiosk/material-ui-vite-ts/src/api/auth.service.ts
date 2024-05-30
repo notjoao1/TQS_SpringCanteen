@@ -4,19 +4,22 @@ import { SignUpRequest } from "../pages/SignUp";
 import { SignInRequest } from "../pages/SignIn";
 
 export const signUp = async (signUpData: SignUpRequest): Promise<IEmployee> => {
-    const res = await axios.post<IEmployee>("http://localhost:8080/api/auth/signup", signUpData);
+    const VITE_HOST = import.meta.env.VITE_HOST as string;
+    const res = await axios.post<IEmployee>(`http://${VITE_HOST}/api/auth/signup`, signUpData);
 
     return res.data;
 }
 
 export const signIn = async (signInData: SignInRequest): Promise<IEmployee> => {
-    const res = await axios.post<IEmployee>("http://localhost:8080/api/auth/signin", signInData);
+    const VITE_HOST = import.meta.env.VITE_HOST as string;
+    const res = await axios.post<IEmployee>(`http://${VITE_HOST}/api/auth/signin`, signInData);
 
     return res.data;
 }
 
 export const refreshToken = async (refreshToken: string): Promise<JwtRefreshResponse> => {
-    const res = await axios.post<JwtRefreshResponse>("http://localhost:8080/api/auth/refreshToken",
+    const VITE_HOST = import.meta.env.VITE_HOST as string;
+    const res = await axios.post<JwtRefreshResponse>(`http://${VITE_HOST}/api/auth/refreshToken`,
         {
             "refreshToken": refreshToken,
         }
