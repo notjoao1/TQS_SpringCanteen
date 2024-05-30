@@ -1,8 +1,17 @@
 # TQS_SpringCanteen
 TQS Project UA 2023/2024 - Spring Canteen
 
-## Project Abstract 
+## Project Abstract
+**Spring Canteen** is a chain of restaurants designed to revolutionize the perception of fast food, by delivering high quality healthy meals in record speed. Customers in a hurry can quickly get a chicken salad with low carbs and not feel guilty after a great meal.
 
+Spring Canteen is an integrated IT solution that provides a restaurant with the ability to efficiently handle different kinds of tasks regarding the management of orders between the staff members and the clients. Spring Canteen will meet these requirements through the implementation of various platforms:
+- Spring-Kiosk - A customer portal in which the clients can submit their orders. This platform should provide the customer with menu options and handle the payment processing. It should also give the customer the ability to choose between pickups methods for the order, namely selecting between collecting the order at the counter. At the end of the menu selection process, it should be presented to the user the option to upgrade the order priority status, for an additional fee. 
+
+- Spring-Desk – A platform responsible for providing the staff members with services to handle administrative tasks including employee authentication and payments at the counter. Additionally, there should be presented to the employees’ different service queues, a normal and a priority queue where priority orders should take precedence regarding meal preparation. The staff members will also be able to manage the different waiting lines according to the order’s readiness and delivery confirmation.  
+
+- Spring-Boards - A digital signage solution that concisely communicates to the client that his/her order is being prepared and promptly inform him/her of when it is ready for pickup at the counter. The different orders will appear by the sequence of the order placement, within the different priority queues.
+
+This project aims to implement an MVP compliant with the prior usage scenarios, while applying software enterprise architecture patterns. The development of the solution will follow collaborative agile practices and a Software Quality Assurance (SQA) strategy. Software engineering practices like continuous testing, continuous integration and continuous delivery will be embraced with the aim of reducing manual intervention and saving precious time, promoting collaboration and trust among the software development team, and streamlining the development lifecycle to rapidly deliver high-quality software releases. 
 
 ## Project Team
 
