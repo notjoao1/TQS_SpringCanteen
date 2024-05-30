@@ -29,15 +29,16 @@ services:
       database:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/springcanteen
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: true
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_EXPIRATIONTIME_ACCESS: 1200000
-      JWT_EXPIRATIONTIME_REFRESH: 172800000
+      SPRING_APPLICATION_JSON: '{
+          "spring.datasource.url" : "jdbc:mysql://database:3306/VTdb?allowPublicKeyRetrieval=true&useSSL=false",
+          "spring.datasource.username" : "root",
+          "spring.datasource.password" : "${POSTGRES_PASSWORD}",
+          "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+          "spring.jpa.hibernate.ddl-auto" : "update",
+          "jwt.secret_key" : "${JWT_SECRET_KEY}",
+          "jwt.expirationtime.access" : "1200000",
+          "jwt.expirationtime.refresh" : "172800000"
+        }'
     healthcheck:
       test: wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
       interval: 2s
