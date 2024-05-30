@@ -1,0 +1,119 @@
+version: "3.8"
+services:
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: springcanteen
+    volumes:
+      - db_file:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d springcanteen"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+    networks:
+      - backend
+
+  backend:
+    build:
+      context: ./backend/springcanteen
+      dockerfile: Dockerfile.prod
+    restart: on-failure
+    volumes:
+      - ./backend/springcanteen:/app
+      - backend_data:/app/data
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_JSON: '{
+          "spring.datasource.url" : "jdbc:postgresql://database:5432/springcanteen",
+          "spring.datasource.username" : "root",
+          "spring.datasource.password" : "${POSTGRES_PASSWORD}",
+          "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+          "spring.jpa.hibernate.ddl-auto" : "update",
+          "jwt.secret_key" : "${JWT_SECRET_KEY}",
+          "jwt.expirationtime.access" : "1200000",
+          "jwt.expirationtime.refresh" : "172800000"
+        }'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
+      interval: 2s
+      timeout: 30s
+      retries: 200
+      start_period: 10s
+    networks:
+      - backend
+      - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=PathPrefix(`/api`)
+      - traefik.http.services.backend.loadbalancer.server.port=8080
+      - traefik.http.routers.backend.entrypoints=web
+
+  kiosk:
+    build:
+      context: ./frontend/SpringKiosk/material-ui-vite-ts
+      dockerfile: Dockerfile.prod
+    restart: on-failure
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kiosk.rule=PathPrefix(`/`)
+      - traefik.http.services.kiosk.loadbalancer.server.port=5173
+      - traefik.http.routers.kiosk.entrypoints=web
+    environment:
+      - VITE_HOST=deti-tqs-02.ua.pt
+
+  digital-signage:
+    build:
+      context: ./frontend/DigitalSignage
+      dockerfile: Dockerfile.prod
+    restart: on-failure
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.digital-signage.rule=PathPrefix(`/signage`)
+      - traefik.http.services.digital-signage.loadbalancer.server.port=80
+      - traefik.http.routers.digital-signage.entrypoints=web
+    environment:
+      - VITE_HOST=deti-tqs-02.ua.pt
+
+  traefik:
+    image: traefik:v2.11
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+      kiosk:
+        condition: service_started
+      digital-signage:
+        condition: service_started
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./proxy/traefik.yml:/etc/traefik/traefik.yml"
+    restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  db_file:
+  backend_data:
+
+networks:
+  backend:
+  frontend:

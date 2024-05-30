@@ -31,22 +31,21 @@ const OrderMenuCard = ({
       variant="outlined"
       sx={{ maxWidth: 345 }}
     >
-      <CardHeader title={menu.name} subheader={menu.price + "€"} />
+      <CardHeader title={menu.name}/>
       <CardMedia
         component="img"
         height="194"
-        image={menu.image}
+        image={menu.imageLink}
         alt={menu.name}
       />
       <CardContent>
         <Typography variant="body2" color="text.secondary">
-          This impressive paella is a perfect party dish and a fun meal to cook
-          together with your guests. Add 1 cup of frozen peas along with the
-          mussels, if you like.
+          It's delicious and healthy! Cooked to perfection by the greatest cooks in SpringCanteen kitchen, with decades of 
+          experience making amazing food.
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <IconButton aria-label="add to order" onClick={() => onClickAddToOrder(menu)}>
+        <IconButton aria-label="add to order" id={`add-menu-${index + 1}`} onClick={() => onClickAddToOrder(menu)}>
           <AddIcon />
         </IconButton>
         <IconButton

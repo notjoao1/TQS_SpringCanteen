@@ -1,0 +1,31 @@
+on: 
+  push:
+    branches:
+      - main
+    
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy: 
+    runs-on: self-hosted
+    name: SpringCanteen Deploy
+    steps:
+      - name: Clean Workspace
+        uses: AutoModality/action-clean@v1.1.0
+      
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Down containers
+        run: docker compose down
+      
+      - name: Remove build caches
+        run: docker builder prune -a -f
+
+      - name: Build and up 
+        run: docker compose -f docker-compose.prod.yml up --build -d
+        env: 
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
