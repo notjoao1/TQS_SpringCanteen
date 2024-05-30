@@ -66,7 +66,7 @@ services:
       - traefik.http.services.kiosk.loadbalancer.server.port=5173
       - traefik.http.routers.kiosk.entrypoints=web
     environment:
-      - VITE_HOST=http://deti-tqs-02.ua.pt
+      - VITE_HOST=deti-tqs-02.ua.pt
 
   digital-signage:
     build:
@@ -81,10 +81,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.digital-signage.rule=PathPrefix(`/signage`)
-      - traefik.http.services.digital-signage.loadbalancer.server.port=5173
+      - traefik.http.services.digital-signage.loadbalancer.server.port=80
       - traefik.http.routers.digital-signage.entrypoints=web
     environment:
-      - VITE_HOST=http://deti-tqs-02.ua.pt
+      - VITE_HOST=deti-tqs-02.ua.pt
 
   traefik:
     image: traefik:v2.11
