@@ -1,7 +1,7 @@
 @customize
 Feature: Customize a menu on SpringCanteen
     Scenario: User wants to make an order and customize it
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "1"
         And I select the Main Dish number "1"
         And I select the Drink number "2"

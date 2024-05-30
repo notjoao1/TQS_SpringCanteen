@@ -3,7 +3,7 @@ Feature: Pay for my order on SpringCanteen
 
     @payment_fail_nif
     Scenario: User wants to make an order, but doesn't enter his NIF
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -15,7 +15,7 @@ Feature: Pay for my order on SpringCanteen
         
     @payment_fail_no_payment_details
     Scenario: User wants to make an order, but doesn't enter any payment details
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -28,7 +28,7 @@ Feature: Pay for my order on SpringCanteen
 
     @payment_fail_date
     Scenario: User wants to make an order, but doesn't enter a valid expiration date
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -44,7 +44,7 @@ Feature: Pay for my order on SpringCanteen
 
     @payment_fail_card
     Scenario: User wants to make an order, but doesn't enter a valid card number
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -60,7 +60,7 @@ Feature: Pay for my order on SpringCanteen
 
     @payment_success
     Scenario: User wants to make an order, and enters all the payment details correctly
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
@@ -76,7 +76,7 @@ Feature: Pay for my order on SpringCanteen
 
     @payment_success_desk   
     Scenario: User wants to make an order, and pay it in the desk
-        When I navigate to "http://localhost:5173/order"
+        When I navigate to "http://localhost/order"
         And I select the menu number "2"
         And I select the Main Dish number "1"
         And I select the Drink number "1"
