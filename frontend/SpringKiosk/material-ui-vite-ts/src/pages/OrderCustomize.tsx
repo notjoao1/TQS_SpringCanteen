@@ -110,7 +110,7 @@ const OrderCustomize = () => {
                   id="priority-queue-checkbox"
                   label="Priority Queue (+0.30€)"
                   value={isPriority}
-                  onChange={(e) =>  setIsPriority(e.target.checked as boolean)}
+                  onChange={(e) =>  setIsPriority((e.target as unknown as React.InputHTMLAttributes<HTMLInputElement> ).checked as boolean)}
                 />
               </Tooltip>
             </FormGroup>
