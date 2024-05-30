@@ -1,10 +1,12 @@
 import { Box, Button, Paper, Typography, createTheme } from "@mui/material";
-import { IOrder, OrderStatus } from "../../types/OrderTypes";
+import { CookOrder, IOrder, OrderStatus } from "../../types/OrderTypes";
 import { ThemeProvider } from "@emotion/react";
 import { Check, LocalMall, OutdoorGrill } from "@mui/icons-material";
 
 interface OrderCardProps {
-  order: IOrder;
+  order: CookOrder;
+  isPriority: boolean;
+  orderStatus: OrderStatus;
 }
 
 const customTheme = createTheme({
@@ -20,23 +22,28 @@ const customTheme = createTheme({
   },
 });
 
-const OrderCard = ({ order }: OrderCardProps) => {
+const OrderCard = ({ order, isPriority, orderStatus }: OrderCardProps) => {
   return (
     <ThemeProvider theme={customTheme}>
-      <Paper square={true} elevation={2} sx={{ bgcolor: "#ffd24b", p: 2 }}>
-        <Box display={"flex"} flexDirection={"column"} sx={{ height: "80%" }}>
+      <Paper square={true} elevation={2} sx={{ bgcolor: "#ffd24b", pb: 2 }}>
+        {isPriority && (
+          <Box sx={{height: "40%", background: "linear-gradient(to bottom, #fba70a, #542922)"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+          <Typography color={"white"} variant="h5">Priority Order</Typography>
+        </Box>
+        )}
+        <Box display={"flex"} flexDirection={"column"} sx={{ height: "60%" }} px={2} pt={1}>
           <Typography>Order #{order.id}</Typography>
           <Typography>
-            Menus: {order.menus.map((menu) => menu.name).join(", ")}
+            Menus: {order.orderMenus.map((menu) => menu.menu.name).join(", ")}
           </Typography>
           <Typography>
             Status:{" "}
-            <span style={{ fontWeight: "bold" }}>{order.order_status}</span>
+            <span style={{ fontWeight: "bold" }}>{orderStatus}</span>
           </Typography>
         </Box>
-        <Box display={"flex"} justifyContent={"flex-end"} pt={1}>
-          <Button variant="contained" endIcon={order.order_status === OrderStatus.IDLE ? <OutdoorGrill/> : (order.order_status === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}>
-            {order.order_status === OrderStatus.IDLE ? "Start cooking" : (order.order_status === OrderStatus.PREPARING ? "Ready to pick up" : "Mark as done")}
+        <Box display={"flex"} justifyContent={"flex-end"} pt={1} px={2}>
+          <Button variant="contained" endIcon={orderStatus === OrderStatus.IDLE ? <OutdoorGrill/> : (orderStatus === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}>
+            {orderStatus === OrderStatus.IDLE ? "Start cooking" : (orderStatus === OrderStatus.PREPARING ? "Ready to pick up" : "Mark as done")}
           </Button>{" "}
         </Box>
       </Paper>

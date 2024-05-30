@@ -19,6 +19,7 @@ import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
+import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
@@ -31,9 +32,10 @@ import java.util.Set;
 public class IOrderService implements OrderService {
     private static final Logger logger = LoggerFactory.getLogger(IOrderService.class);
     private PriceService priceService;
+    private MenuService menuService;
+    private OrderManagementService orderManagementService;
     private OrderRepository orderRepository;
     private OrderMenuRepository orderMenuRepository;
-    private MenuService menuService;
 
     @Override
     @Transactional
@@ -52,6 +54,14 @@ public class IOrderService implements OrderService {
         }
         order.setPrice(totalOrderPrice);
         orderRepository.save(order);
+        // add order to queue that is paid and therefore, ready to be cooked (idle status)
+        if (order.getOrderStatus() == OrderStatus.IDLE) {
+            logger.info("Created order is in IDLE status, ready to cook -> adding it to the queue...");
+            if (orderManagementService.addNewIdleOrder(order)) {
+                logger.info("Successfully added IDLE order to queue. Sending it through Websockets...");
+            } else
+                logger.error("Could not add IDLE order to queue...");
+        }
         orderMenuRepository.saveAll(orderMenus);
         return Optional.of(order);
     }
@@ -59,13 +69,13 @@ public class IOrderService implements OrderService {
     private Order orderEntityFromDTO(CustomizeOrderDTO customizeOrderDTO) {
         KioskTerminal kioskTerminal = new KioskTerminal();
         kioskTerminal.setId(customizeOrderDTO.getKioskId());
-        
+
         Order order;
-        if (customizeOrderDTO.getIsPaid())
+        if (Boolean.TRUE.equals(customizeOrderDTO.getIsPaid()))
             order = new Order(OrderStatus.IDLE, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
-        else 
+        else
             order = new Order(OrderStatus.NOT_PAID, customizeOrderDTO.getIsPaid(), customizeOrderDTO.getIsPriority(), customizeOrderDTO.getNif(), kioskTerminal);
-        
+
         Set<OrderMenu> orderMenus = new HashSet<>();
         // check if all menus provided exist and add them to orderMenus set
         for (OrderMenuDTO orderMenuDTO : customizeOrderDTO.getOrderMenus()) {
@@ -76,6 +86,20 @@ public class IOrderService implements OrderService {
         }
         order.setOrderMenus(orderMenus);
         return order;
+    }
 
+    public Optional<Order> changeToNextOrderStatus(Long orderId) {
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty())
+            return Optional.empty();
+
+        Order order = orderOpt.get();
+        logger.info("Changing from order status {}", order.getOrderStatus());
+        if(orderManagementService.manageOrder(order)){
+            logger.info("Order with id {} moved to the next queue and OrderStatus changed to {}", order.getId(), order.getOrderStatus());
+            return Optional.of(order);
+        }
+        logger.error("Order with id {} could not be transferred to another queue. OrderStatus unchanged: {}", order.getId(), order.getOrderStatus());
+        return Optional.empty();
     }
 }

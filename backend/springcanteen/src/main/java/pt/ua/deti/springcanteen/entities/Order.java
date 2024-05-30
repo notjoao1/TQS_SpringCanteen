@@ -2,16 +2,16 @@ package pt.ua.deti.springcanteen.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.util.Set;
 
 @Entity
 @Setter
 @Getter
+@EqualsAndHashCode
 @Table(name = "orders")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -42,6 +42,7 @@ public class Order {
     private KioskTerminal kioskTerminal;
 
     @OneToMany(mappedBy = "order")
+    @Fetch(FetchMode.JOIN)
     private Set<OrderMenu> orderMenus;
 
     public Order(OrderStatus orderStatus, boolean isPaid, boolean isPriority, String nif, KioskTerminal kioskTerminal) {
