@@ -35,6 +35,9 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: true
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      JWT_SECRET_KEY: 413F4428472B4B6250655368566D5970337336763979244226452948404D6351
+      JWT_EXPIRATIONTIME_ACCESS: 1200000
+      JWT_EXPIRATIONTIME_REFRESH: 172800000
     healthcheck:
       test: curl --fail --silent localhost:8080/actuator/health || exit 1
       interval: 2s
