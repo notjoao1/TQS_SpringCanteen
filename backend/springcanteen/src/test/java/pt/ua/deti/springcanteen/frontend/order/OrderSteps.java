@@ -52,14 +52,13 @@ public class OrderSteps {
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
     wait = new WebDriverWait(driver, Duration.ofSeconds(3));
-
-    captureConsoleLogs();
-
   }
 
   // changed the id in frontend, continue...
   @And("I select the menu number {string}")
   public void i_select_menu(String number) {
+    captureConsoleLogs();
+
     driver.findElement(By.id("add-menu-" + number)).click();
   }
 
