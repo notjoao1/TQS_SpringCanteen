@@ -125,15 +125,15 @@ const EmployeeCook = () => {
               Ready to cook
             </Typography>
             {priorityIdleOrders
-              .map((order: CookOrder) => (
-                <Box pt={2} key={order.id}>
+              .map((order: CookOrder, index: number) => (
+                <Box pt={2} key={order.id} id={`priority-idle-order-${index + 1}`}>
                   <OrderCard order={order} isPriority={true} orderStatus={OrderStatus.IDLE} updateStatusMethod={sendOrderStatusUpdate}/>
                 </Box>
               ))
             }
             {regularIdleOrders
-              .map((order: CookOrder) => (
-                <Box pt={2} key={order.id}>
+              .map((order: CookOrder, index: number) => (
+                <Box pt={2} key={order.id} id={`regular-idle-order-${index + 1}`}>
                   <OrderCard order={order} isPriority={false} orderStatus={OrderStatus.IDLE} updateStatusMethod={sendOrderStatusUpdate}/>
                 </Box>
               ))
@@ -149,15 +149,15 @@ const EmployeeCook = () => {
               Cooking
             </Typography>
             {priorityPreparingOrders
-              .map((order: CookOrder) => (
-                <Box pt={2} key={order.id}>
+              .map((order: CookOrder, index: number) => (
+                <Box pt={2} key={order.id} id={`priority-preparing-order-${index + 1}`}>
                   <OrderCard order={order} isPriority={true} orderStatus={OrderStatus.PREPARING} updateStatusMethod={sendOrderStatusUpdate}/>
                 </Box>
               ))
             }
             {regularPreparingOrders
-              .map((order: CookOrder) => (
-                <Box pt={2} key={order.id}>
+              .map((order: CookOrder, index: number) => (
+                <Box pt={2} key={order.id} id={`regular-preparing-order-${index + 1}`}>
                   <OrderCard order={order} isPriority={false} orderStatus={OrderStatus.PREPARING} updateStatusMethod={sendOrderStatusUpdate}/>
                 </Box>
               ))
