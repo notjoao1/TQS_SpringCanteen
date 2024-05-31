@@ -1,5 +1,6 @@
 package pt.ua.deti.springcanteen.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +30,8 @@ import pt.ua.deti.springcanteen.entities.Menu;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
+import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
 import pt.ua.deti.springcanteen.service.EmployeeService;
 import pt.ua.deti.springcanteen.service.JwtService;
 import pt.ua.deti.springcanteen.service.impl.IOrderService;
@@ -194,13 +197,14 @@ class OrderControllerTest {
             + "    ]"
             + "}";
 
-    RestAssuredMockMvc.given()
+    RestAssuredMockMvc
+      .given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
         .body(orderRequest)
-        .when()
+      .when()
         .post("api/orders")
-        .then()
+      .then()
         .statusCode(HttpStatus.SC_CREATED)
         .and()
         .body("orderMenus.size()", is(1))
@@ -292,13 +296,14 @@ class OrderControllerTest {
             + "}";
 
     // expect 2 menus, first one with price (10€ + 1€), second one w ith price (3€ + 2€)
-    RestAssuredMockMvc.given()
+    RestAssuredMockMvc
+      .given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
         .body(orderRequest)
-        .when()
+      .when()
         .post("api/orders")
-        .then()
+      .then()
         .statusCode(HttpStatus.SC_CREATED)
         .and()
         .body("orderMenus.size()", is(2))
@@ -309,4 +314,72 @@ class OrderControllerTest {
         .and()
         .body("orderMenus.menu.price", containsInAnyOrder(11.0f, 5.0f));
   }
+
+  @Test
+  void whenPayOrderWithStatusNotPaidAndThatExists_thenReturn204() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+        .thenReturn(Optional.of(new Order()));
+
+    RestAssuredMockMvc
+      .given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+      .when()
+        .put("api/orders/1")
+      .then()
+        .statusCode(HttpStatus.SC_NO_CONTENT);
+
+  }
+
+  @Test
+  void whenPayOrderThatDoesntExist_thenReturn404() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+      .thenReturn(Optional.empty());
+
+    RestAssuredMockMvc
+      .given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+      .when()
+        .put("api/orders/1")
+      .then()
+        .statusCode(HttpStatus.SC_NOT_FOUND);
+  }
+
+  @Test
+  void whenPayOrderWithInvalidStatus_thenThrowException_andReturn400AndCustomMessage(){
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+      .thenThrow(new InvalidStatusChangeException("Invalid status change"));
+
+    String statusLine = RestAssuredMockMvc
+      .given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+      .when()
+        .put("api/orders/1")
+      .then()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .extract().statusLine();
+
+    assertThat(statusLine).isEqualTo("400 Invalid status change");
+  }
+
+  @Test
+  void whenPayOrderWithStatusNotPaidAndThatExistsIfQueueIsFull_thenThrowException_andReturn400AndCustomMessage(){
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+      .thenThrow(new QueueTransferException("Queue was full"));
+
+    String statusLine = RestAssuredMockMvc
+      .given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+      .when()
+        .put("api/orders/1")
+      .then()
+        .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+        .extract().statusLine();
+
+    assertThat(statusLine).isEqualTo("500 Queue was full");
+  }
+
 }
