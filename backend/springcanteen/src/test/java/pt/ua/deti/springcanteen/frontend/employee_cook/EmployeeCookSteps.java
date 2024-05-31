@@ -37,7 +37,7 @@ public class EmployeeCookSteps {
   // POST request to /api/auth/signup to create a cook employee
   static void createCookEmployee(RestTemplate restTemplate) {
     String postData = "{ \"username\": \"hellocook123\", \"password\": \"cook123\", \"email\": \"testcook@gmail.com\", \"role\": \"COOK\"}";
-    String url = "http://localhost:8080/api/auth/signup";
+    String url = "http://localhost/api/auth/signup";
     logger.info("Calling {} to create user...", url);
     
     HttpHeaders headers = new HttpHeaders();
@@ -85,7 +85,7 @@ public class EmployeeCookSteps {
             + "    ]"
             + "}";
 
-    String url = "http://localhost:8080/api/orders";
+    String url = "http://localhost/api/orders";
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -99,14 +99,12 @@ public class EmployeeCookSteps {
 
   @BeforeAll
   public static void setup() {
-    //WebDriverManager.firefoxdriver().setup();
-    WebDriverManager.chromedriver().setup();
+    WebDriverManager.firefoxdriver().setup();
     FirefoxOptions options = new FirefoxOptions();
     options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
-    //driver = new FirefoxDriver(options);
-    driver = new ChromeDriver();
+    driver = new FirefoxDriver(options);
     js = (JavascriptExecutor) driver;
     // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
@@ -120,13 +118,13 @@ public class EmployeeCookSteps {
 
   @Given("I have a clean local storage")
   public void i_have_a_clean_local_storage() {
-    driver.get("http://localhost:5173/");
+    driver.get("http://localhost/");
     js.executeScript("window.localStorage.clear()");
   }
 
   @And("I navigate to the sign in page")
   public void i_navigate_to_the_sign_in_page() {
-    driver.get("http://localhost:5173/signin");
+    driver.get("http://localhost/signin");
   }
 
   @When("I submit username and password")
@@ -148,7 +146,7 @@ public class EmployeeCookSteps {
 
   @When("I navigate to the cook orders page")
   public void i_navigate_to_the_cook_orders_page() {
-    driver.get("http://localhost:5173/employee/orders");
+    driver.get("http://localhost/employee/orders");
   }
 
   @Then("I should see the single existing priority idle order")
