@@ -104,10 +104,12 @@ public class IOrderService implements OrderService {
   }
 
   public Optional<Order> changeNotPaidOrderToNextOrderStatus(Long orderId) {
+    logger.info("changeNotPaidOrderToNextOrderStatus: orderId={}", orderId);
     return changeToNextOrderStatus(orderId, List.of(OrderStatus.NOT_PAID));
   }
 
   public Optional<Order> changePaidOrderToNextOrderStatus(Long orderId) {
+    logger.info("changePaidOrderToNextOrderStatus: orderId={}", orderId);
     return changeToNextOrderStatus(orderId, List.of(OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY));
   }
 
@@ -117,7 +119,7 @@ public class IOrderService implements OrderService {
     if (orderOpt.isEmpty()) return Optional.empty();
 
     Order order = orderOpt.get();
-    if (availableOldOrderStatus.contains(order.getOrderStatus()))
+    if (!availableOldOrderStatus.contains(order.getOrderStatus()))
       throw new InvalidStatusChangeException(String.format(
               "Can only change status from Order with the following status: %s. Got %s",
               Arrays.toString(availableOldOrderStatus.toArray()), order.getOrderStatus()
