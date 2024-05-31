@@ -7,6 +7,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import pt.ua.deti.springcanteen.service.QueueNotifierService;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -127,17 +129,9 @@ class OrderUpdatesControllerIT {
             + "    \"role\": \"%s\"}";
     List<Employee> employees =
         List.of(
-            new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
-            new Employee(
-                "desk_payments",
-                "desk_payments@gmail.com",
-                "desk_payments_password",
-                EmployeeRole.DESK_PAYMENTS),
-            new Employee(
-                "desk_orders",
-                "desk_orders@gmail.com",
-                "desk_orders_password",
-                EmployeeRole.DESK_ORDERS));
+          new Employee("desk_payments","desk_payments@gmail.com","desk_payments_password",EmployeeRole.DESK_PAYMENTS),
+          new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
+          new Employee("desk_orders","desk_orders@gmail.com","desk_orders_password",EmployeeRole.DESK_ORDERS));
     employeeOrderAndUpdateRequestAndToken =
         employees.stream()
             .map(
@@ -169,7 +163,7 @@ class OrderUpdatesControllerIT {
                               testOrder.getKioskTerminal()));
                   OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
                   orderUpdateRequest.setOrderId(newOrder.getId());
-                  return Arguments.of(newOrder, orderUpdateRequest, token);
+                  return Arguments.of(newOrder, orderUpdateRequest, token, employee.getRole());
                 })
             .toList();
   }
@@ -202,9 +196,10 @@ class OrderUpdatesControllerIT {
               OrderUpdateRequestDTO orderUpdateRequest =
                   (OrderUpdateRequestDTO) argumentsObjects[1];
               String token = (String) argumentsObjects[2];
+              EmployeeRole employeeRole = (EmployeeRole) argumentsObjects[3];
               StompHeaders handshakeHeaders = new StompHeaders();
               handshakeHeaders.set("Authorization", "Bearer " + token);
-              return Arguments.of(order, orderUpdateRequest, handshakeHeaders);
+              return Arguments.of(order, orderUpdateRequest, handshakeHeaders, employeeRole);
             });
   }
 
@@ -233,7 +228,7 @@ class OrderUpdatesControllerIT {
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(1)
   void whenAuthenticatedConnect_thenMessagesReceived(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole)
       throws InterruptedException, ExecutionException, TimeoutException {
     // act
     stompSession =
@@ -262,14 +257,11 @@ class OrderUpdatesControllerIT {
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(2)
   void whenReceiveUpdateOrder_FromNOTPAID_toIDLE_thenInvalidStatusChangeException(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  ) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info(
-        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-        testOrder,
-        orderUpdateRequest,
-        userHandshakeHeaders);
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -281,31 +273,126 @@ class OrderUpdatesControllerIT {
       .atMost(2, TimeUnit.SECONDS)
       .untilAsserted(
         () -> {
-          verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-          verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
-          verify(orderUpdatesControllerSpy, times(1)).handleException(any());
-
+          verify(orderUpdatesControllerSpy, times(1)).handleException(any(InvalidStatusChangeException.class));
         });
 
     // assert
+    verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
+    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
     verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
     verify(orderManagementServiceSpy, times(0)).manageOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
   }
+  @ParameterizedTest
+  @EnumSource(value = OrderStatus.class, names = {"IDLE", "PREPARING", "READY", "PICKED_UP"})
+  @org.junit.jupiter.api.Order(4)
+  void whenPayOrderWithInvalidStatus_thenReturn400W_forDeskPayments( OrderStatus orderStatus ) {
+    // setup
+    Object[] argumentsObjects = provideAllTokenHeaders().findFirst().orElseThrow().get();
+
+    int statusCode = RestAssured
+      .given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", "Bearer " + argumentsObjects[2])
+      .when()
+        .put(String.format("api/orders/%d", testOrder.getId()))
+      .then()
+        .statusCode(employeeRole == EmployeeRole.DESK_PAYMENTS ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_FORBIDDEN)
+        .extract().statusCode();
+
+    verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    if (statusCode == HttpStatus.SC_FORBIDDEN) {
+      verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
+      verify(orderManagementServiceSpy, times(0)).manageOrder(any());
+      verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    } else {
+      verify(orderServiceSpy, times(1)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
+      verify(orderManagementServiceSpy, times(1)).manageOrder(any());
+      verify(orderNotifierServiceSpy, times(1)).sendNewOrder(
+        argThat((Order order) -> order.getId().equals(testOrder.getId()))
+      );
+    }
+  }
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(3)
+  @org.junit.jupiter.api.Order(4)
+  void whenPayNotPaidOrder_WithStatusNotPaid_thenReturn204_OnlyForDeskPayments_elseReturn403(
+    Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  ) {
+    // setup
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
+
+    int statusCode = RestAssured
+      .given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
+      .when()
+        .put(String.format("api/orders/%d", testOrder.getId()))
+      .then()
+        .statusCode(employeeRole == EmployeeRole.DESK_PAYMENTS ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_FORBIDDEN)
+        .extract().statusCode();
+
+    verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    if (statusCode == HttpStatus.SC_FORBIDDEN) {
+      verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
+      verify(orderManagementServiceSpy, times(0)).manageOrder(any());
+      verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+      // Setup test number X
+      for (Optional<Order> orderOpt: List.of(orderRepository.findById(testOrder.getId()+1), orderRepository.findById(testOrder.getId()+2))){
+        Order order = orderOpt.orElseThrow();
+        orderManagementServiceSpy.manageOrder(order);
+      }
+    } else {
+      verify(orderServiceSpy, times(1)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
+      verify(orderManagementServiceSpy, times(1)).manageOrder(any());
+      verify(orderNotifierServiceSpy, times(1)).sendNewOrder(
+        argThat((Order order) -> order.getId().equals(testOrder.getId()))
+      );
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideAllTokenHeaders")
+  @org.junit.jupiter.api.Order(4)
+  void whenPayOrderThatDoesntExist_thenReturn404_OnlyForDeskPayments_elseReturn403(
+    Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  ) {
+    // setup
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
+
+    RestAssured
+      .given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
+      .when()
+        .put("api/orders/398")
+      .then()
+        .statusCode(employeeRole == EmployeeRole.DESK_PAYMENTS ? HttpStatus.SC_NOT_FOUND : HttpStatus.SC_FORBIDDEN)
+        .extract().statusCode();
+
+    verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
+    verify(orderManagementServiceSpy, times(0)).manageOrder(any());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideAllTokenHeaders")
+  @org.junit.jupiter.api.Order(5)
   void whenReceiveUpdateOrder_FromIDLE_toPREPARING_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  )
       throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info(
-        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-        testOrder,
-        orderUpdateRequest,
-        userHandshakeHeaders);
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -332,12 +419,13 @@ class OrderUpdatesControllerIT {
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(4)
+  @org.junit.jupiter.api.Order(6)
   void whenReceiveUpdateOrder_FromPREPARING_to_READY_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  ) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -367,12 +455,13 @@ class OrderUpdatesControllerIT {
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(5)
+  @org.junit.jupiter.api.Order(7)
   void whenReceiveUpdateOrder_FromREADY_to_PICKED_UP_thenRemoveFromQueue(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
+  ) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}; employeeRole: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders, employeeRole);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 

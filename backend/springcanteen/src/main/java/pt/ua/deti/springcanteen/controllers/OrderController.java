@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
@@ -36,7 +37,9 @@ public class OrderController {
   }
 
   @PutMapping("/{id}")
+  @Secured("DESK_PAYMENTS")
   public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id){
+    // has to be desk payments
     logger.info("PUT /api/orders/{id} - pay not paid order");
     Optional<Order> orderOpt = orderService.changeNotPaidOrderToNextOrderStatus(id);
     if (orderOpt.isEmpty()){
