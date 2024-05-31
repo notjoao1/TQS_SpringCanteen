@@ -338,7 +338,8 @@ class OrderManagementServiceTest {
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
     verify(orderRepository, times(0)).save(any());
-    verify(orderNotifierService, times(0)).sendOrderStatusUpdates(1L, OrderStatus.PREPARING, priority);
+    verify(orderNotifierService, times(0))
+        .sendOrderStatusUpdates(1L, OrderStatus.PREPARING, priority);
   }
 
   @ParameterizedTest
@@ -369,7 +370,8 @@ class OrderManagementServiceTest {
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
     verify(orderRepository, times(1)).save(any());
-    verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP, priority);
+    verify(orderNotifierService, times(1))
+        .sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP, priority);
   }
 
   @ParameterizedTest

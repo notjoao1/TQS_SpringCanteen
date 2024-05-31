@@ -28,7 +28,8 @@ public class IOrderNotifierService implements OrderNotifierService {
 
   @Override
   public void sendOrderStatusUpdates(Long orderId, OrderStatus newOrderStatus, boolean isPriority) {
-    OrderUpdateResponseDTO updateResponse = new OrderUpdateResponseDTO(orderId, newOrderStatus, isPriority);
+    OrderUpdateResponseDTO updateResponse =
+        new OrderUpdateResponseDTO(orderId, newOrderStatus, isPriority);
     logger.info(
         "Sending order update to /topic/orders. New status - {}; Order id - {}",
         newOrderStatus,

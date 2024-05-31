@@ -318,7 +318,8 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
+                  .sendOrderStatusUpdates(
+                      testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
             });
 
     // assert
@@ -352,7 +353,8 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
+                  .sendOrderStatusUpdates(
+                      testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
             });
 
     // assert
@@ -386,7 +388,8 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
+                  .sendOrderStatusUpdates(
+                      testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
             });
 
     // assert
