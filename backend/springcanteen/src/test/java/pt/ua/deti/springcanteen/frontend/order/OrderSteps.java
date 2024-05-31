@@ -8,6 +8,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -18,6 +20,7 @@ import io.cucumber.java.en.When;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
+import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -33,7 +36,15 @@ public class OrderSteps {
     options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
-    driver = new FirefoxDriver(options);
+    // catch console logs
+    DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, options);
+        capabilities.setCapability("moz:firefoxOptions", options);
+        capabilities.setCapability("goog:loggingPrefs", new HashMap<String, Object>() {{
+            put(LogType.BROWSER, java.util.logging.Level.ALL);
+        }});
+
+    driver = new FirefoxDriver(options.merge(capabilities));
     // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
