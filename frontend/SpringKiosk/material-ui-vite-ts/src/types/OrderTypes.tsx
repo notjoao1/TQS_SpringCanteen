@@ -78,5 +78,5 @@ export interface WebsocketConnectMessage {
 export interface OrderUpdateMessage {
     orderId: number;
     newOrderStatus: OrderStatus;
-    isPriority: boolean;
+    priority: boolean;
 }
