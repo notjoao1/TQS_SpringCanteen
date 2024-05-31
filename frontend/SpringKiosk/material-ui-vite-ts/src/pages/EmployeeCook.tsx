@@ -64,7 +64,6 @@ const EmployeeCook = () => {
         return updatedQueue;
       })
 
-      //console.log("cookOrderToMove ->", cookOrderToMove)
       // add this order to the new queue
       setNewQueue?.((prevState) => {
         return [

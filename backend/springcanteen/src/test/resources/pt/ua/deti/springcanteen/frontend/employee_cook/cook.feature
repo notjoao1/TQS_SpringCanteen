@@ -2,7 +2,8 @@
 Feature: Operations that a "Cook" employee can perform
     
     Background: Cook employee is Logged In
-        Given I navigate to the sign in page
+        Given I have a clean local storage
+        And I navigate to the sign in page
         When I submit username and password
         And I click the sign in button
         Then I should be logged in 
