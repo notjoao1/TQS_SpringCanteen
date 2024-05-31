@@ -39,7 +39,7 @@ jobs:
           sudo apt install firefox -y --allow-downgrades
 
       - name: Up containers
-        run: docker compose up -d --build
+        run: docker compose -f docker-compose.yml up --build -d
       
       - name: Change ownership of project files
         run: sudo chown -R $USER:$USER backend/springcanteen/target
