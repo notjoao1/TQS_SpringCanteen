@@ -244,7 +244,7 @@ class OrderUpdatesControllerIT {
               verify(queueNotifierService, times(1)).sendExistingOrderQueues(any());
             });
 
-    orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
+    orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING, false);
 
     OrderUpdateResponseDTO receivedOrderUpdateResponseDTO = futureMessage.get(10, TimeUnit.SECONDS);
     logger.info("{}", receivedOrderUpdateResponseDTO);
@@ -318,7 +318,7 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PREPARING);
+                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
             });
 
     // assert
@@ -352,7 +352,7 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.READY);
+                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
             });
 
     // assert
@@ -386,11 +386,11 @@ class OrderUpdatesControllerIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
-                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP);
+                  .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
             });
 
     // assert
     verify(orderNotifierServiceSpy, times(1))
-        .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP);
+        .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
   }
 }

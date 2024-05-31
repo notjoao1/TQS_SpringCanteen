@@ -88,7 +88,7 @@ public class IOrderManagementService implements OrderManagementService {
       if (result) {
         oldOrderQueue.remove(oldOrderEntry);
         orderRepository.save(order);
-        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PREPARING);
+        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PREPARING, order.isPriority());
       }
     } else {
       logger.info("Order not found in queue {}", order);
@@ -115,7 +115,7 @@ public class IOrderManagementService implements OrderManagementService {
       if (result) {
         oldOrderQueue.remove(OrderEntry.fromOrderEntity(order));
         orderRepository.save(order);
-        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.READY);
+        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.READY, order.isPriority());
       }
     } else {
       logger.info("Order not found in queue {}", order);
@@ -130,7 +130,7 @@ public class IOrderManagementService implements OrderManagementService {
     if (result) {
       order.setOrderStatus(OrderStatus.PICKED_UP);
       orderRepository.save(order);
-      orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PICKED_UP);
+      orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PICKED_UP, order.isPriority());
     }
     return result;
   }
