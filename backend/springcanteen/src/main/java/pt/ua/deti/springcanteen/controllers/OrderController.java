@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
+import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.service.OrderService;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -30,5 +33,15 @@ public class OrderController {
                 ResponseEntity.status(HttpStatus.CREATED)
                     .body(OrderClientResponseDTO.fromOrderEntity(order)))
         .orElse(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build());
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id){
+    logger.info("PUT /api/orders/{id} - pay not paid order");
+    Optional<Order> orderOpt = orderService.changeNotPaidOrderToNextOrderStatus(id);
+    if (orderOpt.isEmpty()){
+      return ResponseEntity.notFound().build();
+    }
+    return ResponseEntity.noContent().build();
   }
 }

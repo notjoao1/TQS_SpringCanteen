@@ -31,9 +31,9 @@ public class IOrderNotifierService implements OrderNotifierService {
     OrderUpdateResponseDTO updateResponse =
         new OrderUpdateResponseDTO(orderId, newOrderStatus, isPriority);
     logger.info(
-        "Sending order update to /topic/orders. New status - {}; Order id - {}",
-        newOrderStatus,
-        orderId);
+        "Sending order update to /topic/orders. New status - {}; Order id - {}; Priority - {}",
+        newOrderStatus, orderId, isPriority
+    );
     websocketClient.convertAndSend(ORDER_TOPIC, updateResponse);
   }
 }

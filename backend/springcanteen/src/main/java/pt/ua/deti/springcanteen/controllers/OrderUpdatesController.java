@@ -20,6 +20,6 @@ public class OrderUpdatesController {
     logger.info(
         "STOMP MESSAGE RECEIVED AT /order_updates: Update order with body - {}",
         orderUpdateRequest);
-    orderService.changeToNextOrderStatus(orderUpdateRequest.getOrderId());
+    orderService.changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
   }
 }
