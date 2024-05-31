@@ -5,30 +5,19 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.logging.LogEntries;
-import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Level;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -39,26 +28,23 @@ public class OrderSteps {
 
   @When("I navigate to {string}")
   public void i_navigate_to(String url) {
-    WebDriverManager.chromedriver().setup();
-    ChromeOptions options = new ChromeOptions();
+    WebDriverManager.firefoxdriver().setup();
+    FirefoxOptions options = new FirefoxOptions();
     options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
-    options.addArguments("--disable-gpu");
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.BROWSER, Level.ALL);
-    options.setCapability("goog:loggingPrefs", logPrefs);
-    driver = new ChromeDriver(options);
+
+    driver = new FirefoxDriver(options);
+    // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
+    // setup wait
     wait = new WebDriverWait(driver, Duration.ofSeconds(3));
   }
 
   // changed the id in frontend, continue...
   @And("I select the menu number {string}")
   public void i_select_menu(String number) {
-    captureConsoleLogs();
-
     driver.findElement(By.id("add-menu-" + number)).click();
   }
 
@@ -106,7 +92,6 @@ public class OrderSteps {
 
   @Then("I should see the message \"Successfully added menu to order.\"")
   public void i_should_see_message() {
-    captureConsoleLogs();
     wait.until(
         ExpectedConditions.textToBePresentInElementLocated(
             By.id("snackbar-add-menu-to-order"), "Successfully added menu to order."));
@@ -193,15 +178,5 @@ public class OrderSteps {
     assertThat(
         driver.findElement(By.id("customize-menu-" + menuNumberExisting)).isDisplayed(), is(true));
     assertThat(driver.findElements(By.id("customize-menu-" + menuNumberGone)).size(), is(0));
-  }
-
-  public void captureConsoleLogs() {
-    System.out.println("GETTING LOGS FROM THAT RUN!!!!!");
-    LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
-    Iterator<LogEntry> logIterator = logs.iterator();
-    while (logIterator.hasNext()) {
-        LogEntry logEntry = logIterator.next();
-        System.out.println("Console log: " + logEntry.getMessage());
-    }
   }
 }
