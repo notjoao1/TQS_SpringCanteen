@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
 import pt.ua.deti.springcanteen.dto.OrderUpdateResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.*;
+import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
 import pt.ua.deti.springcanteen.repositories.KioskTerminalRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
@@ -44,10 +47,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWithHeaders;
@@ -107,13 +112,12 @@ class OrderUpdatesControllerIT {
 
     KioskTerminal kioskTerminal = kioskTerminalRepository.save(new KioskTerminal());
     Order testOrder = new Order();
-    testOrder.setPaid(false);
-    testOrder.setPrice(0.0f);
     testOrder.setPriority(false);
+    testOrder.setPaid(false);
+    testOrder.setOrderStatus(OrderStatus.NOT_PAID);
+    testOrder.setPrice(0.0f);
     testOrder.setNif("123456789");
     testOrder.setKioskTerminal(kioskTerminal);
-    testOrder.setOrderStatus(OrderStatus.NOT_PAID);
-    orderRepository.save(testOrder);
 
     String signUpRequestTemplate =
         "{"
@@ -247,14 +251,17 @@ class OrderUpdatesControllerIT {
     orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING, false);
 
     OrderUpdateResponseDTO receivedOrderUpdateResponseDTO = futureMessage.get(10, TimeUnit.SECONDS);
-    logger.info("{}", receivedOrderUpdateResponseDTO);
+    assertThat(receivedOrderUpdateResponseDTO)
+      .isNotNull()
+      .extracting(OrderUpdateResponseDTO::getOrderId, OrderUpdateResponseDTO::getNewOrderStatus, OrderUpdateResponseDTO::isPriority)
+      .containsExactly(1L, OrderStatus.PREPARING, false);
     assertNotNull(receivedOrderUpdateResponseDTO);
   }
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(2)
-  void whenReceiveUpdateOrder_FromNOTPAID_toIDLE_thenSendUpdateThroughWebsockets(
+  void whenReceiveUpdateOrder_FromNOTPAID_toIDLE_thenInvalidStatusChangeException(
       Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
       throws ExecutionException, InterruptedException, TimeoutException {
     // setup
@@ -269,25 +276,22 @@ class OrderUpdatesControllerIT {
     // act
     stompSession.send("/app/order_updates", orderUpdateRequest);
 
-    // wait until message received and update message is sent
+    // wait until message received
     Awaitility.await()
-        .atMost(2, TimeUnit.SECONDS)
-        .untilAsserted(
-            () -> {
-              verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
-              verify(orderManagementServiceSpy, times(1))
-                  .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
-              verify(orderNotifierServiceSpy, times(1))
-                  .sendNewOrder(
-                      argThat(
-                          (Order order) ->
-                              order.getId().equals(testOrder.getId())
-                                  && order.getOrderStatus() == OrderStatus.IDLE));
-            });
+      .atMost(2, TimeUnit.SECONDS)
+      .untilAsserted(
+        () -> {
+          verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
+          verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+          verify(orderUpdatesControllerSpy, times(1)).handleException(any());
+
+        });
 
     // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderManagementServiceSpy, times(0)).manageOrder(any());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
   }
 
   @ParameterizedTest
@@ -314,7 +318,7 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
@@ -323,7 +327,7 @@ class OrderUpdatesControllerIT {
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
   }
 
   @ParameterizedTest
@@ -349,7 +353,7 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
@@ -358,7 +362,7 @@ class OrderUpdatesControllerIT {
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
   }
 
   @ParameterizedTest
@@ -384,7 +388,7 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
