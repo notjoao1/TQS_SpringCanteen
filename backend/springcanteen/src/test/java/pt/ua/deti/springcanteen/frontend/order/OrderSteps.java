@@ -40,29 +40,17 @@ public class OrderSteps {
   @When("I navigate to {string}")
   public void i_navigate_to(String url) {
     WebDriverManager.chromedriver().setup();
-    ChromeOptions options = new ChromeOptions();    
+    ChromeOptions options = new ChromeOptions();
+    options.addArguments("--headless");
+    options.addArguments("--no-sandbox");
+    options.addArguments("--disable-dev-shm-usage");
+    options.addArguments("--disable-gpu");
     LoggingPreferences logPrefs = new LoggingPreferences();
     logPrefs.enable(LogType.BROWSER, Level.ALL);
     options.setCapability("goog:loggingPrefs", logPrefs);
-    /* FirefoxOptions options = new FirefoxOptions();
-    options.addArguments("--headless");
-    options.addArguments("--no-sandbox");
-    options.addArguments("--disable-dev-shm-usage"); */
-    // catch console logs
-    DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(FirefoxOptions.FIREFOX_OPTIONS, options);
-        capabilities.setCapability("moz:firefoxOptions", options);
-        capabilities.setCapability("goog:loggingPrefs", new HashMap<String, Object>() {{
-            put(LogType.BROWSER, java.util.logging.Level.ALL);
-        }});
-
-    /* driver = new FirefoxDriver(options.merge(capabilities)); */
     driver = new ChromeDriver(options);
-    System.out.println("CAPABILITIES ENABLED");
-    // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
-    // setup wait
     wait = new WebDriverWait(driver, Duration.ofSeconds(3));
   }
 
