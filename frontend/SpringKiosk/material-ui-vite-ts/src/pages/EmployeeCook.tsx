@@ -4,6 +4,7 @@ import { CookOrder, OrderStatus, OrderUpdateMessage, WebsocketConnectMessage } f
 import { useEffect, useState } from "react";
 import { IMessage } from "@stomp/stompjs";
 import { useWebSocket } from "../context/WebsocketContext";
+import { enqueueSnackbar } from "notistack";
 
 
 const EmployeeCook = () => {
@@ -16,12 +17,10 @@ const EmployeeCook = () => {
 
   useEffect(() => {
     websocketClient?.subscribe("/user/topic/orders", (message: IMessage) => {
-      console.log("received a message USER -@ /user/topic/orders -> ", message)
       handleReceiveExistingOrders(message);
     });
     
     websocketClient?.subscribe("/topic/orders", (message: IMessage) => {
-      console.log("received a message @ /topic/orders -> ", message)
       handleReceiveNewOrderOrOrderUpdate(message);
     })
   }, [websocketClient])
@@ -38,7 +37,7 @@ const EmployeeCook = () => {
 
   const handleReceiveNewOrderOrOrderUpdate = (message: IMessage) => {
     const receivedMessage: Record<string, any> = JSON.parse(message.body);
-    if (receivedMessage.hasOwnProperty("orderMenus")) { // new order message (new orders are IDLE)
+    if (receivedMessage.hasOwnProperty("orderMenus")) { // new order message (new orders are always in IDLE status)
       const newOrder = receivedMessage as CookOrder;
       if (newOrder.priority) {
         setPriorityIdleOrders((oldState) => {
@@ -50,10 +49,52 @@ const EmployeeCook = () => {
         })
       }
     } else if (receivedMessage.hasOwnProperty("newOrderStatus")) { // order update message
-      // TODO: continue this
       const orderUpdate = receivedMessage as OrderUpdateMessage;
+      const setOldQueue = getOldQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.isPriority);
+      const setNewQueue = getNewQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.isPriority);
+      let cookOrderToMove: CookOrder | undefined = undefined;
+      
+      // remove this order from old queue
+      setOldQueue?.((prevState) => {
+        const updatedQueue = prevState.filter((order) => {
+          if (order.id === orderUpdate.orderId)
+            cookOrderToMove = order;
+        });
+        return updatedQueue;
+      })
+
+      // add this order to the new queue
+      setNewQueue?.((prevState) => {
+        return [
+          ...prevState,
+          cookOrderToMove!
+        ]
+      })
+      
+      enqueueSnackbar<"success">(`Successfully updated ${orderUpdate.isPriority ? "PRIORITY" : ""} order ${orderUpdate.orderId} to ${orderUpdate.newOrderStatus}`, 
+        {variant: "success", autoHideDuration: 5000}
+      );
     }
   }
+
+  // returns old queue setter, so that the order can be removed from the queue
+  // returns undefined if queue is not relevant to this page (cooks don't need to know when orders are picked up, for example)
+  const getOldQueueSetterBasedOnNewStatusAndPriority = (newStatus: OrderStatus, priority: boolean): React.Dispatch<React.SetStateAction<CookOrder[]>> | undefined => {
+    if (newStatus === OrderStatus.PREPARING)
+      return priority ? setPriorityIdleOrders : setRegularIdleOrders;
+    if (newStatus === OrderStatus.READY)
+      return priority ? setPriorityPreparingOrders : setRegularPreparingOrders;
+    return undefined;
+  }
+
+  // returns new queue, so that the order can be added to the queue
+  // returns undefined if new queue is not relevant to this page (cooks don't need to know when orders are picked up, for example)
+  const getNewQueueSetterBasedOnNewStatusAndPriority = (newStatus: OrderStatus, priority: boolean): React.Dispatch<React.SetStateAction<CookOrder[]>> | undefined => {
+    if (newStatus === OrderStatus.PREPARING)
+      return priority ? setPriorityPreparingOrders : setRegularPreparingOrders;
+    return undefined;
+  }
+
 
   const sendOrderStatusUpdate = (order: CookOrder) => {
     const updateBody = {

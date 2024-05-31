@@ -20,6 +20,7 @@ import PrivateRoute from './components/PrivateRoute';
 import { EmployeeRole } from './types/EmployeeTypes';
 import MenuContextLayout from './components/MenuContextLayout';
 import { WebSocketProvider } from './context/WebsocketContext';
+import { SnackbarProvider } from 'notistack';
 
 export default function App() {
   const [mode, setMode] = React.useState<PaletteMode>('light');
@@ -31,6 +32,7 @@ export default function App() {
     <ThemeProvider theme={showCustomTheme ? LPtheme : defaultTheme}>
       <CssBaseline />
       <AuthContextProvider>
+        <SnackbarProvider>
           <TopBar mode={mode} />
           <BrowserRouter>
               <NewOrderContextProvider>
@@ -75,6 +77,7 @@ export default function App() {
                   </Routes>
               </NewOrderContextProvider>
           </BrowserRouter>
+        </SnackbarProvider>
       </AuthContextProvider>
     </ThemeProvider>
   );
