@@ -7,6 +7,7 @@ interface OrderCardProps {
   order: CookOrder;
   isPriority: boolean;
   orderStatus: OrderStatus;
+  updateStatusMethod: (order: CookOrder) => void
 }
 
 const customTheme = createTheme({
@@ -22,7 +23,7 @@ const customTheme = createTheme({
   },
 });
 
-const OrderCard = ({ order, isPriority, orderStatus }: OrderCardProps) => {
+const OrderCard = ({ order, isPriority, orderStatus, updateStatusMethod }: OrderCardProps) => {
   return (
     <ThemeProvider theme={customTheme}>
       <Paper square={true} elevation={2} sx={{ bgcolor: "#ffd24b", pb: 2 }}>
@@ -42,9 +43,13 @@ const OrderCard = ({ order, isPriority, orderStatus }: OrderCardProps) => {
           </Typography>
         </Box>
         <Box display={"flex"} justifyContent={"flex-end"} pt={1} px={2}>
-          <Button variant="contained" endIcon={orderStatus === OrderStatus.IDLE ? <OutdoorGrill/> : (orderStatus === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}>
+          <Button 
+            variant="contained" 
+            endIcon={orderStatus === OrderStatus.IDLE ? <OutdoorGrill/> : (orderStatus === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}
+            onClick={() => updateStatusMethod(order)}
+          >
             {orderStatus === OrderStatus.IDLE ? "Start cooking" : (orderStatus === OrderStatus.PREPARING ? "Ready to pick up" : "Mark as done")}
-          </Button>{" "}
+          </Button>
         </Box>
       </Paper>
     </ThemeProvider>
