@@ -45,7 +45,7 @@ public class DeskOrdersEmployeeSteps {
   private static JavascriptExecutor js;
   private static Wait<WebDriver> wait;
   private static Logger logger = LoggerFactory.getLogger(DeskOrdersEmployeeSteps.class);
-  private static final String BASE_BACKEND_URL = "localhost";
+  private static final String BASE_HOSTNAME = "localhost";
 
   static void setupOrderAndEmployee(RestTemplate restTemplate) throws Exception {
     String jwt = createDeskOrdersEmployee(restTemplate);
@@ -58,7 +58,7 @@ public class DeskOrdersEmployeeSteps {
     String postData =
         "{ \"username\": \"deskorders123\", \"password\": \"deskorders123\", \"email\":"
             + " \"testdeskorders@gmail.com\", \"role\": \"DESK_ORDERS\"}";
-    String url = String.format("http://%s/api/auth/signup", BASE_BACKEND_URL);
+    String url = String.format("http://%s/api/auth/signup", BASE_HOSTNAME);
     logger.info("Calling {} to create user...", url);
 
     HttpHeaders headers = new HttpHeaders();
@@ -110,7 +110,7 @@ public class DeskOrdersEmployeeSteps {
             + "    ]"
             + "}";
 
-    String url = String.format("http://%s/api/orders", BASE_BACKEND_URL);
+    String url = String.format("http://%s/api/orders", BASE_HOSTNAME);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -131,7 +131,7 @@ public class DeskOrdersEmployeeSteps {
     WebSocketStompClient stompClient = new WebSocketStompClient(client);
     stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-    String url = String.format("ws://%s/websocket", BASE_BACKEND_URL);
+    String url = String.format("ws://%s/websocket", BASE_HOSTNAME);
     logger.info("Updating order status to READY...");
 
     StompSessionHandlerAdapter sessionHandler =

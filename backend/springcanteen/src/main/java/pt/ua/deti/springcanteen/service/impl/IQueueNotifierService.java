@@ -34,12 +34,12 @@ public class IQueueNotifierService implements QueueNotifierService {
       Optional<Employee> employeeOpt = employeeService.getEmployeeByEmail(user.getName());
       if (employeeOpt.isPresent()) {
         EmployeeRole employeeRole = employeeOpt.get().getRole();
-        if (employeeRole != EmployeeRole.COOK && employeeRole != EmployeeRole.DESK_ORDERS) {
-          logger.info("Employee role is not COOK or DESK_ORDERS. No need to send all orders");
-        } else {
+        if (employeeRole == EmployeeRole.COOK || employeeRole == EmployeeRole.DESK_ORDERS) {
           websocketClient.convertAndSendToUser(
-              user.getName(), ORDER_TOPIC, orderManagementService.getAllOrders());
-          logger.info("Sent all orders to user {}", user.getName());
+                  user.getName(), ORDER_TOPIC, orderManagementService.getAllOrders());
+          logger.info("Sent all orders to user {} with role {}", user.getName(), employeeRole);
+        } else {
+          logger.info("Role of employee {} is not COOK or DESK_ORDERS. It is {}. No need to send all orders", user.getName(), employeeRole);
         }
       } else {
         logger.info("Employee corresponding to the user received in websocket is null");

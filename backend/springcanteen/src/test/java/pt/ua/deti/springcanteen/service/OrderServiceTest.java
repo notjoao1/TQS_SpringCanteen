@@ -10,29 +10,40 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
-import pt.ua.deti.springcanteen.entities.Menu;
-import pt.ua.deti.springcanteen.entities.Order;
-import pt.ua.deti.springcanteen.entities.OrderMenu;
-import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.entities.*;
 import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
+import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.impl.IOrderService;
 
 @ExtendWith(MockitoExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OrderServiceTest {
+
+  private static final Logger logger = LoggerFactory.getLogger(OrderServiceTest.class);
   @Mock OrderRepository orderRepository;
 
   @Mock OrderMenuRepository orderMenuRepository;
@@ -61,6 +72,38 @@ class OrderServiceTest {
     menu2 = new Menu();
     menu2.setId(2L);
     menu2.setName("menu2");
+  }
+
+  @FunctionalInterface
+  interface OrderStatusChanger {
+    Optional<Order> changeOrderStatus(Long orderId);
+  }
+
+  private Stream<Arguments> provideOrderStatusChangers() {
+    return Stream.of(
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId)),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId))
+    );
+  }
+
+  private Stream<Arguments> provideOrderStatusChangersAndNotAvailableOldOrderStatus() {
+    return Stream.of(
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId), OrderStatus.IDLE),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId), OrderStatus.PREPARING),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId), OrderStatus.READY),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId), OrderStatus.PICKED_UP),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId), OrderStatus.NOT_PAID),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId), OrderStatus.PICKED_UP)
+    );
+  }
+
+  private Stream<Arguments> provideOrderStatusChangersAndAvailableOldOrderStatus() {
+    return Stream.of(
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changeNotPaidOrderToNextOrderStatus(orderId), OrderStatus.NOT_PAID),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId), OrderStatus.IDLE),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId), OrderStatus.PREPARING),
+      Arguments.of((OrderStatusChanger) (Long orderId) -> orderService.changePaidOrderToNextOrderStatus(orderId), OrderStatus.READY)
+    );
   }
 
   @Test
@@ -153,4 +196,82 @@ class OrderServiceTest {
     // 5€ from menu 1 and 10€ from menu 2
     assertThat(orderOpt.get().getPrice(), is(15.0f));
   }
+
+  @ParameterizedTest
+  @MethodSource("provideOrderStatusChangers")
+  void whenChangeOrderThatDoesntExistToNextOrderStatus_thenReturnEmptyOptional(OrderStatusChanger changer){
+    Long orderId = 1L;
+    when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+    Optional<Order> orderOpt = changer.changeOrderStatus(orderId);
+
+    verify(orderRepository, times(1)).findById(orderId);
+    verify(orderManagementService, times(0)).manageOrder(any(Order.class));
+    Assertions.assertThat(orderOpt).isEmpty();
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideOrderStatusChangersAndNotAvailableOldOrderStatus")
+  void whenChangeOrderWithInvalidStatusToNextOrderStatus_thenThrowInvalidStatusChangeException(OrderStatusChanger changer, OrderStatus orderStatus){
+    Long orderId = 1L;
+    Order order = new Order(); order.setId(1L); order.setOrderStatus(orderStatus);
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+    assertThrows(InvalidStatusChangeException.class, () -> changer.changeOrderStatus(orderId));
+
+    verify(orderRepository, times(1)).findById(orderId);
+    verify(orderManagementService, times(0)).manageOrder(any(Order.class));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideOrderStatusChangersAndAvailableOldOrderStatus")
+  void whenChangeOrderWithValidStatusToNextOrderStatusButQueueIsFull_thenThrowQueueTransferException(OrderStatusChanger changer, OrderStatus orderStatus){
+    Long orderId = 1L;
+    Order order = new Order(); order.setId(1L); order.setOrderStatus(orderStatus);
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    when(orderManagementService.manageOrder(order)).thenReturn(false);
+
+    assertThrows(QueueTransferException.class, () -> changer.changeOrderStatus(orderId));
+
+    verify(orderRepository, times(1)).findById(orderId);
+    verify(orderManagementService, times(1)).manageOrder(order);
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideOrderStatusChangersAndAvailableOldOrderStatus")
+  void whenChangeOrderWithValidStatusToNextOrderStatusAndQueueNotFull_thenReturnOptionalOfOrder(OrderStatusChanger changer, OrderStatus orderStatus){
+    Long orderId = 1L;
+    Order order = new Order(); order.setId(1L); order.setOrderStatus(orderStatus);
+    when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+    when(orderManagementService.manageOrder(order)).thenReturn(true);
+
+    Optional<Order> orderOpt = changer.changeOrderStatus(orderId);
+
+    verify(orderRepository, times(1)).findById(orderId);
+    verify(orderManagementService, times(1)).manageOrder(order);
+    Assertions.assertThat(orderOpt)
+      .isPresent()
+      .hasValue(order);
+  }
+
+  @Test
+  void whenGetNotPaidOrders_thenReturnListOfNotPaidOrders(){
+    KioskTerminal kioskTerminal = new KioskTerminal(); kioskTerminal.setId(1L);
+    OrderMenu orderMenu1 = new OrderMenu(null, menu1, "{}");
+    OrderMenu orderMenu2 = new OrderMenu(null, menu2, "{}");
+    OrderMenu orderMenu3 = new OrderMenu(null, menu2, "{}");
+    Order order1 = new Order(1L, OrderStatus.NOT_PAID, false, 10.0f,
+      false, "123456789", kioskTerminal, Set.of(orderMenu1, orderMenu2));
+    Order order2 = new Order(2L, OrderStatus.NOT_PAID, false, 5.0f,
+      false, "987654321", kioskTerminal, Set.of(orderMenu3));
+    when(orderRepository.findByIsPaid(false)).thenReturn(List.of(order1, order2));
+
+    List<Order> notPaidOrders = orderService.getNotPaidOrders();
+
+    Assertions.assertThat(notPaidOrders)
+      .isNotNull()
+      .hasSize(2)
+      .containsExactly(order1, order2);
+  }
+
 }

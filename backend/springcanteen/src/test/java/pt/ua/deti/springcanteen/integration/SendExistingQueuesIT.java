@@ -114,7 +114,7 @@ public class SendExistingQueuesIT {
   Stream<StompHeaders> authorizedEmployeesHeaders;
   StompHeaders unauthorizedEmployeeHeaders;
 
-  private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesControllerIT.class);
+  private static final Logger logger = LoggerFactory.getLogger(SendExistingQueuesIT.class);
   private static final String ORDER_TOPIC = "/topic/orders";
 
   @BeforeAll

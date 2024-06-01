@@ -15,18 +15,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pt.ua.deti.springcanteen.controllers.OrderUpdatesController;
+import pt.ua.deti.springcanteen.dto.OrderEntry;
 import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
-import pt.ua.deti.springcanteen.dto.OrderUpdateResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.*;
 import pt.ua.deti.springcanteen.repositories.KioskTerminalRepository;
@@ -36,18 +36,13 @@ import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.QueueNotifierService;
 
-import java.lang.reflect.Type;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.Queue;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWithHeaders;
@@ -56,7 +51,7 @@ import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWi
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class OrderUpdatesControllerIT {
+class OrderUpdatesControllerValidFlowIT {
 
   public static PostgreSQLContainer<?> container =
       new PostgreSQLContainer<>("postgres:latest")
@@ -71,7 +66,7 @@ class OrderUpdatesControllerIT {
     registry.add("spring.datasource.username", container::getUsername);
   }
 
-  public OrderUpdatesControllerIT() {
+  public OrderUpdatesControllerValidFlowIT() {
     container.start();
   }
 
@@ -98,7 +93,7 @@ class OrderUpdatesControllerIT {
 
   List<Arguments> employeeOrderAndUpdateRequestAndToken;
 
-  private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesControllerIT.class);
+  private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesControllerValidFlowIT.class);
 
   @BeforeAll
   void beforeAllSetup() {
@@ -107,13 +102,12 @@ class OrderUpdatesControllerIT {
 
     KioskTerminal kioskTerminal = kioskTerminalRepository.save(new KioskTerminal());
     Order testOrder = new Order();
-    testOrder.setPaid(false);
-    testOrder.setPrice(0.0f);
     testOrder.setPriority(false);
+    testOrder.setPaid(true);
+    testOrder.setOrderStatus(OrderStatus.IDLE);
+    testOrder.setPrice(0.0f);
     testOrder.setNif("123456789");
     testOrder.setKioskTerminal(kioskTerminal);
-    testOrder.setOrderStatus(OrderStatus.NOT_PAID);
-    orderRepository.save(testOrder);
 
     String signUpRequestTemplate =
         "{"
@@ -123,17 +117,9 @@ class OrderUpdatesControllerIT {
             + "    \"role\": \"%s\"}";
     List<Employee> employees =
         List.of(
-            new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
-            new Employee(
-                "desk_payments",
-                "desk_payments@gmail.com",
-                "desk_payments_password",
-                EmployeeRole.DESK_PAYMENTS),
-            new Employee(
-                "desk_orders",
-                "desk_orders@gmail.com",
-                "desk_orders_password",
-                EmployeeRole.DESK_ORDERS));
+          new Employee("desk_payments","desk_payments@gmail.com","desk_payments_password",EmployeeRole.DESK_PAYMENTS),
+          new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
+          new Employee("desk_orders","desk_orders@gmail.com","desk_orders_password",EmployeeRole.DESK_ORDERS));
     employeeOrderAndUpdateRequestAndToken =
         employees.stream()
             .map(
@@ -163,9 +149,13 @@ class OrderUpdatesControllerIT {
                               testOrder.isPriority(),
                               testOrder.getNif(),
                               testOrder.getKioskTerminal()));
+                  Queue<OrderEntry> queue = (Queue<OrderEntry>) ReflectionTestUtils.getField(orderManagementServiceSpy, "regularIdleOrders");
+                  queue.add(OrderEntry.fromOrderEntity(newOrder));
                   OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
                   orderUpdateRequest.setOrderId(newOrder.getId());
-                  return Arguments.of(newOrder, orderUpdateRequest, token);
+                  StompHeaders handshakeHeaders = new StompHeaders();
+                  handshakeHeaders.set("Authorization", "Bearer " + token);
+                  return Arguments.of(newOrder, orderUpdateRequest, handshakeHeaders);
                 })
             .toList();
   }
@@ -178,7 +168,7 @@ class OrderUpdatesControllerIT {
 
   @AfterEach
   void teardown() {
-    if (stompSession != null) {
+    if (stompSession != null && stompSession.isConnected()) {
       logger.info("disconnecting");
       stompSession.disconnect();
     }
@@ -190,79 +180,19 @@ class OrderUpdatesControllerIT {
   }
 
   private Stream<Arguments> provideAllTokenHeaders() {
-    return employeeOrderAndUpdateRequestAndToken.stream()
-        .map(
-            arguments -> {
-              Object[] argumentsObjects = arguments.get();
-              Order order = (Order) argumentsObjects[0];
-              OrderUpdateRequestDTO orderUpdateRequest =
-                  (OrderUpdateRequestDTO) argumentsObjects[1];
-              String token = (String) argumentsObjects[2];
-              StompHeaders handshakeHeaders = new StompHeaders();
-              handshakeHeaders.set("Authorization", "Bearer " + token);
-              return Arguments.of(order, orderUpdateRequest, handshakeHeaders);
-            });
-  }
-
-  private class CustomStompFrameHandler implements StompFrameHandler {
-
-    private CompletableFuture<OrderUpdateResponseDTO> futureMessage;
-
-    public CustomStompFrameHandler(CompletableFuture<OrderUpdateResponseDTO> futureMessage) {
-      this.futureMessage = futureMessage;
-    }
-
-    @Override
-    public Type getPayloadType(StompHeaders headers) {
-      logger.info("getPayloadType");
-      return OrderUpdateResponseDTO.class;
-    }
-
-    @Override
-    public void handleFrame(StompHeaders headers, Object payload) {
-      logger.info("converting payload to OrderUpdateResponseDTO");
-      futureMessage.complete((OrderUpdateResponseDTO) payload);
-    }
+    return employeeOrderAndUpdateRequestAndToken.stream();
   }
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(1)
-  void whenAuthenticatedConnect_thenMessagesReceived(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    // act
-    stompSession =
-        connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
-    CompletableFuture<OrderUpdateResponseDTO> futureMessage = new CompletableFuture<>();
-
-    stompSession.subscribe("/topic/orders", new CustomStompFrameHandler(futureMessage));
-    Awaitility.await()
-        .atMost(2, TimeUnit.SECONDS)
-        .untilAsserted(
-            () -> {
-              verify(queueNotifierService, times(1)).sendExistingOrderQueues(any());
-            });
-
-    orderNotifierServiceSpy.sendOrderStatusUpdates(1L, OrderStatus.PREPARING, false);
-
-    OrderUpdateResponseDTO receivedOrderUpdateResponseDTO = futureMessage.get(10, TimeUnit.SECONDS);
-    logger.info("{}", receivedOrderUpdateResponseDTO);
-    assertNotNull(receivedOrderUpdateResponseDTO);
-  }
-
-  @ParameterizedTest
-  @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(2)
-  void whenReceiveUpdateOrder_FromNOTPAID_toIDLE_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
+  void whenReceiveUpdateOrder_FromIDLE_thenSendUpdateThroughWebsockets(
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
+  )
       throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info(
-        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-        testOrder,
-        orderUpdateRequest,
-        userHandshakeHeaders);
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {};",
+      testOrder, orderUpdateRequest, userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -275,65 +205,30 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
-              verify(orderNotifierServiceSpy, times(1))
-                  .sendNewOrder(
-                      argThat(
-                          (Order order) ->
-                              order.getId().equals(testOrder.getId())
-                                  && order.getOrderStatus() == OrderStatus.IDLE));
-            });
-
-    // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
-  }
-
-  @ParameterizedTest
-  @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(3)
-  void whenReceiveUpdateOrder_FromIDLE_toPREPARING_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
-    // setup
-    logger.info(
-        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-        testOrder,
-        orderUpdateRequest,
-        userHandshakeHeaders);
-    stompSession =
-        connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
-
-    // act
-    stompSession.send("/app/order_updates", orderUpdateRequest);
-
-    // wait until message received and update message is sent
-    Awaitility.await()
-        .atMost(2, TimeUnit.SECONDS)
-        .untilAsserted(
-            () -> {
-              verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
-                  .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+                  .manageIdleOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(4)
-  void whenReceiveUpdateOrder_FromPREPARING_to_READY_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
+  @org.junit.jupiter.api.Order(2)
+  void whenReceiveUpdateOrder_FromPREPARING_thenSendUpdateThroughWebsockets(
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
+  ) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -349,26 +244,30 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+              verify(orderManagementServiceSpy, times(1))
+                  .managePreparingOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 
   @ParameterizedTest
   @MethodSource("provideAllTokenHeaders")
-  @org.junit.jupiter.api.Order(5)
-  void whenReceiveUpdateOrder_FromREADY_to_PICKED_UP_thenRemoveFromQueue(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
-      throws ExecutionException, InterruptedException, TimeoutException {
+  @org.junit.jupiter.api.Order(3)
+  void whenReceiveUpdateOrder_FromREADY_PICKED_UP_thenRemoveFromQueue(
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
+  ) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder {} {}", testOrder.getId(), testOrder.getOrderStatus());
+    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
+      testOrder, orderUpdateRequest, userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -384,16 +283,18 @@ class OrderUpdatesControllerIT {
         .untilAsserted(
             () -> {
               verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-              verify(orderServiceSpy, times(1)).changeToNextOrderStatus(testOrder.getId());
+              verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+              verify(orderManagementServiceSpy, times(1))
+                .manageReadyOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
             });
 
     // assert
-    verify(orderNotifierServiceSpy, times(1))
-        .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 }

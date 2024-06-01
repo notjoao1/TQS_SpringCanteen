@@ -2,11 +2,14 @@ package pt.ua.deti.springcanteen.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
 import lombok.AllArgsConstructor;
 import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
+import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
 import pt.ua.deti.springcanteen.service.OrderService;
 
 @Controller
@@ -20,6 +23,11 @@ public class OrderUpdatesController {
     logger.info(
         "STOMP MESSAGE RECEIVED AT /order_updates: Update order with body - {}",
         orderUpdateRequest);
-    orderService.changeToNextOrderStatus(orderUpdateRequest.getOrderId());
+    orderService.changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+  }
+
+  @MessageExceptionHandler({InvalidOrderException.class, InvalidStatusChangeException.class})
+  public void handleException(Exception e) {
+    logger.error("Error handling message: {}", e.getMessage());
   }
 }
