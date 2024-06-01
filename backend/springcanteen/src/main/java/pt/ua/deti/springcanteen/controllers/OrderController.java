@@ -13,6 +13,7 @@ import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseD
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.service.OrderService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -39,12 +40,22 @@ public class OrderController {
   @PutMapping("/{id}")
   @Secured("DESK_PAYMENTS")
   public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id){
-    // has to be desk payments
     logger.info("PUT /api/orders/{id} - pay not paid order");
     Optional<Order> orderOpt = orderService.changeNotPaidOrderToNextOrderStatus(id);
     if (orderOpt.isEmpty()){
       return ResponseEntity.notFound().build();
     }
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/notpaid")
+  @Secured("DESK_PAYMENTS")
+  public ResponseEntity<List<OrderClientResponseDTO>> getNotPaidOrders(){
+    logger.info("GET /api/orders/notpaid - get not paid orders");
+    return ResponseEntity.ok(
+        orderService.getNotPaidOrders().stream()
+            .map(OrderClientResponseDTO::fromOrderEntity)
+            .toList()
+    );
   }
 }

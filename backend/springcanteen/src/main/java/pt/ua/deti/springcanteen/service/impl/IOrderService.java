@@ -144,4 +144,9 @@ public class IOrderService implements OrderService {
     ));
 
   }
+
+  @Override
+  public List<Order> getNotPaidOrders() {
+    return orderRepository.findByIsPaid(false);
+  }
 }

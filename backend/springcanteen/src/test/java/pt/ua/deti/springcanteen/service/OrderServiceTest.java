@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -30,10 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ua.deti.springcanteen.dto.CustomizeOrderDTO;
 import pt.ua.deti.springcanteen.dto.OrderMenuDTO;
-import pt.ua.deti.springcanteen.entities.Menu;
-import pt.ua.deti.springcanteen.entities.Order;
-import pt.ua.deti.springcanteen.entities.OrderMenu;
-import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.entities.*;
 import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
 import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
 import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
@@ -254,6 +252,26 @@ class OrderServiceTest {
     Assertions.assertThat(orderOpt)
       .isPresent()
       .hasValue(order);
+  }
+
+  @Test
+  void whenGetNotPaidOrders_thenReturnListOfNotPaidOrders(){
+    KioskTerminal kioskTerminal = new KioskTerminal(); kioskTerminal.setId(1L);
+    OrderMenu orderMenu1 = new OrderMenu(null, menu1, "{}");
+    OrderMenu orderMenu2 = new OrderMenu(null, menu2, "{}");
+    OrderMenu orderMenu3 = new OrderMenu(null, menu2, "{}");
+    Order order1 = new Order(1L, OrderStatus.NOT_PAID, false, 10.0f,
+      false, "123456789", kioskTerminal, Set.of(orderMenu1, orderMenu2));
+    Order order2 = new Order(2L, OrderStatus.NOT_PAID, false, 5.0f,
+      false, "987654321", kioskTerminal, Set.of(orderMenu3));
+    when(orderRepository.findByIsPaid(false)).thenReturn(List.of(order1, order2));
+
+    List<Order> notPaidOrders = orderService.getNotPaidOrders();
+
+    Assertions.assertThat(notPaidOrders)
+      .isNotNull()
+      .hasSize(2)
+      .containsExactly(order1, order2);
   }
 
 }
