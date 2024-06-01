@@ -11,10 +11,11 @@ export interface IOrder {
 
 
 export enum OrderStatus {
-    IDLE = "Idle",
-    PREPARING = "Preparing",
-    READY = "Ready",
-    PICKED_UP = "Picked up"
+    IDLE = "IDLE",
+    PREPARING = "PREPARING",
+    READY = "READY",
+    PICKED_UP = "PICKED_UP",
+    NOT_PAID = "NOT_PAID"
 }
 
 
@@ -77,4 +78,5 @@ export interface WebsocketConnectMessage {
 export interface OrderUpdateMessage {
     orderId: number;
     newOrderStatus: OrderStatus;
+    priority: boolean;
 }

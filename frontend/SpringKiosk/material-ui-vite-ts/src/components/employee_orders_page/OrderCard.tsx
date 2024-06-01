@@ -1,5 +1,5 @@
 import { Box, Button, Paper, Typography, createTheme } from "@mui/material";
-import { CookOrder, IOrder, OrderStatus } from "../../types/OrderTypes";
+import { CookOrder, OrderStatus } from "../../types/OrderTypes";
 import { ThemeProvider } from "@emotion/react";
 import { Check, LocalMall, OutdoorGrill } from "@mui/icons-material";
 
@@ -7,6 +7,8 @@ interface OrderCardProps {
   order: CookOrder;
   isPriority: boolean;
   orderStatus: OrderStatus;
+  updateStatusMethod: (order: CookOrder) => void;
+  index: number;
 }
 
 const customTheme = createTheme({
@@ -22,10 +24,11 @@ const customTheme = createTheme({
   },
 });
 
-const OrderCard = ({ order, isPriority, orderStatus }: OrderCardProps) => {
+const OrderCard = ({ order, isPriority, orderStatus, updateStatusMethod, index }: OrderCardProps) => {
+  const baseHtmlId = `${isPriority ? "priority" : "regular"}-${orderStatus.toLowerCase()}`
   return (
     <ThemeProvider theme={customTheme}>
-      <Paper square={true} elevation={2} sx={{ bgcolor: "#ffd24b", pb: 2 }}>
+      <Paper square={true} elevation={2} sx={{ bgcolor: "#ffd24b", pb: 2 }} id={`${baseHtmlId}-order-${index + 1}`}>
         {isPriority && (
           <Box sx={{height: "40%", background: "linear-gradient(to bottom, #fba70a, #542922)"}} display={"flex"} justifyContent={"center"} alignItems={"center"}>
           <Typography color={"white"} variant="h5">Priority Order</Typography>
@@ -42,9 +45,14 @@ const OrderCard = ({ order, isPriority, orderStatus }: OrderCardProps) => {
           </Typography>
         </Box>
         <Box display={"flex"} justifyContent={"flex-end"} pt={1} px={2}>
-          <Button variant="contained" endIcon={orderStatus === OrderStatus.IDLE ? <OutdoorGrill/> : (orderStatus === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}>
+          <Button 
+            variant="contained" 
+            endIcon={orderStatus === OrderStatus.IDLE ? <OutdoorGrill/> : (orderStatus === OrderStatus.PREPARING ? <LocalMall/> : <Check />)}
+            onClick={() => updateStatusMethod(order)}
+            id={`${baseHtmlId}-button-${index + 1}`}
+          >
             {orderStatus === OrderStatus.IDLE ? "Start cooking" : (orderStatus === OrderStatus.PREPARING ? "Ready to pick up" : "Mark as done")}
-          </Button>{" "}
+          </Button>
         </Box>
       </Paper>
     </ThemeProvider>
