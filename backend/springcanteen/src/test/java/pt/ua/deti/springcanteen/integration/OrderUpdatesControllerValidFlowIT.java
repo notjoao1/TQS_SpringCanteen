@@ -7,7 +7,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -29,10 +27,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pt.ua.deti.springcanteen.controllers.OrderUpdatesController;
 import pt.ua.deti.springcanteen.dto.OrderEntry;
 import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
-import pt.ua.deti.springcanteen.dto.OrderUpdateResponseDTO;
 import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.*;
-import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
 import pt.ua.deti.springcanteen.repositories.KioskTerminalRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
@@ -40,7 +36,6 @@ import pt.ua.deti.springcanteen.service.OrderNotifierService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.QueueNotifierService;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -213,13 +208,16 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+              verify(orderManagementServiceSpy, times(1))
+                  .manageIdleOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 
   @ParameterizedTest
@@ -249,13 +247,16 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+              verify(orderManagementServiceSpy, times(1))
+                  .managePreparingOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
             });
 
     // assert
-    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 
   @ParameterizedTest
@@ -285,13 +286,15 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(testOrder.getId());
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+              verify(orderManagementServiceSpy, times(1))
+                .manageReadyOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
             });
 
     // assert
-    verify(orderNotifierServiceSpy, times(1))
-        .sendOrderStatusUpdates(testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());
+    verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
+    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
   }
 }

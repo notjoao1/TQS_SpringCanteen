@@ -287,7 +287,7 @@ class OrderUpdatesIT {
     orderRepository.save(testOrder);
     logger.info("testOrder: {}; employeeRole: {}; userHandshakeHeaders: {};", testOrder.getId(), employeeRole, userHandshakeHeaders);
 
-    int statusCode = RestAssured
+    RestAssured
       .given()
         .contentType(ContentType.JSON)
         .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
