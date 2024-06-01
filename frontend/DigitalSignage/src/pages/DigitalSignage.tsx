@@ -8,7 +8,11 @@ import { enqueueSnackbar } from "notistack";
 export default function DigitalSignage() {
   const [regularPreparingOrders, setRegularPreparingOrders] = useState<CookOrder[]>([]);
   const [priorityPreparingOrders, setPriorityPreparingOrders] = useState<CookOrder[]>([]);
+  const [regularReadyOrders, setRegularReadyOrders] = useState<CookOrder[]>([]);
+  const [priorityReadyOrders, setPriorityReadyOrders] = useState<CookOrder[]>([]);
+  
   const [preparingOrders, setPreparingOrders] = useState<CookOrder[]>([]);
+  const [readyOrders, setReadyOrders] = useState<CookOrder[]>([]);
 
   const { websocketClient } = useWebSocket();
 
@@ -27,10 +31,14 @@ export default function DigitalSignage() {
     console.log('Existing orders received:', existingOrders);
     setRegularPreparingOrders(existingOrders.regularPreparingOrders);
     setPriorityPreparingOrders(existingOrders.priorityPreparingOrders);
+    setRegularReadyOrders(existingOrders.regularReadyOrders);
+    setPriorityReadyOrders(existingOrders.priorityReadyOrders);
     
-    const allOrders = [...existingOrders.regularPreparingOrders, ...existingOrders.priorityPreparingOrders];
+    const allPreparingOrders = [...existingOrders.regularPreparingOrders, ...existingOrders.priorityPreparingOrders];
+    const allReadyOrders = [...existingOrders.regularReadyOrders, ...existingOrders.priorityReadyOrders];
 
-    setPreparingOrders(formatOrderIds(orderList(allOrders.map((order) => order.id))));
+    setPreparingOrders(formatOrderIds(orderList(allPreparingOrders.map((order) => order.id))));
+    setReadyOrders(formatOrderIds(orderList(allReadyOrders.map((order) => order.id))));
   }
 
   const handleReceiveNewOrderOrOrderUpdate = (message: IMessage) => {
@@ -47,6 +55,13 @@ export default function DigitalSignage() {
       // remove the id from the preparing orders
       const idToRemove = formatOrderId(orderUpdate.orderId);
       setPreparingOrders((prevState) => prevState.filter((orderId) => orderId !== idToRemove));
+
+      // add the id to the ready orders
+      setReadyOrders((prevState) => [...prevState, formatOrderId(orderUpdate.orderId)]);
+    } else if (orderUpdate.newOrderStatus === OrderStatus.PICKED_UP) {
+      // remove the id from the ready orders
+      const idToRemove = formatOrderId(orderUpdate.orderId);
+      setReadyOrders((prevState) => prevState.filter((orderId) => orderId !== idToRemove));
     }
 
 
@@ -124,9 +139,9 @@ export default function DigitalSignage() {
         </div>
         <div className="grid-child">
           <div className='order-container cyan'>
-            <h2 className="order-child">080</h2>
-            <h2 className="order-child">084</h2>
-            <h2 className="order-child">085</h2>
+            {readyOrders.map((orderId) => (
+              <h2 key={orderId} className="order-child">{orderId}</h2>
+            ))}
           </div>
         </div>
       </div>
