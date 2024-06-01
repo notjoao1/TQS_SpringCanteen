@@ -78,101 +78,16 @@ export default function Order() {
 
   return (
     <Container id="features" sx={{ py: { xs: 8, sm: 16 } }}>
-      <Typography component="h2" variant="h4" color="text.primary">
+      <Typography component="h2" variant="h4" color="text.primary" pt={2}>
         Add menus to your order
       </Typography>
 
-      <Grid container spacing={6} pt={4}>
+      <Grid container spacing={6} pt={4} sx={{placeItems: "center"}}>
         {Array.from(menusById.values()).map((menu, index) => (
           <Grid key={menu.id} item xs={12} md={4}>
             <OrderMenuCard index={index} menu={menu} onClickDetails={handleOpenModal} onClickAddToOrder={handleOpenAddToOrderModal}/>
           </Grid>
         ))}
-        <Grid item xs={12} md={6}>
-          {/* XS 'Available mockMenus' section */}
-          <Grid
-            container
-            item
-            gap={1}
-            sx={{ display: { xs: "auto", sm: "none" } }}
-          >
-            {Array.from(menusById.values()).map((menu, index) => (
-              <Chip
-                key={menu.id}
-                label={menu.name}
-                sx={{
-                  borderColor: (theme) => {
-                    if (theme.palette.mode === "light") {
-                      return selectedMenu === menu ? "primary.light" : "";
-                    }
-                    return selectedMenu === menu ? "primary.light" : "";
-                  },
-                  background: (theme) => {
-                    if (theme.palette.mode === "light") {
-                      return selectedMenu === menu ? "none" : "";
-                    }
-                    return selectedMenu === menu ? "none" : "";
-                  },
-                  backgroundColor:
-                  selectedMenu === menu ? "primary.main" : "",
-                  "& .MuiChip-label": {
-                    color: selectedMenu === menu ? "#fff" : "",
-                  },
-                }}
-              />
-            ))}
-          </Grid>
-          {/* END XS 'Available mockMenus' section */}
-          {/* XS 'Your Order' section */}
-          <Box
-            component={Card}
-            variant="outlined"
-            sx={{
-              display: { xs: "auto", sm: "none" },
-              mt: 4,
-              mb: 4,
-            }}
-          >
-            <Box
-              sx={{
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                minHeight: 280,
-              }}
-            />
-            <Box sx={{ px: 2, pb: 2 }}>
-              <Typography
-                color="text.primary"
-                variant="body2"
-                fontWeight="bold"
-              >
-                {"TEST TODO"}
-              </Typography>
-            </Box>
-          </Box>
-          {/* END XS 'Your Order' section */}
-          <Box sx={{ px: 1, pb: 2, display: { xs: "auto", sm: "none" } }}>
-            <Typography color="text.primary" variant="h5" fontWeight="bold">
-              Your order
-            </Typography>
-          </Box>
-          <Box
-            component={Card}
-            variant="outlined"
-            sx={{
-              display: { xs: "auto", sm: "none" },
-            }}
-          >
-            <Box
-              sx={{
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                minHeight: 280,
-              }}
-            />
-          </Box>
-          {/* END of XS Display mode */}
-        </Grid>
       </Grid>
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={5}>
         <BottomNavigation 
