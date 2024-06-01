@@ -33,6 +33,7 @@ public class OrderSteps {
     options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
+
     driver = new FirefoxDriver(options);
     // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));

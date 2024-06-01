@@ -65,6 +65,8 @@ export default function Order() {
     setIsSnackbarOpen(true);
   }
 
+  console.log("hello world, this is a test log")
+
   // checked before moving on to the customize page. verifies if the order has any menus
   const validateOrder = () => {
     if (order.menus.length === 0) {

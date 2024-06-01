@@ -114,7 +114,7 @@ public class IOrderManagementService implements OrderManagementService {
       order.setOrderStatus(OrderStatus.READY);
       result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
       if (result) {
-        oldOrderQueue.remove(OrderEntry.fromOrderEntity(order));
+        oldOrderQueue.remove(oldOrderEntry);
         orderRepository.save(order);
         orderNotifierService.sendOrderStatusUpdates(
             order.getId(), OrderStatus.READY, order.isPriority());
