@@ -73,7 +73,7 @@ const EmployeeCook = () => {
       })
       
       enqueueSnackbar<"success">(`Successfully updated ${orderUpdate.priority ? "PRIORITY" : ""} order ${orderUpdate.orderId} to ${orderUpdate.newOrderStatus}`, 
-        {variant: "success", autoHideDuration: 1000000}
+        {variant: "success", autoHideDuration: 5000}
       );
     }
   }
