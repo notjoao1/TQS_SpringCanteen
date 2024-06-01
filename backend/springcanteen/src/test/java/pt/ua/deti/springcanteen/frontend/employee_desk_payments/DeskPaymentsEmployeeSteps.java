@@ -106,7 +106,7 @@ public class DeskPaymentsEmployeeSteps {
   public static void setup() {
     WebDriverManager.firefoxdriver().setup();
     FirefoxOptions options = new FirefoxOptions();
-    // options.addArguments("--headless");
+    options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
     driver = new FirefoxDriver(options);
