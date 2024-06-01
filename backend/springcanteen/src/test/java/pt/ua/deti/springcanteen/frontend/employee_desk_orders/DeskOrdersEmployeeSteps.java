@@ -155,7 +155,7 @@ public class DeskOrdersEmployeeSteps {
   public static void setup() throws Exception {
     WebDriverManager.firefoxdriver().setup();
     FirefoxOptions options = new FirefoxOptions();
-    //options.addArguments("--headless");
+    options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
     driver = new FirefoxDriver(options);
