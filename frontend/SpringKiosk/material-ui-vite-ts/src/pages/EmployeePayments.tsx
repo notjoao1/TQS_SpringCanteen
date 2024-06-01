@@ -110,7 +110,7 @@ const EmployeePayments = () => {
           </TableHead>
           <TableBody sx={{backgroundColor: "#f0fef0"}}>
             {notPaidOrders
-              .map((order) => (
+              .map((order, index) => (
                 <TableRow
                   key={order.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -122,6 +122,7 @@ const EmployeePayments = () => {
                   <TableCell align="center">10.20€</TableCell>
                   <TableCell align="right">
                     <Button
+                      id={`not-paid-order-request-pay-${index + 1}`}
                       variant="contained"
                       startIcon={<Payments />}
                       onClick={() => {

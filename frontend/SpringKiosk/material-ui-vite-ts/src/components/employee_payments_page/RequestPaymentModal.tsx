@@ -94,7 +94,7 @@ const RequestPaymentModal = ({isOpen, order, confirmPayment}: RequestPaymentModa
         
         <Box display={"flex"} pt={4} justifyContent={"center"} gap={3}>
           {finishedPayment && (
-            <Button variant="contained" endIcon={<Check />} onClick={() => confirmPayment(order)}>
+            <Button id="confirm-payment-button" variant="contained" endIcon={<Check />} onClick={() => confirmPayment(order)}>
                 Confirm
             </Button>
           )}
