@@ -77,7 +77,7 @@ const EmployeeReadyToPickUp = () => {
       })
       
       enqueueSnackbar<"success">(`Successfully updated ${orderUpdate.priority ? "PRIORITY" : ""} order ${orderUpdate.orderId} to ${orderUpdate.newOrderStatus}`, 
-        {variant: "success", autoHideDuration: 1000000}
+        {variant: "success", autoHideDuration: 5000}
       );
     }
   }
@@ -102,6 +102,20 @@ const EmployeeReadyToPickUp = () => {
     if (newStatus === OrderStatus.READY)
       return priority ? setPriorityReadyOrders : setRegularReadyOrders;
     return undefined;
+  }
+
+  const sendOrderStatusUpdate = (order: CookOrder) => {
+    const updateBody = {
+      orderId: order.id,
+    }
+    if (websocketClient)
+      websocketClient.publish({
+          destination: "/app/order_updates", 
+          body: JSON.stringify(updateBody),
+          headers: {
+            "content-type": "application/json"
+          }
+      })
   }
 
   return (
@@ -129,12 +143,12 @@ const EmployeeReadyToPickUp = () => {
         <Grid container sx={{ width: "100%" }} spacing={2}>
           {priorityReadyOrders.map(o => (
             <Grid item md={4} key={o.id}>
-              <OrderReadyCard order={o}/>
+              <OrderReadyCard updateStatusMethod={sendOrderStatusUpdate} order={o}/>
             </Grid>
           ))}
           {regularReadyOrders.map(o => (
             <Grid item md={4} key={o.id}>
-              <OrderReadyCard order={o}/>
+              <OrderReadyCard updateStatusMethod={sendOrderStatusUpdate} order={o}/>
             </Grid>
           ))}
         </Grid>

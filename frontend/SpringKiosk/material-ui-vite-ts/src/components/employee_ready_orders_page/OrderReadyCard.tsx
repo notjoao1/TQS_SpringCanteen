@@ -3,9 +3,10 @@ import { CookOrder } from "../../types/OrderTypes";
 
 interface OrderReadyCardProps {
     order: CookOrder;
+    updateStatusMethod: (order: CookOrder) => void;
 }
 
-const OrderReadyCard = ({order}: OrderReadyCardProps) => {
+const OrderReadyCard = ({order, updateStatusMethod}: OrderReadyCardProps) => {
     return (
         <Card sx={{ minWidth: 275 }}>
             <CardContent>
@@ -16,13 +17,16 @@ const OrderReadyCard = ({order}: OrderReadyCardProps) => {
                     <span style={{fontWeight: "bold", fontStyle:"italic"}}>Menus: </span>{order.orderMenus.map(o => o.menu.name).join(" ,")}
                 </Typography>
             </CardContent>
-            <CardActions>
-                <Button size="small" color="primary">
+            <CardActions sx={{display:"flex"}} disableSpacing>
+                <Button size="small" color="primary" onClick={() => updateStatusMethod(order)}>
                     Confirm Pick Up
                 </Button>
                 {order.priority && (
-                    <Typography ml={"auto"} mr={0} pr={1}
+                    <Typography
                         sx={{
+                            paddingRight: 1,
+                            marginLeft: "auto",
+                            marginRight: 0,
                             fontWeight: "bold",
                             background: 'linear-gradient(to top, darkgreen, green)',
                             WebkitBackgroundClip: 'text',
