@@ -66,7 +66,8 @@ public class DeskOrdersEmployeeSteps {
 
     HttpEntity<String> request = new HttpEntity<>(postData, headers);
     logger.info("{}", postData);
-    JwtAuthenticationResponseDTO res = restTemplate.postForEntity(url, request, JwtAuthenticationResponseDTO.class).getBody();
+    JwtAuthenticationResponseDTO res =
+        restTemplate.postForEntity(url, request, JwtAuthenticationResponseDTO.class).getBody();
     logger.info(
         "Successfully created a cook employee with credentials: email - testdeskorders@gmail.com;"
             + " password - deskorders123");
@@ -117,12 +118,14 @@ public class DeskOrdersEmployeeSteps {
     HttpEntity<String> request = new HttpEntity<>(orderRequest, headers);
 
     logger.info("Calling {} to create order...", url);
-    OrderClientResponseDTO response = restTemplate.postForEntity(url, request, OrderClientResponseDTO.class).getBody();
+    OrderClientResponseDTO response =
+        restTemplate.postForEntity(url, request, OrderClientResponseDTO.class).getBody();
     logger.info("Successfully created a paid priority order...");
     return response.getId();
   }
 
-  static void updateOrderToReady(long orderId, String jwt) throws InterruptedException, ExecutionException, TimeoutException {
+  static void updateOrderToReady(long orderId, String jwt)
+      throws InterruptedException, ExecutionException, TimeoutException {
 
     WebSocketClient client = new StandardWebSocketClient();
     WebSocketStompClient stompClient = new WebSocketStompClient(client);
@@ -131,24 +134,24 @@ public class DeskOrdersEmployeeSteps {
     String url = String.format("ws://%s/websocket", BASE_BACKEND_URL);
     logger.info("Updating order status to READY...");
 
-    StompSessionHandlerAdapter sessionHandler = new StompSessionHandlerAdapter() {
-        @Override
-        public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-          OrderUpdateRequestDTO payload = new OrderUpdateRequestDTO();
-          payload.setOrderId(orderId);
-          logger.info("Sending payload: {}", payload);
-          session.send("/app/order_updates", payload);
-          session.send("/app/order_updates", payload);
-          logger.info("Payload for updating orders sent...");
-        }
-    };
+    StompSessionHandlerAdapter sessionHandler =
+        new StompSessionHandlerAdapter() {
+          @Override
+          public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+            OrderUpdateRequestDTO payload = new OrderUpdateRequestDTO();
+            payload.setOrderId(orderId);
+            logger.info("Sending payload: {}", payload);
+            session.send("/app/order_updates", payload);
+            session.send("/app/order_updates", payload);
+            logger.info("Payload for updating orders sent...");
+          }
+        };
 
     StompHeaders stompHeaders = new StompHeaders();
     stompHeaders.set("Authorization", "Bearer " + jwt);
 
     connectAsyncWithHeaders(url, stompClient, stompHeaders);
     stompClient.connectAsync(url, sessionHandler).get(10, TimeUnit.SECONDS);
-
   }
 
   @BeforeAll
@@ -168,8 +171,6 @@ public class DeskOrdersEmployeeSteps {
     RestTemplate restTemplate = new RestTemplate();
     setupOrderAndEmployee(restTemplate);
   }
-
-  
 
   @Given("I have a clean local storage")
   public void i_have_a_clean_local_storage() {
@@ -196,7 +197,8 @@ public class DeskOrdersEmployeeSteps {
   @Then("I should be logged in")
   public void i_should_be_logged_in() {
     String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
-    assertThat(actualPageText).isEqualTo("Welcome back, deskorders123, get back to confirming ready orders,");
+    assertThat(actualPageText)
+        .isEqualTo("Welcome back, deskorders123, get back to confirming ready orders,");
   }
 
   @When("I navigate to the ready orders page")
@@ -219,7 +221,6 @@ public class DeskOrdersEmployeeSteps {
     wait.until(
         ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"notistack-snackbar\"]")));
     assertThat(driver.findElement(By.xpath("//*[@id=\"notistack-snackbar\"]")).isDisplayed())
-        .isTrue();  
+        .isTrue();
   }
-
 }
