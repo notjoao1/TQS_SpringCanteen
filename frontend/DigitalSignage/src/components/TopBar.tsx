@@ -75,7 +75,7 @@ function TopBar({ mode }: AppAppBarProps) {
               }}
             >
               {/* Logo image */}
-              <Link href="/">
+              <Link href="/signage">
                 <img
                   src={"/SpringCanteen_Title.png"}
                   style={logoStyle}
@@ -84,19 +84,16 @@ function TopBar({ mode }: AppAppBarProps) {
               </Link>
               <Box sx={{ display: { xs: "none", md: "flex" } }}>
                 
-                <Link href={auth === undefined ? "/order" : 
-                  auth.userRole === "COOK" ? "/employee/orders" : 
-                  auth.userRole === "DESK_PAYMENTS" ? "/employee/payments" : 
-                  auth.userRole === "DESK_ORDERS" ? "/employee/ready_orders" : "/"}
+                <Link href={auth === undefined ? "/signage/signin" : 
+                  "/signage/digital-signage"
+                  }
                 >
                   <MenuItem
                     sx={{ py: "6px", px: "12px" }}
                   >
                     <Typography variant="body2" color="text.primary">
-                      {auth === undefined ? "Order now" : 
-                        auth.userRole === "COOK" ? "Cook orders" : 
-                        auth.userRole === "DESK_PAYMENTS" ? "Desk payments" : 
-                        auth.userRole === "DESK_ORDERS" ? "Ready orders" : "Home"
+                      {auth === undefined ? "" : 
+                        "Digital Signage"
                       }
                     </Typography>
                   </MenuItem>
@@ -130,7 +127,7 @@ function TopBar({ mode }: AppAppBarProps) {
                     component="a"
                     target="_blank"
                   >
-                    <Link href={"/signin"}>Sign in</Link>
+                    <Link href={"/signage/signin"}>Sign in</Link>
                   </Button>
                   <Button
                     color="primary"
@@ -139,7 +136,7 @@ function TopBar({ mode }: AppAppBarProps) {
                     component="a"
                     target="_blank"
                   >
-                    <Link href={"/signup"}>Sign up</Link>
+                    <Link href={"/signage/signup"}>Sign up</Link>
                   </Button>
                 </>
               )}
@@ -171,36 +168,7 @@ function TopBar({ mode }: AppAppBarProps) {
                       flexGrow: 1,
                     }}
                   ></Box>
-                  <Link href="/order">
-                    <MenuItem
-                      // onClick={() => scrollToSection('features')}
-                      sx={{ py: "6px", px: "12px" }}
-                    >
-                      <Typography variant="body2" color="text.primary">
-                        Order
-                      </Typography>
-                    </MenuItem>
-                  </Link>
-                  <Link href="/restaurants">
-                    <MenuItem
-                      // onClick={() => scrollToSection('features')}
-                      sx={{ py: "6px", px: "12px" }}
-                    >
-                      <Typography variant="body2" color="text.primary">
-                        Restaurants
-                      </Typography>
-                    </MenuItem>
-                  </Link>
-                  <Link href="/menu">
-                    <MenuItem
-                      // onClick={() => scrollToSection('features')}
-                      sx={{ py: "6px", px: "12px" }}
-                    >
-                      <Typography variant="body2" color="text.primary">
-                        Menu
-                      </Typography>
-                    </MenuItem>
-                  </Link>
+              
                   <Divider />
                   <MenuItem>
                     <Button

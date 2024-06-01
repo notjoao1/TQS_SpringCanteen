@@ -56,7 +56,7 @@ export const WebSocketProvider: React.FC<{
             })
             .catch(() => {
               logout();
-              navigate("/signin");
+              navigate("/signage/signin");
             });
         }
       },

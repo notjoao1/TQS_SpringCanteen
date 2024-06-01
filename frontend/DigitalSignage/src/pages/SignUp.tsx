@@ -49,7 +49,7 @@ const SignUp = () => {
           role: selectedRole as EmployeeRole
         });
         setAuth(userData);
-        navigate("/");
+        navigate("/signage");
       } catch (error) {
         setError(true);
         setErrorMessage("Invalid credentials.");
@@ -61,7 +61,7 @@ const SignUp = () => {
 
   useEffect(() => {
     if (auth !== undefined)
-      navigate("/");
+      navigate("/signage");
   }, [])
 
   return (
@@ -144,7 +144,7 @@ const SignUp = () => {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link to={"/signin"}>
+                <Link to={"/signage/signin"}>
                   Already have an account? Sign in
                 </Link>
               </Grid>

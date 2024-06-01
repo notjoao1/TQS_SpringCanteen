@@ -1,3 +1,4 @@
+import './DigitalSignage.css'
 
 export default function DigitalSignage() {
     return (

@@ -36,7 +36,7 @@ const SignIn = () => {
           password: data.get("password") as string,
         });
         setAuth(userData);
-        navigate("/");
+        navigate("/signage");
       } catch (error) {
         setError(true);
         setErrorMessage("Invalid credentials.");
@@ -49,7 +49,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (auth !== undefined)
-      navigate("/")
+      navigate("/signage")
   }, [])
 
   return (
@@ -100,7 +100,7 @@ const SignIn = () => {
           </Button>
           <Grid container>
             <Grid item>
-              <Link to={"/signup"}>{"Don't have an account? Sign Up"}</Link>
+              <Link to={"/signage/signup"}>{"Don't have an account? Sign Up"}</Link>
             </Grid>
           </Grid>
         </Box>

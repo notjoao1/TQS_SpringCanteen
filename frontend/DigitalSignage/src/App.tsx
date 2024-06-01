@@ -29,8 +29,8 @@ function App() {
             <BrowserRouter>
               <Routes>
                   {/* auth pages */}
-                  <Route path="/signup" Component={SignUp} />
-                  <Route path="/signin" Component={SignIn} />
+                  <Route path="/signage/signup" Component={SignUp} />
+                  <Route path="/signage/signin" Component={SignIn} />
 
                    {/* digital signage -> require websockets */}
                    <Route element={
@@ -38,7 +38,7 @@ function App() {
                         <PrivateRoute />
                       </WebSocketProvider>
                     }>
-                      <Route path="/" Component={DigitalSignage} />
+                      <Route path="/signage/digital-signage" Component={DigitalSignage} />
                     </Route>
               </Routes>
             </BrowserRouter>
