@@ -49,7 +49,7 @@ public class DeskOrdersEmployeeSteps {
 
   static void setupOrderAndEmployee(RestTemplate restTemplate) throws Exception {
     String jwt = createDeskOrdersEmployee(restTemplate);
-    long orderId = createOrder(restTemplate, jwt);
+    long orderId = createOrder(restTemplate);
     updateOrderToReady(orderId, jwt);
   }
 
