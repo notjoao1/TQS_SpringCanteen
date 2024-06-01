@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import io.restassured.http.ContentType;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import pt.ua.deti.springcanteen.controllers.OrderController;
-import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
 import pt.ua.deti.springcanteen.entities.*;
 import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
 import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
