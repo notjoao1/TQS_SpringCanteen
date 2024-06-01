@@ -60,10 +60,9 @@ Feature: Make an order on SpringCanteen
         And I click on "Confirm order"
         Then I should see my order number as "7"
         And I should see total cost as "7.00"€
-        And I should see that my order is a priority order
 
     @order_priority_full_flow
-    Scenario: User wants to make an order with a menu, and see his order number
+    Scenario: User wants to make an order with a menu, placing it in the priority queue, and see his order number
         When I navigate to "http://localhost/order"
         And I select the menu number "3"
         And I select the Main Dish number "1"
