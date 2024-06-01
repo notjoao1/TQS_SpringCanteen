@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { ICreateOrder, IOrderResponse } from "../types/OrderTypes";
 
 interface OrderCreateObject {
@@ -75,3 +75,29 @@ const createOrderCreateObject = (order: ICreateOrder, isPaid: boolean, isPriorit
     return postObject;
 }
 
+
+export const getNotPaidOrders = async (accessToken: string): Promise<IOrderResponse[]> => {
+    const VITE_HOST = import.meta.env.VITE_HOST as string ?? "localhost:8080";
+    const res = await axios.get<IOrderResponse[]>(`http://${VITE_HOST}/api/orders/notpaid`, 
+        {
+            headers: {
+                Authorization: "Bearer " + accessToken
+            }
+        }
+    );
+
+    return res.data;
+}
+
+
+export const confirmPaymentOrder = async (accessToken: string, orderId: number): Promise<AxiosResponse<void, any>> => {
+    const VITE_HOST = import.meta.env.VITE_HOST as string ?? "localhost:8080";
+    const res = await axios.put<void>(`http://${VITE_HOST}/api/orders/${orderId}`, {}, 
+        {
+            headers: {
+                Authorization: "Bearer " + accessToken
+            }
+        }
+    );
+    return res;
+}

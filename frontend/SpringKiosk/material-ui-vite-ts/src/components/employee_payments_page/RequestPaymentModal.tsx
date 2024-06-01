@@ -6,12 +6,12 @@ import {
   Modal,
   Typography,
 } from "@mui/material";
-import { IOrder } from "../../types/OrderTypes";
+import { IOrderResponse } from "../../types/OrderTypes";
 import { Check } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
 const style = {
-  position: "absolute" as "absolute",
+  position: "absolute" as const,
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
@@ -23,18 +23,17 @@ const style = {
 };
 
 interface RequestPaymentModal {
-  order: IOrder | undefined;
+  order: IOrderResponse | undefined;
   isOpen: boolean;
-  onClose: () => void;
+  confirmPayment: (order: IOrderResponse) => void;
 }
 
-const RequestPaymentModal = ({isOpen, order, onClose}: RequestPaymentModal) => {
-  if (!order) return;
-  const handleClose = (event: {}, reason: "backdropClick" | "escapeKeyDown") => {
-    if (reason && reason === "backdropClick") return;
-    onClose();
-  };
+const RequestPaymentModal = ({isOpen, order, confirmPayment}: RequestPaymentModal) => {
   const [finishedPayment, setFinishedPayment] = useState<boolean>(false);
+
+  useEffect(() => {
+    setFinishedPayment(false);
+  }, [order])
 
   useEffect(() => {
     if (!isOpen)
@@ -47,6 +46,12 @@ const RequestPaymentModal = ({isOpen, order, onClose}: RequestPaymentModal) => {
         setFinishedPayment(true);
     }, 3000)
 
+  if (!order) return;
+
+  const handleClose = (event: {}, reason: "backdropClick" | "escapeKeyDown") => {
+    if (reason) return; // never close on clicking escape or clicking the backdrop, its an ongoing payment
+    confirmPayment(order);
+  };
 
   return (
     <Modal
@@ -89,7 +94,7 @@ const RequestPaymentModal = ({isOpen, order, onClose}: RequestPaymentModal) => {
         
         <Box display={"flex"} pt={4} justifyContent={"center"} gap={3}>
           {finishedPayment && (
-            <Button variant="contained" endIcon={<Check />}  onClick={() => {setFinishedPayment(false); onClose()}}>
+            <Button variant="contained" endIcon={<Check />} onClick={() => confirmPayment(order)}>
                 Confirm
             </Button>
           )}
