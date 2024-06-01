@@ -73,7 +73,7 @@ public class DeskOrdersEmployeeSteps {
     return res.getToken();
   }
 
-  static long createOrder(RestTemplate restTemplate, String jwt) throws Exception {
+  static long createOrder(RestTemplate restTemplate) throws Exception {
     String orderRequest =
         "{"
             + "    \"kioskId\": 1,"
