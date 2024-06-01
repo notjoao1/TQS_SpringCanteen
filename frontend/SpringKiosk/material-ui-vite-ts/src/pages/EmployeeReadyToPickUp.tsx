@@ -141,14 +141,14 @@ const EmployeeReadyToPickUp = () => {
         </Box>
       ) : (
         <Grid container sx={{ width: "100%" }} spacing={2}>
-          {priorityReadyOrders.map(o => (
+          {priorityReadyOrders.map((o, index) => (
             <Grid item md={4} key={o.id}>
-              <OrderReadyCard updateStatusMethod={sendOrderStatusUpdate} order={o}/>
+              <OrderReadyCard index={index} updateStatusMethod={sendOrderStatusUpdate} order={o}/>
             </Grid>
           ))}
-          {regularReadyOrders.map(o => (
+          {regularReadyOrders.map((o, index) => (
             <Grid item md={4} key={o.id}>
-              <OrderReadyCard updateStatusMethod={sendOrderStatusUpdate} order={o}/>
+              <OrderReadyCard index={index} updateStatusMethod={sendOrderStatusUpdate} order={o}/>
             </Grid>
           ))}
         </Grid>
