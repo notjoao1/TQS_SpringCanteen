@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, Paper, Typography } from "@mui/material";
+import { Button, Card, CardActions, CardContent, Typography } from "@mui/material";
 import { CookOrder } from "../../types/OrderTypes";
 
 interface OrderReadyCardProps {
@@ -9,9 +9,6 @@ const OrderReadyCard = ({order}: OrderReadyCardProps) => {
     return (
         <Card sx={{ minWidth: 275 }}>
             <CardContent>
-                <Paper sx={{ padding: 1, backgroundColor: 'darkgreen', color: 'white', borderRadius: 1, textAlign: 'center', marginBottom: 2 }}>
-                    PRIORITY
-                </Paper>
                 <Typography sx={{ fontSize: 30, fontWeight: 'bold' }} color="text.secondary" gutterBottom>        
                     ORDER: {order.id}
                 </Typography>
@@ -23,6 +20,19 @@ const OrderReadyCard = ({order}: OrderReadyCardProps) => {
                 <Button size="small" color="primary">
                     Confirm Pick Up
                 </Button>
+                {order.priority && (
+                    <Typography ml={"auto"} mr={0} pr={1}
+                        sx={{
+                            fontWeight: "bold",
+                            background: 'linear-gradient(to top, darkgreen, green)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                        }}
+                    >
+                        PRIORITY
+                    </Typography>
+                )}
+                
             </CardActions>
         </Card>
     )
