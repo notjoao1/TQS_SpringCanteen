@@ -45,6 +45,8 @@ public class OrderSteps {
   // changed the id in frontend, continue...
   @And("I select the menu number {string}")
   public void i_select_menu(String number) {
+    wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("MuiSnackbarContent-message")));
+    wait.until(ExpectedConditions.elementToBeClickable(By.id("add-menu-" + number)));
     driver.findElement(By.id("add-menu-" + number)).click();
   }
 
@@ -63,8 +65,7 @@ public class OrderSteps {
   @And("I click on \"Confirm selection\"")
   public void i_click_confirm() {
     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirm-selection")));
-    WebElement confirmSelection =
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("confirm-selection")));
+    WebElement confirmSelection = wait.until(ExpectedConditions.elementToBeClickable(By.id("confirm-selection")));
 
     Actions actions = new Actions(driver);
     actions.moveToElement(confirmSelection).click().perform();
@@ -78,8 +79,7 @@ public class OrderSteps {
   @And("I click on \"Cancel selection\"")
   public void i_click_cancel() {
     wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("cancel-selection")));
-    WebElement cancelSelection =
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("cancel-selection")));
+    WebElement cancelSelection = wait.until(ExpectedConditions.elementToBeClickable(By.id("cancel-selection")));
 
     Actions actions = new Actions(driver);
     actions.moveToElement(cancelSelection).click().perform();
