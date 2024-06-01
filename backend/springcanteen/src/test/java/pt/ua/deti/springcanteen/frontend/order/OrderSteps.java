@@ -39,7 +39,7 @@ public class OrderSteps {
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
     // setup wait
-    wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+    wait = new WebDriverWait(driver, Duration.ofSeconds(6));
   }
 
   // changed the id in frontend, continue...
