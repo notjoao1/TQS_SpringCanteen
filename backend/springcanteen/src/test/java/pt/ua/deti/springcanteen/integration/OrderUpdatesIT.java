@@ -122,9 +122,17 @@ class OrderUpdatesIT {
             + "    \"role\": \"%s\"}";
     List<Employee> employees =
         List.of(
-          new Employee("desk_payments","desk_payments@gmail.com","desk_payments_password",EmployeeRole.DESK_PAYMENTS),
-          new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
-          new Employee("desk_orders","desk_orders@gmail.com","desk_orders_password",EmployeeRole.DESK_ORDERS));
+            new Employee(
+                "desk_payments",
+                "desk_payments@gmail.com",
+                "desk_payments_password",
+                EmployeeRole.DESK_PAYMENTS),
+            new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
+            new Employee(
+                "desk_orders",
+                "desk_orders@gmail.com",
+                "desk_orders_password",
+                EmployeeRole.DESK_ORDERS));
     employeeOrderAndUpdateRequestAndHeader =
         employees.stream()
             .map(
@@ -158,8 +166,10 @@ class OrderUpdatesIT {
                   orderUpdateRequest.setOrderId(newOrder.getId());
                   StompHeaders handshakeHeaders = new StompHeaders();
                   handshakeHeaders.set("Authorization", "Bearer " + token);
-                  return Arguments.of(newOrder, orderUpdateRequest, handshakeHeaders, employee.getRole());
-                }).toList();
+                  return Arguments.of(
+                      newOrder, orderUpdateRequest, handshakeHeaders, employee.getRole());
+                })
+            .toList();
   }
 
   @BeforeEach
@@ -185,8 +195,11 @@ class OrderUpdatesIT {
     return employeeOrderAndUpdateRequestAndHeader.stream();
   }
 
-  private Arguments provideArgumentsForEmployeeWithCertainRole(EmployeeRole employeeRole){
-    return provideAllArguments().filter(arguments -> arguments.get()[3] == employeeRole).findFirst().orElseThrow();
+  private Arguments provideArgumentsForEmployeeWithCertainRole(EmployeeRole employeeRole) {
+    return provideAllArguments()
+        .filter(arguments -> arguments.get()[3] == employeeRole)
+        .findFirst()
+        .orElseThrow();
   }
 
   private class CustomStompFrameHandler implements StompFrameHandler {
@@ -213,8 +226,11 @@ class OrderUpdatesIT {
   @ParameterizedTest
   @MethodSource("provideAllArguments")
   void whenAuthenticatedConnect_thenMessagesReceived(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
-  ) throws InterruptedException, ExecutionException, TimeoutException {
+      Order testOrder,
+      OrderUpdateRequestDTO orderUpdateRequest,
+      StompHeaders userHandshakeHeaders,
+      EmployeeRole employeeRole)
+      throws InterruptedException, ExecutionException, TimeoutException {
     // act
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
@@ -232,102 +248,132 @@ class OrderUpdatesIT {
 
     OrderUpdateResponseDTO receivedOrderUpdateResponseDTO = futureMessage.get(10, TimeUnit.SECONDS);
     assertThat(receivedOrderUpdateResponseDTO)
-      .isNotNull()
-      .extracting(OrderUpdateResponseDTO::getOrderId, OrderUpdateResponseDTO::getNewOrderStatus, OrderUpdateResponseDTO::isPriority)
-      .containsExactly(1L, OrderStatus.PREPARING, false);
+        .isNotNull()
+        .extracting(
+            OrderUpdateResponseDTO::getOrderId,
+            OrderUpdateResponseDTO::getNewOrderStatus,
+            OrderUpdateResponseDTO::isPriority)
+        .containsExactly(1L, OrderStatus.PREPARING, false);
   }
 
   @ParameterizedTest
-  @EnumSource(value = OrderStatus.class, names = {"NOT_PAID", "PICKED_UP"})
-  void whenReceiveUpdateOrder_FromInvalidStatus_thenInvalidStatusChangeException( OrderStatus orderStatus )
-  throws ExecutionException, InterruptedException, TimeoutException {
+  @EnumSource(
+      value = OrderStatus.class,
+      names = {"NOT_PAID", "PICKED_UP"})
+  void whenReceiveUpdateOrder_FromInvalidStatus_thenInvalidStatusChangeException(
+      OrderStatus orderStatus) throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    Object[] argumentsObjects = provideArgumentsForEmployeeWithCertainRole(EmployeeRole.DESK_PAYMENTS).get();
+    Object[] argumentsObjects =
+        provideArgumentsForEmployeeWithCertainRole(EmployeeRole.DESK_PAYMENTS).get();
     OrderUpdateRequestDTO orderUpdateRequest = (OrderUpdateRequestDTO) argumentsObjects[1];
     StompHeaders userHandshakeHeaders = (StompHeaders) argumentsObjects[2];
     EmployeeRole employeeRole = (EmployeeRole) argumentsObjects[3];
     Order testOrder = (Order) argumentsObjects[0];
     testOrder.setOrderStatus(orderStatus);
     orderRepository.save(testOrder);
-    logger.info("testOrder: {}; orderUpdateRequest: {}; employeeRole: {}; userHandshakeHeaders: {};",
-      testOrder.getId(), orderUpdateRequest, employeeRole, userHandshakeHeaders);
+    logger.info(
+        "testOrder: {}; orderUpdateRequest: {}; employeeRole: {}; userHandshakeHeaders: {};",
+        testOrder.getId(),
+        orderUpdateRequest,
+        employeeRole,
+        userHandshakeHeaders);
     stompSession =
-      connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
+        connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
     // act
     stompSession.send("/app/order_updates", orderUpdateRequest);
 
     // wait until message received
     Awaitility.await()
-      .atMost(2, TimeUnit.SECONDS)
-      .untilAsserted(
-        () -> {
-          verify(orderUpdatesControllerSpy, times(1)).handleException(any(InvalidStatusChangeException.class));
-        });
+        .atMost(2, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              verify(orderUpdatesControllerSpy, times(1))
+                  .handleException(any(InvalidStatusChangeException.class));
+            });
 
     // assert
     verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(any());
-    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
-    verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderServiceSpy, times(1))
+        .changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderServiceSpy, times(0))
+        .changeNotPaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
     verify(orderManagementServiceSpy, times(0)).manageOrder(any());
     verify(orderManagementServiceSpy, times(0)).manageNotPaidOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
-    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderNotifierServiceSpy, times(0))
+        .sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
   }
 
   @ParameterizedTest
-  @EnumSource(value = OrderStatus.class, names = {"IDLE", "PREPARING", "READY", "PICKED_UP"})
+  @EnumSource(
+      value = OrderStatus.class,
+      names = {"IDLE", "PREPARING", "READY", "PICKED_UP"})
   void whenPayOrderWithInvalidStatus_thenReturn400_ForDeskPayments(OrderStatus orderStatus) {
     // setup
-    Object[] argumentsObjects = provideArgumentsForEmployeeWithCertainRole(EmployeeRole.DESK_PAYMENTS).get();
+    Object[] argumentsObjects =
+        provideArgumentsForEmployeeWithCertainRole(EmployeeRole.DESK_PAYMENTS).get();
     StompHeaders userHandshakeHeaders = (StompHeaders) argumentsObjects[2];
     EmployeeRole employeeRole = (EmployeeRole) argumentsObjects[3];
     Order testOrder = (Order) argumentsObjects[0];
     testOrder.setOrderStatus(orderStatus);
     orderRepository.save(testOrder);
-    logger.info("testOrder: {}; employeeRole: {}; userHandshakeHeaders: {};", testOrder.getId(), employeeRole, userHandshakeHeaders);
+    logger.info(
+        "testOrder: {}; employeeRole: {}; userHandshakeHeaders: {};",
+        testOrder.getId(),
+        employeeRole,
+        userHandshakeHeaders);
 
-    RestAssured
-      .given()
+    RestAssured.given()
         .contentType(ContentType.JSON)
         .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
-      .when()
+        .when()
         .put(String.format("api/orders/%s", testOrder.getId()))
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_BAD_REQUEST)
-        .extract().statusCode();
+        .extract()
+        .statusCode();
 
     verify(orderServiceSpy, times(1)).changeNotPaidOrderToNextOrderStatus(testOrder.getId());
     verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(any());
     verify(orderManagementServiceSpy, times(0)).manageOrder(any());
     verify(orderManagementServiceSpy, times(0)).manageNotPaidOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
-    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderNotifierServiceSpy, times(0))
+        .sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
   }
 
   @ParameterizedTest
   @MethodSource("provideAllArguments")
   void whenPayOrderThatDoesntExist_thenReturn404_OnlyForDeskPayments_elseReturn403(
-    Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
-  ) {
+      Order testOrder,
+      OrderUpdateRequestDTO orderUpdateRequest,
+      StompHeaders userHandshakeHeaders,
+      EmployeeRole employeeRole) {
     // setup
-    logger.info("employeeRole: {}; userHandshakeHeaders: {};",employeeRole, userHandshakeHeaders);
+    logger.info("employeeRole: {}; userHandshakeHeaders: {};", employeeRole, userHandshakeHeaders);
 
-    int statusCode = RestAssured
-      .given()
-        .contentType(ContentType.JSON)
-        .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
-      .when()
-        .put("api/orders/398")
-      .then()
-        .statusCode(employeeRole == EmployeeRole.DESK_PAYMENTS ? HttpStatus.SC_NOT_FOUND : HttpStatus.SC_FORBIDDEN)
-        .extract().statusCode();
+    int statusCode =
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
+            .when()
+            .put("api/orders/398")
+            .then()
+            .statusCode(
+                employeeRole == EmployeeRole.DESK_PAYMENTS
+                    ? HttpStatus.SC_NOT_FOUND
+                    : HttpStatus.SC_FORBIDDEN)
+            .extract()
+            .statusCode();
 
-    verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderServiceSpy, times(0))
+        .changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
     verify(orderManagementServiceSpy, times(0)).manageOrder(any());
     verify(orderManagementServiceSpy, times(0)).manageNotPaidOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
-    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderNotifierServiceSpy, times(0))
+        .sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
     if (statusCode == HttpStatus.SC_FORBIDDEN) {
       verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(398L);
     } else {
@@ -338,61 +384,86 @@ class OrderUpdatesIT {
   @ParameterizedTest
   @MethodSource("provideAllArguments")
   void whenReceiveOrderThatDoesntExist_thenDoNothing(
-    Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
-  ) throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder,
+      OrderUpdateRequestDTO orderUpdateRequest,
+      StompHeaders userHandshakeHeaders,
+      EmployeeRole employeeRole)
+      throws ExecutionException, InterruptedException, TimeoutException {
     // setup
     OrderUpdateRequestDTO orderUpdateRequestDTO = new OrderUpdateRequestDTO();
     orderUpdateRequestDTO.setOrderId(398L);
-    logger.info("orderUpdateRequestDTO: {}; employeeRole: {}; userHandshakeHeaders: {};",
-      orderUpdateRequestDTO, employeeRole, userHandshakeHeaders);
+    logger.info(
+        "orderUpdateRequestDTO: {}; employeeRole: {}; userHandshakeHeaders: {};",
+        orderUpdateRequestDTO,
+        employeeRole,
+        userHandshakeHeaders);
     stompSession =
-      connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
+        connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
     // act
     stompSession.send("/app/order_updates", orderUpdateRequestDTO);
 
     // wait until message received
     Awaitility.await()
-      .atMost(2, TimeUnit.SECONDS)
-      .untilAsserted(
-        () -> {
-          verify(orderUpdatesControllerSpy, times(1)).receiveOrderUpdates(orderUpdateRequestDTO);
-        });
+        .atMost(2, TimeUnit.SECONDS)
+        .untilAsserted(
+            () -> {
+              verify(orderUpdatesControllerSpy, times(1))
+                  .receiveOrderUpdates(orderUpdateRequestDTO);
+            });
 
     // assert
-    verify(orderServiceSpy, times(1)).changePaidOrderToNextOrderStatus(orderUpdateRequestDTO.getOrderId());
+    verify(orderServiceSpy, times(1))
+        .changePaidOrderToNextOrderStatus(orderUpdateRequestDTO.getOrderId());
     verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(any());
     verify(orderManagementServiceSpy, times(0)).manageOrder(any());
     verify(orderManagementServiceSpy, times(0)).manageNotPaidOrder(any());
     verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
-    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderNotifierServiceSpy, times(0))
+        .sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
   }
 
   @ParameterizedTest
   @MethodSource("provideAllArguments")
   void whenPayNotPaidOrder_WithStatusNotPaid_thenReturn204_OnlyForDeskPayments_elseReturn403(
-    Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders, EmployeeRole employeeRole
-  ) {
+      Order testOrder,
+      OrderUpdateRequestDTO orderUpdateRequest,
+      StompHeaders userHandshakeHeaders,
+      EmployeeRole employeeRole) {
     // setup
-    Order newOrder = new Order(
-      OrderStatus.NOT_PAID,testOrder.isPaid(),testOrder.isPriority(),testOrder.getNif(),testOrder.getKioskTerminal()
-    );
+    Order newOrder =
+        new Order(
+            OrderStatus.NOT_PAID,
+            testOrder.isPaid(),
+            testOrder.isPriority(),
+            testOrder.getNif(),
+            testOrder.getKioskTerminal());
     orderRepository.save(newOrder);
-    logger.info("newOrder: {}; orderUpdateRequest: {}; employeeRole: {}; userHandshakeHeaders: {};",
-      newOrder.getId(), orderUpdateRequest, employeeRole, userHandshakeHeaders);
+    logger.info(
+        "newOrder: {}; orderUpdateRequest: {}; employeeRole: {}; userHandshakeHeaders: {};",
+        newOrder.getId(),
+        orderUpdateRequest,
+        employeeRole,
+        userHandshakeHeaders);
 
-    int statusCode = RestAssured
-      .given()
-        .contentType(ContentType.JSON)
-        .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
-      .when()
-        .put(String.format("api/orders/%d", newOrder.getId()))
-      .then()
-        .statusCode(employeeRole == EmployeeRole.DESK_PAYMENTS ? HttpStatus.SC_NO_CONTENT : HttpStatus.SC_FORBIDDEN)
-        .extract().statusCode();
+    int statusCode =
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", userHandshakeHeaders.get("Authorization").get(0))
+            .when()
+            .put(String.format("api/orders/%d", newOrder.getId()))
+            .then()
+            .statusCode(
+                employeeRole == EmployeeRole.DESK_PAYMENTS
+                    ? HttpStatus.SC_NO_CONTENT
+                    : HttpStatus.SC_FORBIDDEN)
+            .extract()
+            .statusCode();
 
-    verify(orderServiceSpy, times(0)).changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
-    verify(orderNotifierServiceSpy, times(0)).sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
+    verify(orderServiceSpy, times(0))
+        .changePaidOrderToNextOrderStatus(orderUpdateRequest.getOrderId());
+    verify(orderNotifierServiceSpy, times(0))
+        .sendOrderStatusUpdates(anyLong(), any(), anyBoolean());
     if (statusCode == HttpStatus.SC_FORBIDDEN) {
       verify(orderServiceSpy, times(0)).changeNotPaidOrderToNextOrderStatus(newOrder.getId());
       verify(orderManagementServiceSpy, times(0)).manageOrder(any());
@@ -400,17 +471,16 @@ class OrderUpdatesIT {
       verify(orderNotifierServiceSpy, times(0)).sendNewOrder(any());
     } else {
       verify(orderServiceSpy, times(1)).changeNotPaidOrderToNextOrderStatus(newOrder.getId());
-      verify(orderManagementServiceSpy, times(1)).manageOrder(
-        argThat((Order order) -> order.getId().equals(newOrder.getId()))
-      );
-      verify(orderManagementServiceSpy, times(1)).manageNotPaidOrder(
-        argThat((Order order) -> order.getId().equals(newOrder.getId()))
-      );
-      verify(orderNotifierServiceSpy, times(1)).sendNewOrder(
-        argThat((Order order) -> order.getId().equals(newOrder.getId()) && order.getOrderStatus() == OrderStatus.IDLE)
-      );
+      verify(orderManagementServiceSpy, times(1))
+          .manageOrder(argThat((Order order) -> order.getId().equals(newOrder.getId())));
+      verify(orderManagementServiceSpy, times(1))
+          .manageNotPaidOrder(argThat((Order order) -> order.getId().equals(newOrder.getId())));
+      verify(orderNotifierServiceSpy, times(1))
+          .sendNewOrder(
+              argThat(
+                  (Order order) ->
+                      order.getId().equals(newOrder.getId())
+                          && order.getOrderStatus() == OrderStatus.IDLE));
     }
   }
-
-
 }

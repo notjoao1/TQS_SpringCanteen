@@ -110,39 +110,39 @@ public class IOrderService implements OrderService {
 
   public Optional<Order> changePaidOrderToNextOrderStatus(Long orderId) {
     logger.info("changePaidOrderToNextOrderStatus: orderId={}", orderId);
-    return changeToNextOrderStatus(orderId, List.of(OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY));
+    return changeToNextOrderStatus(
+        orderId, List.of(OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY));
   }
 
-  private Optional<Order> changeToNextOrderStatus(Long orderId, List<OrderStatus> availableOldOrderStatus){
+  private Optional<Order> changeToNextOrderStatus(
+      Long orderId, List<OrderStatus> availableOldOrderStatus) {
 
     Optional<Order> orderOpt = orderRepository.findById(orderId);
     if (orderOpt.isEmpty()) return Optional.empty();
 
     Order order = orderOpt.get();
     if (!availableOldOrderStatus.contains(order.getOrderStatus()))
-      throw new InvalidStatusChangeException(String.format(
+      throw new InvalidStatusChangeException(
+          String.format(
               "Can only change status from Order with the following status: %s. Got %s",
-              Arrays.toString(availableOldOrderStatus.toArray()), order.getOrderStatus()
-      ));
-    else
-      logger.info("Changing from order status {}", order.getOrderStatus());
+              Arrays.toString(availableOldOrderStatus.toArray()), order.getOrderStatus()));
+    else logger.info("Changing from order status {}", order.getOrderStatus());
 
     if (orderManagementService.manageOrder(order)) {
       logger.info(
-              "Order with id {} moved to the next queue and OrderStatus changed to {}",
-              order.getId(), order.getOrderStatus()
-      );
+          "Order with id {} moved to the next queue and OrderStatus changed to {}",
+          order.getId(),
+          order.getOrderStatus());
       return Optional.of(order);
     }
     logger.error(
-            "Order with id {} could not be transferred to another queue. OrderStatus unchanged: {}",
-            order.getId(), order.getOrderStatus()
-    );
-    throw new QueueTransferException(String.format(
+        "Order with id {} could not be transferred to another queue. OrderStatus unchanged: {}",
+        order.getId(),
+        order.getOrderStatus());
+    throw new QueueTransferException(
+        String.format(
             "Order with id %s could not be transferred to another queue. OrderStatus unchanged: %s",
-            order.getId(), order.getOrderStatus()
-    ));
-
+            order.getId(), order.getOrderStatus()));
   }
 
   @Override

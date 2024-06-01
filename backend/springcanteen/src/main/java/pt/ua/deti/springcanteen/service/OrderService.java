@@ -14,5 +14,4 @@ public interface OrderService {
   Optional<Order> changeNotPaidOrderToNextOrderStatus(Long orderId);
 
   List<Order> getNotPaidOrders();
-
 }

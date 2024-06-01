@@ -190,14 +190,13 @@ class OrderControllerTest {
             + "    ]"
             + "}";
 
-    RestAssuredMockMvc
-      .given()
+    RestAssuredMockMvc.given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
         .body(orderRequest)
-      .when()
+        .when()
         .post("api/orders")
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_CREATED)
         .and()
         .body("orderMenus.size()", is(1))
@@ -289,14 +288,13 @@ class OrderControllerTest {
             + "}";
 
     // expect 2 menus, first one with price (10€ + 1€), second one w ith price (3€ + 2€)
-    RestAssuredMockMvc
-      .given()
+    RestAssuredMockMvc.given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
         .body(orderRequest)
-      .when()
+        .when()
         .post("api/orders")
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_CREATED)
         .and()
         .body("orderMenus.size()", is(2))
@@ -310,90 +308,104 @@ class OrderControllerTest {
 
   @Test
   void whenPayOrderWithStatusNotPaidAndThatExists_thenReturn204() {
-    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
-        .thenReturn(Optional.of(new Order()));
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L)).thenReturn(Optional.of(new Order()));
 
-    RestAssuredMockMvc
-      .given()
+    RestAssuredMockMvc.given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
-      .when()
+        .when()
         .put("api/orders/1")
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_NO_CONTENT);
-
   }
 
   @Test
   void whenPayOrderThatDoesntExist_thenReturn404() {
-    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
-      .thenReturn(Optional.empty());
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L)).thenReturn(Optional.empty());
 
-    RestAssuredMockMvc
-      .given()
+    RestAssuredMockMvc.given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
-      .when()
+        .when()
         .put("api/orders/1")
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_NOT_FOUND);
   }
 
   @Test
-  void whenPayOrderWithInvalidStatus_thenThrowException_andReturn400AndCustomMessage(){
+  void whenPayOrderWithInvalidStatus_thenThrowException_andReturn400AndCustomMessage() {
     when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
-      .thenThrow(new InvalidStatusChangeException("Invalid status change"));
+        .thenThrow(new InvalidStatusChangeException("Invalid status change"));
 
-    String statusLine = RestAssuredMockMvc
-      .given()
-        .mockMvc(mockMvc)
-        .contentType(ContentType.JSON)
-      .when()
-        .put("api/orders/1")
-      .then()
-        .statusCode(HttpStatus.SC_BAD_REQUEST)
-        .extract().statusLine();
+    String statusLine =
+        RestAssuredMockMvc.given()
+            .mockMvc(mockMvc)
+            .contentType(ContentType.JSON)
+            .when()
+            .put("api/orders/1")
+            .then()
+            .statusCode(HttpStatus.SC_BAD_REQUEST)
+            .extract()
+            .statusLine();
 
     assertThat(statusLine).isEqualTo("400 Invalid status change");
   }
 
   @Test
-  void whenPayOrderWithStatusNotPaidAndThatExistsIfQueueIsFull_thenThrowException_andReturn400AndCustomMessage(){
+  void
+      whenPayOrderWithStatusNotPaidAndThatExistsIfQueueIsFull_thenThrowException_andReturn400AndCustomMessage() {
     when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
-      .thenThrow(new QueueTransferException("Queue was full"));
+        .thenThrow(new QueueTransferException("Queue was full"));
 
-    String statusLine = RestAssuredMockMvc
-      .given()
-        .mockMvc(mockMvc)
-        .contentType(ContentType.JSON)
-      .when()
-        .put("api/orders/1")
-      .then()
-        .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-        .extract().statusLine();
+    String statusLine =
+        RestAssuredMockMvc.given()
+            .mockMvc(mockMvc)
+            .contentType(ContentType.JSON)
+            .when()
+            .put("api/orders/1")
+            .then()
+            .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+            .extract()
+            .statusLine();
 
     assertThat(statusLine).isEqualTo("500 Queue was full");
   }
 
   @Test
   void whenGetNotPaidOrders_thenReturnCorrectResponseAnd200() {
-    KioskTerminal kioskTerminal = new KioskTerminal(); kioskTerminal.setId(1L);
+    KioskTerminal kioskTerminal = new KioskTerminal();
+    kioskTerminal.setId(1L);
     OrderMenu orderMenu1 = new OrderMenu(null, menu1, "{}");
     OrderMenu orderMenu2 = new OrderMenu(null, menu2, "{}");
     OrderMenu orderMenu3 = new OrderMenu(null, menu2, "{}");
-    Order order1 = new Order(1L, OrderStatus.NOT_PAID, false, 10.0f,
-      false, "123456789", kioskTerminal, Set.of(orderMenu1, orderMenu2));
-    Order order2 = new Order(2L, OrderStatus.NOT_PAID, false, 5.0f,
-      false, "987654321", kioskTerminal, Set.of(orderMenu3));
+    Order order1 =
+        new Order(
+            1L,
+            OrderStatus.NOT_PAID,
+            false,
+            10.0f,
+            false,
+            "123456789",
+            kioskTerminal,
+            Set.of(orderMenu1, orderMenu2));
+    Order order2 =
+        new Order(
+            2L,
+            OrderStatus.NOT_PAID,
+            false,
+            5.0f,
+            false,
+            "987654321",
+            kioskTerminal,
+            Set.of(orderMenu3));
     when(orderService.getNotPaidOrders()).thenReturn(List.of(order1, order2));
 
-    RestAssuredMockMvc
-      .given()
+    RestAssuredMockMvc.given()
         .mockMvc(mockMvc)
         .contentType(ContentType.JSON)
-      .when()
+        .when()
         .get("api/orders/notpaid")
-      .then()
+        .then()
         .statusCode(HttpStatus.SC_OK)
         .body("size()", is(2))
         .body("id", contains(1, 2))
@@ -406,5 +418,4 @@ class OrderControllerTest {
         .body("orderMenus[0].menu.name", containsInAnyOrder(menu1.getName(), menu2.getName()))
         .body("orderMenus[1].menu.name", containsInAnyOrder(menu2.getName()));
   }
-
 }

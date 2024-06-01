@@ -16,17 +16,17 @@ import pt.ua.deti.springcanteen.service.impl.IMenuService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class OrderRepositoryTest {
 
   @Container
-  public static PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:latest")
-    .withUsername("testname")
-    .withPassword("testpassword")
-    .withDatabaseName("sc_test");
+  public static PostgreSQLContainer container =
+      new PostgreSQLContainer<>("postgres:latest")
+          .withUsername("testname")
+          .withPassword("testpassword")
+          .withDatabaseName("sc_test");
 
   @DynamicPropertySource
   static void properties(DynamicPropertyRegistry registry) {
@@ -35,19 +35,15 @@ class OrderRepositoryTest {
     registry.add("spring.datasource.username", container::getUsername);
   }
 
-
-  @Autowired
-  private OrderRepository orderRepository;
+  @Autowired private OrderRepository orderRepository;
 
   private static final Logger logger = LoggerFactory.getLogger(IMenuService.class);
 
   // Just to verify if the repository is working (already implemented by Spring Data JPA)
   // no need to test findByIsPaid(false) as is all implemented by Spring Data JPA
   @Test
-  void whenFindByNotPaid_thenReturnNotPaidOrders(){
+  void whenFindByNotPaid_thenReturnNotPaidOrders() {
     logger.info("Testing OrderRepository - findByIsPaid(true)");
-    assertThat(orderRepository.findByIsPaid(true))
-      .isNotNull()
-      .hasSize(6);
+    assertThat(orderRepository.findByIsPaid(true)).isNotNull().hasSize(6);
   }
 }

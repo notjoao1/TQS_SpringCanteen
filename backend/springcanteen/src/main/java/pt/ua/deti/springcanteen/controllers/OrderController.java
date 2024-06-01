@@ -39,10 +39,10 @@ public class OrderController {
 
   @PutMapping("/{id}")
   @Secured("DESK_PAYMENTS")
-  public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id){
+  public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id) {
     logger.info("PUT /api/orders/{id} - pay not paid order");
     Optional<Order> orderOpt = orderService.changeNotPaidOrderToNextOrderStatus(id);
-    if (orderOpt.isEmpty()){
+    if (orderOpt.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
     return ResponseEntity.noContent().build();
@@ -50,12 +50,11 @@ public class OrderController {
 
   @GetMapping("/notpaid")
   @Secured("DESK_PAYMENTS")
-  public ResponseEntity<List<OrderClientResponseDTO>> getNotPaidOrders(){
+  public ResponseEntity<List<OrderClientResponseDTO>> getNotPaidOrders() {
     logger.info("GET /api/orders/notpaid - get not paid orders");
     return ResponseEntity.ok(
         orderService.getNotPaidOrders().stream()
             .map(OrderClientResponseDTO::fromOrderEntity)
-            .toList()
-    );
+            .toList());
   }
 }

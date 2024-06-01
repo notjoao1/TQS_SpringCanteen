@@ -93,7 +93,8 @@ class OrderUpdatesControllerValidFlowIT {
 
   List<Arguments> employeeOrderAndUpdateRequestAndToken;
 
-  private static final Logger logger = LoggerFactory.getLogger(OrderUpdatesControllerValidFlowIT.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(OrderUpdatesControllerValidFlowIT.class);
 
   @BeforeAll
   void beforeAllSetup() {
@@ -117,9 +118,17 @@ class OrderUpdatesControllerValidFlowIT {
             + "    \"role\": \"%s\"}";
     List<Employee> employees =
         List.of(
-          new Employee("desk_payments","desk_payments@gmail.com","desk_payments_password",EmployeeRole.DESK_PAYMENTS),
-          new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
-          new Employee("desk_orders","desk_orders@gmail.com","desk_orders_password",EmployeeRole.DESK_ORDERS));
+            new Employee(
+                "desk_payments",
+                "desk_payments@gmail.com",
+                "desk_payments_password",
+                EmployeeRole.DESK_PAYMENTS),
+            new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK),
+            new Employee(
+                "desk_orders",
+                "desk_orders@gmail.com",
+                "desk_orders_password",
+                EmployeeRole.DESK_ORDERS));
     employeeOrderAndUpdateRequestAndToken =
         employees.stream()
             .map(
@@ -149,7 +158,10 @@ class OrderUpdatesControllerValidFlowIT {
                               testOrder.isPriority(),
                               testOrder.getNif(),
                               testOrder.getKioskTerminal()));
-                  Queue<OrderEntry> queue = (Queue<OrderEntry>) ReflectionTestUtils.getField(orderManagementServiceSpy, "regularIdleOrders");
+                  Queue<OrderEntry> queue =
+                      (Queue<OrderEntry>)
+                          ReflectionTestUtils.getField(
+                              orderManagementServiceSpy, "regularIdleOrders");
                   queue.add(OrderEntry.fromOrderEntity(newOrder));
                   OrderUpdateRequestDTO orderUpdateRequest = new OrderUpdateRequestDTO();
                   orderUpdateRequest.setOrderId(newOrder.getId());
@@ -187,12 +199,14 @@ class OrderUpdatesControllerValidFlowIT {
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(1)
   void whenReceiveUpdateOrder_FromIDLE_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
-  )
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
       throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {};",
-      testOrder, orderUpdateRequest, userHandshakeHeaders);
+    logger.info(
+        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {};",
+        testOrder,
+        orderUpdateRequest,
+        userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -209,7 +223,8 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderManagementServiceSpy, times(1))
-                  .manageIdleOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+                  .manageIdleOrder(
+                      argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PREPARING, testOrder.isPriority());
@@ -224,11 +239,14 @@ class OrderUpdatesControllerValidFlowIT {
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(2)
   void whenReceiveUpdateOrder_FromPREPARING_thenSendUpdateThroughWebsockets(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
-  ) throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
+      throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-      testOrder, orderUpdateRequest, userHandshakeHeaders);
+    logger.info(
+        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
+        testOrder,
+        orderUpdateRequest,
+        userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -248,7 +266,8 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderManagementServiceSpy, times(1))
-                  .managePreparingOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+                  .managePreparingOrder(
+                      argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.READY, testOrder.isPriority());
@@ -263,11 +282,14 @@ class OrderUpdatesControllerValidFlowIT {
   @MethodSource("provideAllTokenHeaders")
   @org.junit.jupiter.api.Order(3)
   void whenReceiveUpdateOrder_FromREADY_PICKED_UP_thenRemoveFromQueue(
-      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders
-  ) throws ExecutionException, InterruptedException, TimeoutException {
+      Order testOrder, OrderUpdateRequestDTO orderUpdateRequest, StompHeaders userHandshakeHeaders)
+      throws ExecutionException, InterruptedException, TimeoutException {
     // setup
-    logger.info("testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
-      testOrder, orderUpdateRequest, userHandshakeHeaders);
+    logger.info(
+        "testOrder: {}; orderUpdateRequest: {}; userHandshakeHeaders: {}",
+        testOrder,
+        orderUpdateRequest,
+        userHandshakeHeaders);
     stompSession =
         connectAsyncWithHeaders(websocketURL, webSocketStompClient, userHandshakeHeaders);
 
@@ -287,7 +309,8 @@ class OrderUpdatesControllerValidFlowIT {
               verify(orderManagementServiceSpy, times(1))
                   .manageOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderManagementServiceSpy, times(1))
-                .manageReadyOrder(argThat((Order order) -> order.getId().equals(testOrder.getId())));
+                  .manageReadyOrder(
+                      argThat((Order order) -> order.getId().equals(testOrder.getId())));
               verify(orderNotifierServiceSpy, times(1))
                   .sendOrderStatusUpdates(
                       testOrder.getId(), OrderStatus.PICKED_UP, testOrder.isPriority());

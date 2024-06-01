@@ -38,8 +38,9 @@ public class DeskPaymentsEmployeeSteps {
 
   // POST request to /api/auth/signup to create a desk payments employee
   static void createDeskPaymentsEmployee(RestTemplate restTemplate) {
-    String postData = "{ \"username\": \"payments123\", \"password\": \"payments123\", \"email\":"
-        + " \"testpayments@gmail.com\", \"role\": \"DESK_PAYMENTS\"}";
+    String postData =
+        "{ \"username\": \"payments123\", \"password\": \"payments123\", \"email\":"
+            + " \"testpayments@gmail.com\", \"role\": \"DESK_PAYMENTS\"}";
     String url = String.format("http://%s/api/auth/signup", BASE_HOSTNAME);
     logger.info("Calling {} to create user...", url);
 
@@ -50,45 +51,46 @@ public class DeskPaymentsEmployeeSteps {
     logger.info("{}", postData);
     restTemplate.postForEntity(url, request, String.class);
     logger.info(
-        "Successfully created a desk payments employee with credentials: email - testpayments@gmail.com;"
-            + " password - payments123");
+        "Successfully created a desk payments employee with credentials: email -"
+            + " testpayments@gmail.com; password - payments123");
   }
 
   static void createOrder(RestTemplate restTemplate) {
     // create not paid order
-    String orderRequest = "{"
-        + "    \"kioskId\": 1,"
-        + "    \"isPaid\": false,"
-        + "    \"isPriority\": true,"
-        + "    \"nif\": \"123456789\","
-        + "    \"orderMenus\": ["
-        + "        {"
-        + "            \"menuId\": 1,"
-        + "            \"customization\": {"
-        + "                \"customizedDrink\": {"
-        + "                    \"itemId\": 8"
-        + "                },"
-        + "                \"customizedMainDish\": {"
-        + "                    \"itemId\": 1,"
-        + "                    \"customizedIngredients\": ["
-        + "                        {"
-        + "                            \"ingredientId\": 1,"
-        + "                            \"quantity\": 1"
-        + "                        },"
-        + "                        {"
-        + "                            \"ingredientId\": 3,"
-        + "                            \"quantity\": 2"
-        + "                        },"
-        + "                        {"
-        + "                            \"ingredientId\": 4,"
-        + "                            \"quantity\": 2"
-        + "                        }"
-        + "                    ]"
-        + "                }"
-        + "            }"
-        + "        }"
-        + "    ]"
-        + "}";
+    String orderRequest =
+        "{"
+            + "    \"kioskId\": 1,"
+            + "    \"isPaid\": false,"
+            + "    \"isPriority\": true,"
+            + "    \"nif\": \"123456789\","
+            + "    \"orderMenus\": ["
+            + "        {"
+            + "            \"menuId\": 1,"
+            + "            \"customization\": {"
+            + "                \"customizedDrink\": {"
+            + "                    \"itemId\": 8"
+            + "                },"
+            + "                \"customizedMainDish\": {"
+            + "                    \"itemId\": 1,"
+            + "                    \"customizedIngredients\": ["
+            + "                        {"
+            + "                            \"ingredientId\": 1,"
+            + "                            \"quantity\": 1"
+            + "                        },"
+            + "                        {"
+            + "                            \"ingredientId\": 3,"
+            + "                            \"quantity\": 2"
+            + "                        },"
+            + "                        {"
+            + "                            \"ingredientId\": 4,"
+            + "                            \"quantity\": 2"
+            + "                        }"
+            + "                    ]"
+            + "                }"
+            + "            }"
+            + "        }"
+            + "    ]"
+            + "}";
 
     String url = String.format("http://%s/api/orders", BASE_HOSTNAME);
 
@@ -146,7 +148,8 @@ public class DeskPaymentsEmployeeSteps {
   @Then("I should be logged in")
   public void i_should_be_logged_in() {
     String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
-    assertThat(actualPageText).isEqualTo("Welcome back, payments123, get back to handling Desk Payments,");
+    assertThat(actualPageText)
+        .isEqualTo("Welcome back, payments123, get back to handling Desk Payments,");
   }
 
   @When("I navigate to the Desk payments page")
@@ -157,24 +160,27 @@ public class DeskPaymentsEmployeeSteps {
   @Then("I should see the existing not yet paid orders")
   public void i_should_see_the_existing_not_yet_paid_orders() {
     // get children elements
-    List<WebElement> notPaidOrders = driver.findElement(By.cssSelector(".MuiTableBody-root"))
-        .findElements(By.cssSelector(".MuiTableRow-root"));
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
     assertThat(notPaidOrders.size()).isNotZero();
   }
 
   @And("I click the 'Request Payment' button for the first not yet paid order")
   public void i_click_the_request_payment_button_for_the_first_not_yet_paid_order() {
     // before paying, get number of unpaid orders for later
-    List<WebElement> notPaidOrders = driver.findElement(By.cssSelector(".MuiTableBody-root"))
-        .findElements(By.cssSelector(".MuiTableRow-root"));
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
     numberNotPaidOrders = notPaidOrders.size();
     driver.findElement(By.id("not-paid-order-request-pay-1")).click();
   }
 
   @And("I click the 'Confirm' button")
   public void i_click_the_confirm_button() {
-    wait.until(
-        ExpectedConditions.visibilityOfElementLocated(By.id("confirm-payment-button")));
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirm-payment-button")));
     driver.findElement(By.id("confirm-payment-button")).click();
   }
 
@@ -188,9 +194,10 @@ public class DeskPaymentsEmployeeSteps {
 
   @And("the desk payments table should have one less order to be paid")
   public void the_desk_payments_table_should_have_one_less_order_to_be_paid() {
-    List<WebElement> notPaidOrders = driver.findElement(By.cssSelector(".MuiTableBody-root"))
-        .findElements(By.cssSelector(".MuiTableRow-root"));
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
     assertThat(notPaidOrders).hasSize(numberNotPaidOrders - 1);
   }
-
 }
