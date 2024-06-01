@@ -56,6 +56,7 @@ public class IOrderManagementService implements OrderManagementService {
     boolean result;
     Queue<OrderEntry> newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
     order.setOrderStatus(OrderStatus.IDLE);
+    order.setPaid(true);
     result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
     logger.info("newOrderQueue = regularIdleOrders {}", newOrderQueue == regularIdleOrders);
     if (result) {
@@ -114,7 +115,7 @@ public class IOrderManagementService implements OrderManagementService {
       order.setOrderStatus(OrderStatus.READY);
       result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
       if (result) {
-        oldOrderQueue.remove(OrderEntry.fromOrderEntity(order));
+        oldOrderQueue.remove(oldOrderEntry);
         orderRepository.save(order);
         orderNotifierService.sendOrderStatusUpdates(
             order.getId(), OrderStatus.READY, order.isPriority());
