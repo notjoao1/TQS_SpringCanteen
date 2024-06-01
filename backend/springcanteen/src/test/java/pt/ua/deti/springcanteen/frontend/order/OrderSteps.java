@@ -172,6 +172,11 @@ public class OrderSteps {
     driver.findElement(By.id("expiration-date-input")).sendKeys(date);
   }
 
+  @And("I click to add my order to the priority queue")
+  public void i_click_to_add_my_order_to_the_priority_queue() {
+    driver.findElement(By.id("priority-queue-checkbox")).click();
+  }
+
   @Then("I should see the menu number {string} and not the menu number {string}")
   public void i_should_see_the_menu_number_and_not_the_menu_number(
       String menuNumberExisting, String menuNumberGone) {
