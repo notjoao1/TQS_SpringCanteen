@@ -59,7 +59,7 @@ Feature: Make an order on SpringCanteen
         And I fill in the expiration date with "12/24"
         And I check the Priority Queue checkbox
         And I click on "Confirm order"
-        Then I should see my order number as "7"
+        Then I should see my order number as "8"
         And I should see total cost as "7.00"€
         And I should see that my order is a priority order
 
@@ -78,7 +78,7 @@ Feature: Make an order on SpringCanteen
         And I fill in the expiration date with "12/24"
         And I check the Priority Queue checkbox
         And I click on "Confirm order"
-        Then I should see my order number as "7"
+        Then I should see my order number as "8"
         And I should see total cost as "7.00"€
         And I should see that my order is a priority order
 
