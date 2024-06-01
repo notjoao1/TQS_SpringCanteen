@@ -34,17 +34,21 @@ public class EmployeeCookSteps {
 
   // POST request to /api/auth/signup to create a cook employee
   static void createCookEmployee(RestTemplate restTemplate) {
-    String postData = "{ \"username\": \"hellocook123\", \"password\": \"cook123\", \"email\": \"testcook@gmail.com\", \"role\": \"COOK\"}";
+    String postData =
+        "{ \"username\": \"hellocook123\", \"password\": \"cook123\", \"email\":"
+            + " \"testcook@gmail.com\", \"role\": \"COOK\"}";
     String url = "http://localhost/api/auth/signup";
     logger.info("Calling {} to create user...", url);
-    
+
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
     HttpEntity<String> request = new HttpEntity<>(postData, headers);
     logger.info("{}", postData);
     restTemplate.postForEntity(url, request, String.class);
-    logger.info("Successfully created a cook employee with credentials: email - testcook@gmail.com; password - cook123");
+    logger.info(
+        "Successfully created a cook employee with credentials: email - testcook@gmail.com;"
+            + " password - cook123");
   }
 
   static void createOrder(RestTemplate restTemplate) {
@@ -149,7 +153,8 @@ public class EmployeeCookSteps {
 
   @Then("I should see the single existing priority idle order")
   public void i_should_see_the_single_existing_priority_idle_order() {
-    // at this point, there should be 1 priority idle order, which was created at the start of this file
+    // at this point, there should be 1 priority idle order, which was created at the start of this
+    // file
     assertThat(driver.findElement(By.id("priority-idle-order-1")).isDisplayed()).isTrue();
   }
 
@@ -160,8 +165,10 @@ public class EmployeeCookSteps {
 
   @Then("I should see the confirmation snackbar")
   public void then_i_should_see_the_confirmation_snackbar() {
-    wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"notistack-snackbar\"]")));
-    assertThat(driver.findElement(By.xpath("//*[@id=\"notistack-snackbar\"]")).isDisplayed()).isTrue();
+    wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"notistack-snackbar\"]")));
+    assertThat(driver.findElement(By.xpath("//*[@id=\"notistack-snackbar\"]")).isDisplayed())
+        .isTrue();
   }
 
   @And("I should see an order in the 'Preparing' orders section")
@@ -183,5 +190,4 @@ public class EmployeeCookSteps {
   public void i_should_no_longer_see_an_order_in_the_preparing_orders_section() {
     assertThat(driver.findElements(By.id("priority-preparing-order-1"))).isEmpty();
   }
-
 }
