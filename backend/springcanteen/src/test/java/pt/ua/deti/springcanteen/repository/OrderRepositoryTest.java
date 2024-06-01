@@ -1,21 +1,40 @@
 package pt.ua.deti.springcanteen.repository;
 
-import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.impl.IMenuService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 @DataJpaTest
+@Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@FlywayTest
 class OrderRepositoryTest {
+
+  @Container
+  public static PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:latest")
+    .withUsername("testname")
+    .withPassword("testpassword")
+    .withDatabaseName("sc_test");
+
+  @DynamicPropertySource
+  static void properties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", container::getJdbcUrl);
+    registry.add("spring.datasource.password", container::getPassword);
+    registry.add("spring.datasource.username", container::getUsername);
+  }
+
 
   @Autowired
   private OrderRepository orderRepository;
