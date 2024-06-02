@@ -1,12 +1,8 @@
-package pt.ua.deti.springcanteen.frontend.employee_desk_orders;
+package pt.ua.deti.springcanteen.frontend.digital_signage;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWithHeaders;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -21,14 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.And;
@@ -37,28 +26,38 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import pt.ua.deti.springcanteen.dto.JwtAuthenticationResponseDTO;
-import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
-import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
 
-public class DeskOrdersEmployeeSteps {
+public class DigitalSignageSteps {
   private static WebDriver driver;
   private static JavascriptExecutor js;
   private static Wait<WebDriver> wait;
-  private static Logger logger = LoggerFactory.getLogger(DeskOrdersEmployeeSteps.class);
-  private static final String BASE_BACKEND_URL = "localhost";
+  private static Logger logger = LoggerFactory.getLogger(DigitalSignageSteps.class);
 
-  static void setupOrderAndEmployee(RestTemplate restTemplate) throws Exception {
-    String jwt = createDeskOrdersEmployee(restTemplate);
-    long orderId = createOrder(restTemplate);
-    updateOrderToReady(orderId, jwt);
+  // POST request to /api/auth/signup to create a cook employee
+  static void createCookEmployee(RestTemplate restTemplate) {
+    String postData =
+        "{ \"username\": \"hellocook567\", \"password\": \"cook123\", \"email\":"
+            + " \"testcook2@gmail.com\", \"role\": \"COOK\"}";
+    String url = "http://localhost/api/auth/signup";
+    logger.info("Calling {} to create user...", url);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<String> request = new HttpEntity<>(postData, headers);
+    logger.info("{}", postData);
+    restTemplate.postForEntity(url, request, String.class);
+    logger.info(
+        "Successfully created a cook employee with credentials: email - testcook2@gmail.com;"
+            + " password - cook123");
   }
 
   // POST request to /api/auth/signup to create a desk orders employee
   static String createDeskOrdersEmployee(RestTemplate restTemplate) {
     String postData =
-        "{ \"username\": \"deskorders123\", \"password\": \"deskorders123\", \"email\":"
-            + " \"testdeskorders@gmail.com\", \"role\": \"DESK_ORDERS\"}";
-    String url = String.format("http://%s/api/auth/signup", BASE_BACKEND_URL);
+        "{ \"username\": \"deskorders567\", \"password\": \"deskorders567\", \"email\":"
+            + " \"testdeskorders2@gmail.com\", \"role\": \"DESK_ORDERS\"}";
+    String url = "http://localhost/api/auth/signup";
     logger.info("Calling {} to create user...", url);
 
     HttpHeaders headers = new HttpHeaders();
@@ -69,12 +68,12 @@ public class DeskOrdersEmployeeSteps {
     JwtAuthenticationResponseDTO res =
         restTemplate.postForEntity(url, request, JwtAuthenticationResponseDTO.class).getBody();
     logger.info(
-        "Successfully created a cook employee with credentials: email - testdeskorders@gmail.com;"
-            + " password - deskorders123");
+        "Successfully created a cook employee with credentials: email - testdeskorders2@gmail.com;"
+            + " password - deskorders567");
     return res.getToken();
   }
 
-  static long createOrder(RestTemplate restTemplate) throws Exception {
+  static void createOrder(RestTemplate restTemplate) {
     String orderRequest =
         "{"
             + "    \"kioskId\": 1,"
@@ -110,7 +109,7 @@ public class DeskOrdersEmployeeSteps {
             + "    ]"
             + "}";
 
-    String url = String.format("http://%s/api/orders", BASE_BACKEND_URL);
+    String url = "http://localhost/api/orders";
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -118,44 +117,12 @@ public class DeskOrdersEmployeeSteps {
     HttpEntity<String> request = new HttpEntity<>(orderRequest, headers);
 
     logger.info("Calling {} to create order...", url);
-    OrderClientResponseDTO response =
-        restTemplate.postForEntity(url, request, OrderClientResponseDTO.class).getBody();
+    restTemplate.postForEntity(url, request, String.class);
     logger.info("Successfully created a paid priority order...");
-    return response.getId();
-  }
-
-  static void updateOrderToReady(long orderId, String jwt)
-      throws InterruptedException, ExecutionException, TimeoutException {
-
-    WebSocketClient client = new StandardWebSocketClient();
-    WebSocketStompClient stompClient = new WebSocketStompClient(client);
-    stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-
-    String url = String.format("ws://%s/websocket", BASE_BACKEND_URL);
-    logger.info("Updating order status to READY...");
-
-    StompSessionHandlerAdapter sessionHandler =
-        new StompSessionHandlerAdapter() {
-          @Override
-          public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-            OrderUpdateRequestDTO payload = new OrderUpdateRequestDTO();
-            payload.setOrderId(orderId);
-            logger.info("Sending payload: {}", payload);
-            session.send("/app/order_updates", payload);
-            session.send("/app/order_updates", payload);
-            logger.info("Payload for updating orders sent...");
-          }
-        };
-
-    StompHeaders stompHeaders = new StompHeaders();
-    stompHeaders.set("Authorization", "Bearer " + jwt);
-
-    connectAsyncWithHeaders(url, stompClient, stompHeaders);
-    stompClient.connectAsync(url, sessionHandler).get(10, TimeUnit.SECONDS);
   }
 
   @BeforeAll
-  public static void setup() throws Exception {
+  public static void setup() {
     WebDriverManager.firefoxdriver().setup();
     FirefoxOptions options = new FirefoxOptions();
     options.addArguments("--headless");
@@ -169,7 +136,9 @@ public class DeskOrdersEmployeeSteps {
     wait = new WebDriverWait(driver, Duration.ofSeconds(3));
 
     RestTemplate restTemplate = new RestTemplate();
-    setupOrderAndEmployee(restTemplate);
+    createCookEmployee(restTemplate);
+    createDeskOrdersEmployee(restTemplate);	
+    createOrder(restTemplate);
   }
 
   @Given("I have a clean local storage")
@@ -183,10 +152,16 @@ public class DeskOrdersEmployeeSteps {
     driver.get("http://localhost/signin");
   }
 
-  @When("I submit username and password")
+  @When("I submit my cook username and password")
   public void i_submit_username_and_password() {
-    driver.findElement(By.id("email")).sendKeys("testdeskorders@gmail.com");
-    driver.findElement(By.id("password")).sendKeys("deskorders123");
+    driver.findElement(By.id("email")).sendKeys("testcook2@gmail.com");
+    driver.findElement(By.id("password")).sendKeys("cook123");
+  }
+
+  @When("I submit my desk employee username and password")
+  public void i_submit_my_desk_employee_username_and_password() {
+    driver.findElement(By.id("email")).sendKeys("testdeskorders2@gmail.com");
+    driver.findElement(By.id("password")).sendKeys("deskorders567");
   }
 
   @And("I click the sign in button")
@@ -194,11 +169,40 @@ public class DeskOrdersEmployeeSteps {
     driver.findElement(By.id("signin-button")).click();
   }
 
-  @Then("I should be logged in")
-  public void i_should_be_logged_in() {
+  @Then("I should be logged in as a cook")
+  public void i_should_be_logged_in_as_a_cook() {
+    String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
+    assertThat(actualPageText).isEqualTo("Welcome back Cook hellocook567!");
+  }
+
+  @Then("I should be logged in as a desk employee")
+  public void i_should_be_logged_in_as_a_desk_employee() {
     String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
     assertThat(actualPageText)
-        .isEqualTo("Welcome back, deskorders123, get back to confirming ready orders,");
+        .isEqualTo("Welcome back, deskorders567, get back to confirming ready orders,");
+  }
+
+  @When("I navigate to the cook orders page")
+  public void i_navigate_to_the_cook_orders_page() {
+    driver.get("http://localhost/employee/orders");
+  }
+
+  @And("I navigate to the Digital Signage page")
+  public void i_navigate_to_the_digital_signage_page() {
+    driver.get("http://localhost/signage/digital-signage");
+  }
+
+  @Then("I should find one order in the \"Preparing\" side")
+  public void i_should_find_one_order_in_the_preparing_side() {
+
+    assertThat(driver.findElement(By.id("preparing-1")).isDisplayed()).isTrue();
+    assertThat(driver.findElements(By.id("delivery-1"))).isEmpty();
+  }
+
+  @Then("I should find one order in the \"Delivery\" side")
+  public void i_should_find_one_order_in_the_delivery_side() {
+    assertThat(driver.findElements(By.id("preparing-1"))).isEmpty();
+    assertThat(driver.findElement(By.id("delivery-1")).isDisplayed()).isTrue();
   }
 
   @When("I navigate to the ready orders page")
@@ -206,21 +210,27 @@ public class DeskOrdersEmployeeSteps {
     driver.get("http://localhost/employee/ready_orders");
   }
 
-  @Then("I should see the single existing priority ready order")
-  public void i_should_see_the_single_existing_priority_ready_order() {
-    assertThat(driver.findElement(By.id("priority-ready-order-1")).isDisplayed()).isTrue();
+  @And("I click the Start Cooking button for the first idle order")
+  public void i_click_the_start_cooking_button_for_the_first_idle_order() {
+    driver.findElement(By.id("priority-idle-button-1")).click();
+  }
+
+  @And("I click the Ready to pick up button for the first preparing order")
+  public void i_click_the_ready_to_pick_up_button_for_the_first_preparing_order() {
+    driver.findElement(By.id("priority-preparing-button-1")).click();
   }
 
   @And("I click the Confirm pick up button for the first ready order")
   public void i_click_the_confirm_pick_up_button_for_the_first_ready_order() {
+    wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.id("priority-ready-button-1")));
     driver.findElement(By.id("priority-ready-button-1")).click();
   }
 
-  @Then("I should see the confirmation snackbar")
-  public void i_should_see_the_confirmation_snackbar() {
-    wait.until(
-        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"notistack-snackbar\"]")));
-    assertThat(driver.findElement(By.xpath("//*[@id=\"notistack-snackbar\"]")).isDisplayed())
-        .isTrue();
+  @Then("I should not find any order")
+  public void i_should_not_find_any_order() {
+    assertThat(driver.findElements(By.id("preparing-1"))).isEmpty();
+    assertThat(driver.findElements(By.id("delivery-1"))).isEmpty();
   }
+
 }
