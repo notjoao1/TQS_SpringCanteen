@@ -56,6 +56,7 @@ public class IOrderManagementService implements OrderManagementService {
     boolean result;
     Queue<OrderEntry> newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
     order.setOrderStatus(OrderStatus.IDLE);
+    order.setPaid(true);
     result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
     logger.info("newOrderQueue = regularIdleOrders {}", newOrderQueue == regularIdleOrders);
     if (result) {
@@ -88,7 +89,8 @@ public class IOrderManagementService implements OrderManagementService {
       if (result) {
         oldOrderQueue.remove(oldOrderEntry);
         orderRepository.save(order);
-        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PREPARING);
+        orderNotifierService.sendOrderStatusUpdates(
+            order.getId(), OrderStatus.PREPARING, order.isPriority());
       }
     } else {
       logger.info("Order not found in queue {}", order);
@@ -113,9 +115,10 @@ public class IOrderManagementService implements OrderManagementService {
       order.setOrderStatus(OrderStatus.READY);
       result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
       if (result) {
-        oldOrderQueue.remove(OrderEntry.fromOrderEntity(order));
+        oldOrderQueue.remove(oldOrderEntry);
         orderRepository.save(order);
-        orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.READY);
+        orderNotifierService.sendOrderStatusUpdates(
+            order.getId(), OrderStatus.READY, order.isPriority());
       }
     } else {
       logger.info("Order not found in queue {}", order);
@@ -130,7 +133,8 @@ public class IOrderManagementService implements OrderManagementService {
     if (result) {
       order.setOrderStatus(OrderStatus.PICKED_UP);
       orderRepository.save(order);
-      orderNotifierService.sendOrderStatusUpdates(order.getId(), OrderStatus.PICKED_UP);
+      orderNotifierService.sendOrderStatusUpdates(
+          order.getId(), OrderStatus.PICKED_UP, order.isPriority());
     }
     return result;
   }

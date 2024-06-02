@@ -3,14 +3,14 @@ package pt.ua.deti.springcanteen.integration;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
 
 import org.apache.hc.core5.http.HttpStatus;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -22,6 +22,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.everyItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +33,9 @@ import io.restassured.http.ContentType;
 import pt.ua.deti.springcanteen.ConvertUtils;
 import pt.ua.deti.springcanteen.dto.QueueOrdersDTO;
 import pt.ua.deti.springcanteen.dto.response.cookresponse.OrderCookResponseDTO;
+import pt.ua.deti.springcanteen.entities.*;
+import pt.ua.deti.springcanteen.entities.Order;
+import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.OrderManagementService;
 
 import java.util.List;
@@ -60,7 +65,10 @@ class OrderControllerIT {
 
   @LocalServerPort int serverPort;
 
+  private static final Logger logger = LoggerFactory.getLogger(OrderControllerIT.class);
   private static final int QUEUE_CAPACITY = 120;
+
+  @Autowired private OrderRepository orderRepository;
 
   @BeforeEach
   void setup() {
@@ -81,6 +89,31 @@ class OrderControllerIT {
         orderManagementServiceSpy, "regularReadyOrders", new ArrayBlockingQueue<>(QUEUE_CAPACITY));
     ReflectionTestUtils.setField(
         orderManagementServiceSpy, "priorityReadyOrders", new ArrayBlockingQueue<>(QUEUE_CAPACITY));
+  }
+
+  private String createEmployeeAndGetToken(Employee employee) {
+    String signUpRequestTemplate =
+        "{"
+            + "    \"username\": \"%s\","
+            + "    \"email\": \"%s\","
+            + "    \"password\": \"%s\","
+            + "    \"role\": \"%s\"}";
+    return RestAssured.given()
+        .contentType(ContentType.JSON)
+        .body(
+            String.format(
+                signUpRequestTemplate,
+                employee.getUsername(),
+                employee.getEmail(),
+                employee.getPassword(),
+                employee.getRole().name()))
+        .when()
+        .post("api/auth/signup")
+        .then()
+        .statusCode(org.apache.http.HttpStatus.SC_CREATED)
+        .body("$", hasKey("token"))
+        .extract()
+        .path("token");
   }
 
   @ParameterizedTest
@@ -545,5 +578,85 @@ class OrderControllerIT {
                 allOrders.getRegularReadyOrders(), allOrders.getPriorityReadyOrders()))
         .isNotEmpty()
         .allSatisfy(queue -> assertThat(queue).isNotNull().isEmpty());
+  }
+
+  @Test
+  void whenGetNotPaidOrders_withNotAuthenticatedUser_shouldFailWithStatus403() {
+    logger.info("no token");
+    given()
+        .contentType(ContentType.JSON)
+        .when()
+        .get("api/orders/notpaid")
+        .then()
+        .statusCode(HttpStatus.SC_FORBIDDEN);
+  }
+
+  @Test
+  void whenGetNotPaidOrders_withCookEmployee_shouldFailWithStatus403() {
+    String token =
+        createEmployeeAndGetToken(
+            new Employee("cook", "mockcook@gmail.com", "cook_password", EmployeeRole.COOK));
+    logger.info("token: {}", token);
+
+    given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", "Bearer " + token)
+        .when()
+        .get("api/orders/notpaid")
+        .then()
+        .statusCode(HttpStatus.SC_FORBIDDEN);
+  }
+
+  @Test
+  void whenGetNotPaidOrders_withDeskOrdersEmployee_shouldFailWithStatus403() {
+    String token =
+        createEmployeeAndGetToken(
+            new Employee(
+                "desk_orders",
+                "desk_orders@gmail.com",
+                "desk_orders_password",
+                EmployeeRole.DESK_ORDERS));
+    logger.info("token: {}", token);
+
+    given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", "Bearer " + token)
+        .when()
+        .get("api/orders/notpaid")
+        .then()
+        .statusCode(HttpStatus.SC_FORBIDDEN);
+  }
+
+  @Test
+  void whenGetNotPaidOrders_withDeskPaymentsEmployee_shouldReturnCorrectResponse200() {
+    String token =
+        createEmployeeAndGetToken(
+            new Employee(
+                "desk_payments",
+                "desk_payments@gmail.com",
+                "desk_payments_password",
+                EmployeeRole.DESK_PAYMENTS));
+    KioskTerminal kioskTerminal = new KioskTerminal();
+    kioskTerminal.setId(1L);
+    Order orderNotPaid1 =
+        orderRepository.save(
+            new Order(OrderStatus.NOT_PAID, false, false, "123456789", kioskTerminal));
+    Order orderNotPaid2 =
+        orderRepository.save(
+            new Order(OrderStatus.NOT_PAID, false, true, "123456789", kioskTerminal));
+    orderRepository.save(new Order(OrderStatus.IDLE, true, true, "123456789", kioskTerminal));
+    orderRepository.save(new Order(OrderStatus.IDLE, true, false, "123456789", kioskTerminal));
+    logger.info("token: {}", token);
+
+    given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", "Bearer " + token)
+        .when()
+        .get("api/orders/notpaid")
+        .then()
+        .statusCode(HttpStatus.SC_OK)
+        .body("paid", everyItem(is(false)))
+        .body("id", hasItem(orderNotPaid1.getId().intValue()))
+        .body("id", hasItem(orderNotPaid2.getId().intValue()));
   }
 }

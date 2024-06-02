@@ -59,6 +59,7 @@ export default function Hero() {
             </Typography>
           </Typography>
           <Typography
+            id="welcome-back-text" 
             textAlign="center"
             color="text.secondary"
             sx={{ alignSelf: 'center', width: { sm: '100%', md: '80%' } }}

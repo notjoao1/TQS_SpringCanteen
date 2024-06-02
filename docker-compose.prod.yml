@@ -37,7 +37,9 @@ services:
           "spring.jpa.hibernate.ddl-auto" : "update",
           "jwt.secret_key" : "${JWT_SECRET_KEY}",
           "jwt.expirationtime.access" : "1200000",
-          "jwt.expirationtime.refresh" : "172800000"
+          "jwt.expirationtime.refresh" : "172800000",
+          "springdoc.api-docs.path" : "/api/docs",
+          "springdoc.swagger-ui.path" : "/api/docs"
         }'
     healthcheck:
       test: curl --fail --silent localhost:8080/actuator/health || exit 1

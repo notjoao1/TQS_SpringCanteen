@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -171,7 +172,8 @@ class OrderManagementServiceTest {
     // should -> add to IDLE orders queue depending on priority;
     //           send message through websockets notifying new order exists;
     assertTrue(result);
-    verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+    verify(idleOrdersQueue, times(1))
+        .offer(new OrderEntry(order1.getId(), order1.getOrderStatus()));
     for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
@@ -197,7 +199,8 @@ class OrderManagementServiceTest {
     // should -> try but not add to IDLE orders queue;
     //           not send message through websockets notifying new order exists;
     assertFalse(result);
-    verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+    verify(idleOrdersQueue, times(1))
+        .offer(new OrderEntry(order1.getId(), order1.getOrderStatus()));
     for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
@@ -228,14 +231,29 @@ class OrderManagementServiceTest {
     // priority;
     //           send message through websockets notifying new order exists;
     assertTrue(result);
-    verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+    verify(idleOrdersQueue, times(1))
+        .offer(
+            argThat(
+                orderEntry ->
+                    orderEntry.getId().equals(order1.getId())
+                        && orderEntry.getOrderStatus() == OrderStatus.IDLE));
     for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
-    verify(orderRepository, times(1)).save(any());
-    verify(orderNotifierService, times(1)).sendNewOrder(any());
+    verify(orderRepository, times(1))
+        .save(
+            argThat(
+                order ->
+                    order.getId().equals(order1.getId())
+                        && order.getOrderStatus() == OrderStatus.IDLE));
+    verify(orderNotifierService, times(1))
+        .sendNewOrder(
+            argThat(
+                order ->
+                    order.getId().equals(order1.getId())
+                        && order.getOrderStatus() == OrderStatus.IDLE));
   }
 
   @ParameterizedTest
@@ -255,7 +273,12 @@ class OrderManagementServiceTest {
     // should -> not change order status and not save it to DB and not add to IDLE orders queue;
     //           not send message through websockets notifying new order exists;
     assertFalse(result);
-    verify(idleOrdersQueue, times(1)).offer(any(OrderEntry.class));
+    verify(idleOrdersQueue, times(1))
+        .offer(
+            argThat(
+                orderEntry ->
+                    orderEntry.getId().equals(order1.getId())
+                        && orderEntry.getOrderStatus() == OrderStatus.IDLE));
     for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(idleOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
@@ -290,18 +313,29 @@ class OrderManagementServiceTest {
     // priority;
     //           remove from old orders queue;
     //           send message through websockets notifying status update
+    OrderEntry oldOrderEntry = new OrderEntry(order1.getId(), oldOrderStatus);
     assertTrue(result);
-    verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
-    verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
-    verify(oldOrdersQueue, times(1)).remove(any(OrderEntry.class));
+    verify(oldOrdersQueue, times(1)).contains(oldOrderEntry);
+    verify(nextOrdersQueue, times(1))
+        .offer(
+            argThat(
+                orderEntry ->
+                    orderEntry.getId().equals(order1.getId())
+                        && orderEntry.getOrderStatus() == newOrderStatus));
+    verify(oldOrdersQueue, times(1)).remove(oldOrderEntry);
     for (Queue<OrderEntry> unwantedQueue :
         getUnwantedQueues(List.of(oldOrdersQueue, nextOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
-    verify(orderRepository, times(1)).save(any());
-    verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, newOrderStatus);
+    verify(orderRepository, times(1))
+        .save(
+            argThat(
+                order ->
+                    order.getId().equals(order1.getId())
+                        && order.getOrderStatus() == newOrderStatus));
+    verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, newOrderStatus, priority);
   }
 
   @ParameterizedTest
@@ -327,9 +361,15 @@ class OrderManagementServiceTest {
     // according to priority;
     //           stay in the same queue; not remove from old orders queue;
     //           not send message through websockets notifying status update
+    OrderEntry oldOrderEntry = new OrderEntry(order1.getId(), oldOrderStatus);
     assertFalse(result);
-    verify(oldOrdersQueue, times(1)).contains(any(OrderEntry.class));
-    verify(nextOrdersQueue, times(1)).offer(any(OrderEntry.class));
+    verify(oldOrdersQueue, times(1)).contains(oldOrderEntry);
+    verify(nextOrdersQueue, times(1))
+        .offer(
+            argThat(
+                orderEntry ->
+                    orderEntry.getId().equals(order1.getId())
+                        && orderEntry.getOrderStatus() == newOrderStatus));
     verify(oldOrdersQueue, times(0)).remove(any(OrderEntry.class));
     for (Queue<OrderEntry> unwantedQueue :
         getUnwantedQueues(List.of(oldOrdersQueue, nextOrdersQueue))) {
@@ -338,7 +378,8 @@ class OrderManagementServiceTest {
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
     verify(orderRepository, times(0)).save(any());
-    verify(orderNotifierService, times(0)).sendOrderStatusUpdates(1L, OrderStatus.PREPARING);
+    verify(orderNotifierService, times(0))
+        .sendOrderStatusUpdates(1L, OrderStatus.PREPARING, priority);
   }
 
   @ParameterizedTest
@@ -362,14 +403,20 @@ class OrderManagementServiceTest {
     //           remove from READY orders queue depending on priority
     //           send message through websockets notifying status update to PICKED_UP
     assertTrue(result);
-    verify(readyOrdersQueue, times(1)).remove(any(OrderEntry.class));
+    verify(readyOrdersQueue, times(1)).remove(new OrderEntry(order1.getId(), OrderStatus.READY));
     for (Queue<OrderEntry> unwantedQueue : getUnwantedQueues(List.of(readyOrdersQueue))) {
       verify(unwantedQueue, times(0)).contains(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).offer(any(OrderEntry.class));
       verify(unwantedQueue, times(0)).remove(any(OrderEntry.class));
     }
-    verify(orderRepository, times(1)).save(any());
-    verify(orderNotifierService, times(1)).sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP);
+    verify(orderRepository, times(1))
+        .save(
+            argThat(
+                order ->
+                    order.getId().equals(order1.getId())
+                        && order.getOrderStatus() == OrderStatus.PICKED_UP));
+    verify(orderNotifierService, times(1))
+        .sendOrderStatusUpdates(1L, OrderStatus.PICKED_UP, priority);
   }
 
   @ParameterizedTest
@@ -390,10 +437,10 @@ class OrderManagementServiceTest {
 
     assertFalse(result);
     if (oldOrderStatus == OrderStatus.READY) {
-      verify(ordersQueue, times(1)).remove(any(OrderEntry.class));
+      verify(ordersQueue, times(1)).remove(new OrderEntry(order1.getId(), oldOrderStatus));
       verify(ordersQueue, times(0)).contains(any(OrderEntry.class));
     } else {
-      verify(ordersQueue, times(1)).contains(any(OrderEntry.class));
+      verify(ordersQueue, times(1)).contains(new OrderEntry(order1.getId(), oldOrderStatus));
       verify(ordersQueue, times(0)).remove(any(OrderEntry.class));
     }
     verify(ordersQueue, times(0)).offer(any(OrderEntry.class));

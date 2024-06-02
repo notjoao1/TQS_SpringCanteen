@@ -1,11 +1,12 @@
 package pt.ua.deti.springcanteen.controller;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,14 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import io.restassured.http.ContentType;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import pt.ua.deti.springcanteen.controllers.OrderController;
-import pt.ua.deti.springcanteen.entities.Drink;
-import pt.ua.deti.springcanteen.entities.Ingredient;
-import pt.ua.deti.springcanteen.entities.MainDish;
-import pt.ua.deti.springcanteen.entities.MainDishIngredients;
-import pt.ua.deti.springcanteen.entities.Menu;
-import pt.ua.deti.springcanteen.entities.Order;
-import pt.ua.deti.springcanteen.entities.OrderMenu;
-import pt.ua.deti.springcanteen.entities.OrderStatus;
+import pt.ua.deti.springcanteen.entities.*;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
+import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
 import pt.ua.deti.springcanteen.service.EmployeeService;
 import pt.ua.deti.springcanteen.service.JwtService;
 import pt.ua.deti.springcanteen.service.impl.IOrderService;
@@ -308,5 +304,118 @@ class OrderControllerTest {
         .body("orderMenus.menu.name", containsInAnyOrder(menu1.getName(), menu2.getName()))
         .and()
         .body("orderMenus.menu.price", containsInAnyOrder(11.0f, 5.0f));
+  }
+
+  @Test
+  void whenPayOrderWithStatusNotPaidAndThatExists_thenReturn204() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L)).thenReturn(Optional.of(new Order()));
+
+    RestAssuredMockMvc.given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+        .when()
+        .put("api/orders/1")
+        .then()
+        .statusCode(HttpStatus.SC_NO_CONTENT);
+  }
+
+  @Test
+  void whenPayOrderThatDoesntExist_thenReturn404() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L)).thenReturn(Optional.empty());
+
+    RestAssuredMockMvc.given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+        .when()
+        .put("api/orders/1")
+        .then()
+        .statusCode(HttpStatus.SC_NOT_FOUND);
+  }
+
+  @Test
+  void whenPayOrderWithInvalidStatus_thenThrowException_andReturn400AndCustomMessage() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+        .thenThrow(new InvalidStatusChangeException("Invalid status change"));
+
+    String statusLine =
+        RestAssuredMockMvc.given()
+            .mockMvc(mockMvc)
+            .contentType(ContentType.JSON)
+            .when()
+            .put("api/orders/1")
+            .then()
+            .statusCode(HttpStatus.SC_BAD_REQUEST)
+            .extract()
+            .statusLine();
+
+    assertThat(statusLine).isEqualTo("400 Invalid status change");
+  }
+
+  @Test
+  void
+      whenPayOrderWithStatusNotPaidAndThatExistsIfQueueIsFull_thenThrowException_andReturn400AndCustomMessage() {
+    when(orderService.changeNotPaidOrderToNextOrderStatus(1L))
+        .thenThrow(new QueueTransferException("Queue was full"));
+
+    String statusLine =
+        RestAssuredMockMvc.given()
+            .mockMvc(mockMvc)
+            .contentType(ContentType.JSON)
+            .when()
+            .put("api/orders/1")
+            .then()
+            .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+            .extract()
+            .statusLine();
+
+    assertThat(statusLine).isEqualTo("500 Queue was full");
+  }
+
+  @Test
+  void whenGetNotPaidOrders_thenReturnCorrectResponseAnd200() {
+    KioskTerminal kioskTerminal = new KioskTerminal();
+    kioskTerminal.setId(1L);
+    OrderMenu orderMenu1 = new OrderMenu(null, menu1, "{}");
+    OrderMenu orderMenu2 = new OrderMenu(null, menu2, "{}");
+    OrderMenu orderMenu3 = new OrderMenu(null, menu2, "{}");
+    Order order1 =
+        new Order(
+            1L,
+            OrderStatus.NOT_PAID,
+            false,
+            10.0f,
+            false,
+            "123456789",
+            kioskTerminal,
+            Set.of(orderMenu1, orderMenu2));
+    Order order2 =
+        new Order(
+            2L,
+            OrderStatus.NOT_PAID,
+            false,
+            5.0f,
+            false,
+            "987654321",
+            kioskTerminal,
+            Set.of(orderMenu3));
+    when(orderService.getNotPaidOrders()).thenReturn(List.of(order1, order2));
+
+    RestAssuredMockMvc.given()
+        .mockMvc(mockMvc)
+        .contentType(ContentType.JSON)
+        .when()
+        .get("api/orders/notpaid")
+        .then()
+        .statusCode(HttpStatus.SC_OK)
+        .body("size()", is(2))
+        .body("id", contains(1, 2))
+        .body("paid", everyItem(is(false)))
+        .body("priority", everyItem(is(false)))
+        .body("nif", contains("123456789", "987654321"))
+        .body("price", contains(10.0f, 5.0f))
+        .body("orderMenus[0].size()", is(2))
+        .body("orderMenus[1].size()", is(1))
+        .body("orderMenus[0].menu.name", containsInAnyOrder(menu1.getName(), menu2.getName()))
+        .body("orderMenus[1].menu.name", containsInAnyOrder(menu2.getName()));
   }
 }

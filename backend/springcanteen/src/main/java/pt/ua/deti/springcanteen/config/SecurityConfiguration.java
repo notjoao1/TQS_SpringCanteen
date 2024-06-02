@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,6 +23,7 @@ import pt.ua.deti.springcanteen.service.EmployeeService;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -35,7 +37,11 @@ public class SecurityConfiguration {
             request ->
                 request
                     .requestMatchers(
-                        "/api/auth/**", "/error", "docs/**", "/swagger-ui/**", "/websocket**")
+                        "/api/auth/**",
+                        "/error",
+                        "/websocket**",
+                        "/api/docs/**",
+                        "/api/swagger-ui/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/orders")
                     .permitAll()

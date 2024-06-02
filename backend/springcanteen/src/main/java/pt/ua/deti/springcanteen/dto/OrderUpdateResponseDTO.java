@@ -13,4 +13,5 @@ import pt.ua.deti.springcanteen.entities.OrderStatus;
 public class OrderUpdateResponseDTO {
   private Long orderId;
   private OrderStatus newOrderStatus;
+  private boolean isPriority;
 }

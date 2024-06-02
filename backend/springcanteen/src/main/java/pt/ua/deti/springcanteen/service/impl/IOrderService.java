@@ -16,6 +16,8 @@ import pt.ua.deti.springcanteen.entities.Order;
 import pt.ua.deti.springcanteen.entities.OrderMenu;
 import pt.ua.deti.springcanteen.entities.OrderStatus;
 import pt.ua.deti.springcanteen.exceptions.InvalidOrderException;
+import pt.ua.deti.springcanteen.exceptions.InvalidStatusChangeException;
+import pt.ua.deti.springcanteen.exceptions.QueueTransferException;
 import pt.ua.deti.springcanteen.repositories.OrderMenuRepository;
 import pt.ua.deti.springcanteen.repositories.OrderRepository;
 import pt.ua.deti.springcanteen.service.MenuService;
@@ -23,9 +25,7 @@ import pt.ua.deti.springcanteen.service.OrderManagementService;
 import pt.ua.deti.springcanteen.service.OrderService;
 import pt.ua.deti.springcanteen.service.PriceService;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -103,12 +103,31 @@ public class IOrderService implements OrderService {
     return order;
   }
 
-  public Optional<Order> changeToNextOrderStatus(Long orderId) {
+  public Optional<Order> changeNotPaidOrderToNextOrderStatus(Long orderId) {
+    logger.info("changeNotPaidOrderToNextOrderStatus: orderId={}", orderId);
+    return changeToNextOrderStatus(orderId, List.of(OrderStatus.NOT_PAID));
+  }
+
+  public Optional<Order> changePaidOrderToNextOrderStatus(Long orderId) {
+    logger.info("changePaidOrderToNextOrderStatus: orderId={}", orderId);
+    return changeToNextOrderStatus(
+        orderId, List.of(OrderStatus.IDLE, OrderStatus.PREPARING, OrderStatus.READY));
+  }
+
+  private Optional<Order> changeToNextOrderStatus(
+      Long orderId, List<OrderStatus> availableOldOrderStatus) {
+
     Optional<Order> orderOpt = orderRepository.findById(orderId);
     if (orderOpt.isEmpty()) return Optional.empty();
 
     Order order = orderOpt.get();
-    logger.info("Changing from order status {}", order.getOrderStatus());
+    if (!availableOldOrderStatus.contains(order.getOrderStatus()))
+      throw new InvalidStatusChangeException(
+          String.format(
+              "Can only change status from Order with the following status: %s. Got %s",
+              Arrays.toString(availableOldOrderStatus.toArray()), order.getOrderStatus()));
+    else logger.info("Changing from order status {}", order.getOrderStatus());
+
     if (orderManagementService.manageOrder(order)) {
       logger.info(
           "Order with id {} moved to the next queue and OrderStatus changed to {}",
@@ -120,6 +139,14 @@ public class IOrderService implements OrderService {
         "Order with id {} could not be transferred to another queue. OrderStatus unchanged: {}",
         order.getId(),
         order.getOrderStatus());
-    return Optional.empty();
+    throw new QueueTransferException(
+        String.format(
+            "Order with id %s could not be transferred to another queue. OrderStatus unchanged: %s",
+            order.getId(), order.getOrderStatus()));
+  }
+
+  @Override
+  public List<Order> getNotPaidOrders() {
+    return orderRepository.findByIsPaid(false);
   }
 }

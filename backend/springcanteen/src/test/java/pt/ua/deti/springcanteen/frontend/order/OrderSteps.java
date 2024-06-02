@@ -33,17 +33,22 @@ public class OrderSteps {
     options.addArguments("--headless");
     options.addArguments("--no-sandbox");
     options.addArguments("--disable-dev-shm-usage");
+
     driver = new FirefoxDriver(options);
     // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     driver.get(url);
     // setup wait
-    wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+    wait = new WebDriverWait(driver, Duration.ofSeconds(6));
   }
 
   // changed the id in frontend, continue...
   @And("I select the menu number {string}")
   public void i_select_menu(String number) {
+    wait.until(
+        ExpectedConditions.invisibilityOfElementLocated(
+            By.className("MuiSnackbarContent-message")));
+    wait.until(ExpectedConditions.elementToBeClickable(By.id("add-menu-" + number)));
     driver.findElement(By.id("add-menu-" + number)).click();
   }
 

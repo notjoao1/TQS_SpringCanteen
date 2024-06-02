@@ -1,0 +1,29 @@
+.container {
+  padding-top: 100px;
+}
+
+.grid-container { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    grid-gap: 20px; 
+  } 
+  .grid-child { 
+    margin: 10px; 
+    min-width: 400px;
+    /* border: 1px solid black;   */
+  }
+  
+  .orders {
+    height: 610px;
+  }
+  
+  .order-child {
+    display: inline-block;
+    padding-top: 1rem;
+    padding-right: 4rem;;
+    vertical-align: middle;
+  }
+  
+  .cyan {
+    color:#4D869C;
+  }
