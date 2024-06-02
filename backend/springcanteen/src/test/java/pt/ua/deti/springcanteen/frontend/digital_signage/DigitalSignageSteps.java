@@ -196,12 +196,12 @@ public class DigitalSignageSteps {
   public void i_should_find_one_order_in_the_preparing_side() {
 
     assertThat(driver.findElement(By.id("preparing-1")).isDisplayed()).isTrue();
-    assertThat(driver.findElements(By.id("delivery-1")).size()).isEqualTo(0);
+    assertThat(driver.findElements(By.id("delivery-1")).size()).isZero();
   }
 
   @Then("I should find one order in the \"Delivery\" side")
   public void i_should_find_one_order_in_the_delivery_side() {
-    assertThat(driver.findElements(By.id("preparing-1")).size()).isEqualTo(0);
+    assertThat(driver.findElements(By.id("preparing-1")).size()).isZero();
     assertThat(driver.findElement(By.id("delivery-1")).isDisplayed()).isTrue();
   }
 
@@ -229,8 +229,8 @@ public class DigitalSignageSteps {
 
   @Then("I should not find any order")
   public void i_should_not_find_any_order() {
-    assertThat(driver.findElements(By.id("preparing-1")).size()).isEqualTo(0);
-    assertThat(driver.findElements(By.id("delivery-1")).size()).isEqualTo(0);
+    assertThat(driver.findElements(By.id("preparing-1")).size()).isZero();
+    assertThat(driver.findElements(By.id("delivery-1")).size()).isZero();
   }
 
 }
