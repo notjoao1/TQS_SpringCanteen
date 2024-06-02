@@ -38,6 +38,12 @@ To run the production environment:
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
+## System Demo
+
+The demo can be viewed [here](https://www.youtube.com/watch?v=ugFbt7i12fo&feature=youtu.be).
+
+We simulated the work of all employees (cook, employee handling confirming orders, and employee handling payments), while users placed orders.
+
 ## Documentation
 
 [Swagger]([https://](https://swagger.io/)) documentation based on the OpenAPI specification can be accessed at the following endpoint:
