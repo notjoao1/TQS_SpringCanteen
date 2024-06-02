@@ -137,7 +137,7 @@ public class DigitalSignageSteps {
 
     RestTemplate restTemplate = new RestTemplate();
     createCookEmployee(restTemplate);
-    createDeskOrdersEmployee(restTemplate);	
+    createDeskOrdersEmployee(restTemplate);
     createOrder(restTemplate);
   }
 
@@ -222,8 +222,7 @@ public class DigitalSignageSteps {
 
   @And("I click the Confirm pick up button for the first ready order")
   public void i_click_the_confirm_pick_up_button_for_the_first_ready_order() {
-    wait.until(
-        ExpectedConditions.visibilityOfElementLocated(By.id("priority-ready-button-1")));
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("priority-ready-button-1")));
     driver.findElement(By.id("priority-ready-button-1")).click();
   }
 
@@ -232,5 +231,4 @@ public class DigitalSignageSteps {
     assertThat(driver.findElements(By.id("preparing-1"))).isEmpty();
     assertThat(driver.findElements(By.id("delivery-1"))).isEmpty();
   }
-
 }
