@@ -6,10 +6,10 @@ import { IMessage } from "@stomp/stompjs";
 import { enqueueSnackbar } from "notistack";
 
 export default function DigitalSignage() {
-  const [regularPreparingOrders, setRegularPreparingOrders] = useState<CookOrder[]>([]);
-  const [priorityPreparingOrders, setPriorityPreparingOrders] = useState<CookOrder[]>([]);
-  const [regularReadyOrders, setRegularReadyOrders] = useState<CookOrder[]>([]);
-  const [priorityReadyOrders, setPriorityReadyOrders] = useState<CookOrder[]>([]);
+  const [, setRegularPreparingOrders] = useState<CookOrder[]>([]);
+  const [, setPriorityPreparingOrders] = useState<CookOrder[]>([]);
+  const [, setRegularReadyOrders] = useState<CookOrder[]>([]);
+  const [, setPriorityReadyOrders] = useState<CookOrder[]>([]);
   
   const [preparingOrderIds, setPreparingOrderIds] = useState<string[]>([]);
   const [readyOrderIds, setReadyOrderIds] = useState<string[]>([]);

@@ -19,11 +19,8 @@ const logoStyle = {
   padding: "0.5em 1em 0.5em",
 };
 
-interface AppAppBarProps {
-  mode: PaletteMode;
-}
 
-function TopBar({ mode }: AppAppBarProps) {
+function TopBar() {
   const { auth, logout } = React.useContext(AuthContext);
   const [open, setOpen] = React.useState(false);
 

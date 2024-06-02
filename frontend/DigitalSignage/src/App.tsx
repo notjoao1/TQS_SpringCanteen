@@ -11,12 +11,11 @@ import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import { WebSocketProvider } from './context/WebsocketContext';
 import DigitalSignage from './pages/DigitalSignage';
-import { EmployeeRole } from './types/EmployeeTypes';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
-  const [mode, setMode] = React.useState<PaletteMode>('light');
-  const [showCustomTheme, setShowCustomTheme] = React.useState(true);
+  const [mode] = React.useState<PaletteMode>('light');
+  const [showCustomTheme] = React.useState(true);
   const LPtheme = createTheme(getLPTheme(mode));
   const defaultTheme = createTheme({ palette: { mode } });
 

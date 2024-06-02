@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import { AuthContext } from './AuthContext';
 import { refreshToken } from '../api/auth.service';
@@ -33,7 +33,7 @@ export const WebSocketProvider: React.FC<{
       reconnectDelay: 5000,
       connectionTimeout: 10000,
 
-      onConnect: (frame) => {
+      onConnect: () => {
         console.log("Successfully connected to Websocket Server...");
         setWebsocketClient(client);
       },

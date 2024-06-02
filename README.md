@@ -22,6 +22,29 @@ This project aims to implement an MVP compliant with the prior usage scenarios, 
 | Miguel Figueiredo | miguel.belchior@ua.pt | 108287 | Product Owner |
 | Vítor Santos | vitor.mtsantos@ua.pt | 107186 | DevOps Master |
 
+## Running 
+
+Ensure you have [Docker]([https://](https://www.docker.com/)) installed, with [Docker Compose]([https://](https://docs.docker.com/compose/)) available.
+
+To run the development environment:
+
+```bash
+docker compose up -d
+```
+
+To run the production environment:
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+## Documentation
+
+[Swagger]([https://](https://swagger.io/)) documentation based on the OpenAPI specification can be accessed at the following endpoint:
+
+- Development: `http://localhost/api/swagger-ui/index.html`
+- Production: `http://deti-tqs-02.ua.pt/api/swagger-ui/index.html`
+
 
 ##  Project Bookmarks
 
