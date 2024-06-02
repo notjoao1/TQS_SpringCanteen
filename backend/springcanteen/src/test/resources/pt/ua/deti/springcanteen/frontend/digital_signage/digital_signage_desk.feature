@@ -6,7 +6,7 @@ Feature: Digital Signage shwowing the status of customer orders, updated by the 
         And I navigate to the sign in page
         When I submit my desk employee username and password
         And I click the sign in button
-        Then I should be logged in 
+        Then I should be logged in as a desk employee
 
     @update_order_status_to_delivered
     Scenario: Desk Employee confirms the order was delivered, changing the Digital Signage

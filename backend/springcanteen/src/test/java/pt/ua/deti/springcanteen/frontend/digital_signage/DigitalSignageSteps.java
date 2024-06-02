@@ -32,8 +32,8 @@ public class DigitalSignageSteps {
   // POST request to /api/auth/signup to create a cook employee
   static void createCookEmployee(RestTemplate restTemplate) {
     String postData =
-        "{ \"username\": \"hellocook123\", \"password\": \"cook123\", \"email\":"
-            + " \"testcook@gmail.com\", \"role\": \"COOK\"}";
+        "{ \"username\": \"hellocook567\", \"password\": \"cook123\", \"email\":"
+            + " \"testcook2@gmail.com\", \"role\": \"COOK\"}";
     String url = "http://localhost/api/auth/signup";
     logger.info("Calling {} to create user...", url);
 
@@ -44,15 +44,15 @@ public class DigitalSignageSteps {
     logger.info("{}", postData);
     restTemplate.postForEntity(url, request, String.class);
     logger.info(
-        "Successfully created a cook employee with credentials: email - testcook@gmail.com;"
+        "Successfully created a cook employee with credentials: email - testcook2@gmail.com;"
             + " password - cook123");
   }
 
   // POST request to /api/auth/signup to create a desk orders employee
   static String createDeskOrdersEmployee(RestTemplate restTemplate) {
     String postData =
-        "{ \"username\": \"deskorders123\", \"password\": \"deskorders123\", \"email\":"
-            + " \"testdeskorders@gmail.com\", \"role\": \"DESK_ORDERS\"}";
+        "{ \"username\": \"deskorders567\", \"password\": \"deskorders567\", \"email\":"
+            + " \"testdeskorders2@gmail.com\", \"role\": \"DESK_ORDERS\"}";
     String url = "http://localhost/api/auth/signup";
     logger.info("Calling {} to create user...", url);
 
@@ -64,8 +64,8 @@ public class DigitalSignageSteps {
     JwtAuthenticationResponseDTO res =
         restTemplate.postForEntity(url, request, JwtAuthenticationResponseDTO.class).getBody();
     logger.info(
-        "Successfully created a cook employee with credentials: email - testdeskorders@gmail.com;"
-            + " password - deskorders123");
+        "Successfully created a cook employee with credentials: email - testdeskorders2@gmail.com;"
+            + " password - deskorders567");
     return res.getToken();
   }
 
@@ -148,14 +148,14 @@ public class DigitalSignageSteps {
 
   @When("I submit my cook username and password")
   public void i_submit_username_and_password() {
-    driver.findElement(By.id("email")).sendKeys("testcook@gmail.com");
+    driver.findElement(By.id("email")).sendKeys("testcook2@gmail.com");
     driver.findElement(By.id("password")).sendKeys("cook123");
   }
 
   @When("I submit my desk employee username and password")
   public void i_submit_my_desk_employee_username_and_password() {
-    driver.findElement(By.id("email")).sendKeys("testdeskorders@gmail.com");
-    driver.findElement(By.id("password")).sendKeys("deskorders123");
+    driver.findElement(By.id("email")).sendKeys("testdeskorders2@gmail.com");
+    driver.findElement(By.id("password")).sendKeys("deskorders567");
   }
 
   @And("I click the sign in button")
@@ -163,10 +163,17 @@ public class DigitalSignageSteps {
     driver.findElement(By.id("signin-button")).click();
   }
 
-  @Then("I should be logged in")
-  public void i_should_be_logged_in() {
+  @Then("I should be logged in as a cook")
+  public void i_should_be_logged_in_as_a_cook() {
     String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
-    assertThat(actualPageText).isEqualTo("Welcome back Cook hellocook123!");
+    assertThat(actualPageText).isEqualTo("Welcome back Cook hellocook567!");
+  }
+
+  @Then("I should be logged in as a desk employee")
+  public void i_should_be_logged_in_as_a_desk_employee() {
+    String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
+    assertThat(actualPageText)
+        .isEqualTo("Welcome back, deskorders567, get back to confirming ready orders,");
   }
 
   @When("I navigate to the cook orders page")

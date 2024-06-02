@@ -6,7 +6,7 @@ Feature: Digital Signage shwowing the status of customer orders, updated by the 
         And I navigate to the sign in page
         When I submit my cook username and password
         And I click the sign in button
-        Then I should be logged in
+        Then I should be logged in as a cook
 
     @update_order_status_to_preparing
     Scenario: Cook confirms the order is being prepared, changing the Digital Signage
