@@ -45,7 +45,7 @@ public class DeskOrdersEmployeeSteps {
   private static JavascriptExecutor js;
   private static Wait<WebDriver> wait;
   private static Logger logger = LoggerFactory.getLogger(DeskOrdersEmployeeSteps.class);
-  private static final String BASE_HOSTNAME = "localhost";
+  private static final String BASE_BACKEND_URL = "localhost";
 
   static void setupOrderAndEmployee(RestTemplate restTemplate) throws Exception {
     String jwt = createDeskOrdersEmployee(restTemplate);
@@ -58,7 +58,7 @@ public class DeskOrdersEmployeeSteps {
     String postData =
         "{ \"username\": \"deskorders123\", \"password\": \"deskorders123\", \"email\":"
             + " \"testdeskorders@gmail.com\", \"role\": \"DESK_ORDERS\"}";
-    String url = String.format("http://%s/api/auth/signup", BASE_HOSTNAME);
+    String url = String.format("http://%s/api/auth/signup", BASE_BACKEND_URL);
     logger.info("Calling {} to create user...", url);
 
     HttpHeaders headers = new HttpHeaders();
@@ -110,7 +110,7 @@ public class DeskOrdersEmployeeSteps {
             + "    ]"
             + "}";
 
-    String url = String.format("http://%s/api/orders", BASE_HOSTNAME);
+    String url = String.format("http://%s/api/orders", BASE_BACKEND_URL);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -131,7 +131,7 @@ public class DeskOrdersEmployeeSteps {
     WebSocketStompClient stompClient = new WebSocketStompClient(client);
     stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-    String url = String.format("ws://%s/websocket", BASE_HOSTNAME);
+    String url = String.format("ws://%s/websocket", BASE_BACKEND_URL);
     logger.info("Updating order status to READY...");
 
     StompSessionHandlerAdapter sessionHandler =
@@ -209,16 +209,6 @@ public class DeskOrdersEmployeeSteps {
   @Then("I should see the single existing priority ready order")
   public void i_should_see_the_single_existing_priority_ready_order() {
     assertThat(driver.findElement(By.id("priority-ready-order-1")).isDisplayed()).isTrue();
-  }
-
-  @And("I click the Start Cooking button for the first idle order")
-  public void i_click_the_start_cooking_button_for_the_first_idle_order() {
-    driver.findElement(By.id("priority-idle-button-1")).click();
-  }
-
-  @And("I click the Ready to pick up button for the first preparing order")
-  public void i_click_the_ready_to_pick_up_button_for_the_first_preparing_order() {
-    driver.findElement(By.id("priority-preparing-button-1")).click();
   }
 
   @And("I click the Confirm pick up button for the first ready order")

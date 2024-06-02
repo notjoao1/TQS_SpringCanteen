@@ -9,6 +9,9 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -27,6 +30,7 @@ import pt.ua.deti.springcanteen.dto.JwtAuthenticationResponseDTO;
 public class DigitalSignageSteps {
   private static WebDriver driver;
   private static JavascriptExecutor js;
+  private static Wait<WebDriver> wait;
   private static Logger logger = LoggerFactory.getLogger(DigitalSignageSteps.class);
 
   // POST request to /api/auth/signup to create a cook employee
@@ -128,6 +132,8 @@ public class DigitalSignageSteps {
     js = (JavascriptExecutor) driver;
     // wait up to 10 seconds
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+    // setup wait
+    wait = new WebDriverWait(driver, Duration.ofSeconds(3));
 
     RestTemplate restTemplate = new RestTemplate();
     createCookEmployee(restTemplate);
@@ -204,8 +210,20 @@ public class DigitalSignageSteps {
     driver.get("http://localhost/employee/ready_orders");
   }
 
+  @And("I click the Start Cooking button for the first idle order")
+  public void i_click_the_start_cooking_button_for_the_first_idle_order() {
+    driver.findElement(By.id("priority-idle-button-1")).click();
+  }
+
+  @And("I click the Ready to pick up button for the first preparing order")
+  public void i_click_the_ready_to_pick_up_button_for_the_first_preparing_order() {
+    driver.findElement(By.id("priority-preparing-button-1")).click();
+  }
+
   @And("I click the Confirm pick up button for the first ready order")
   public void i_click_the_confirm_pick_up_button_for_the_first_ready_order() {
+    wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.id("priority-ready-button-1")));
     driver.findElement(By.id("priority-ready-button-1")).click();
   }
 
