@@ -27,7 +27,9 @@ public class MenuController {
   @Operation(summary = "List all available menus")
   @ApiResponse(
       responseCode = "200",
-      description = "List of all available menus, including main dish options and their ingredients and drink options.",
+      description =
+          "List of all available menus, including main dish options and their ingredients and drink"
+              + " options.",
       content = {
         @Content(
             mediaType = "application/json",

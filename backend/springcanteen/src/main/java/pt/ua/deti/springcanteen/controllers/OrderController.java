@@ -30,20 +30,25 @@ public class OrderController {
   private final OrderService orderService;
 
   @Operation(summary = "Create a new order")
-  @ApiResponses(value = {
-    @ApiResponse(
-        responseCode = "200",
-        description = "Create a new order given a requested list of menus and their customization, including selected main dish, drink and customized ingredients.",
-        content = {
-            @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = OrderClientResponseDTO.class))
-        }),
-    @ApiResponse(
-        responseCode = "422",
-        description = "The order is invalid - invalid menus, options chosen, or ingredients in main dish.",
-        content = @Content)
-  })
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description =
+                "Create a new order given a requested list of menus and their customization,"
+                    + " including selected main dish, drink and customized ingredients.",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = OrderClientResponseDTO.class))
+            }),
+        @ApiResponse(
+            responseCode = "422",
+            description =
+                "The order is invalid - invalid menus, options chosen, or ingredients in main"
+                    + " dish.",
+            content = @Content)
+      })
   @PostMapping("")
   public ResponseEntity<OrderClientResponseDTO> createOrder(
       @Valid @RequestBody CustomizeOrderDTO customizeOrderDTO) {
@@ -59,15 +64,11 @@ public class OrderController {
   }
 
   @Operation(summary = "Confirm the payment of an order")
-  @ApiResponses(value = {
-    @ApiResponse(
-        responseCode = "204",
-        description = "Order payment confirmed."),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Order not found.",
-        content = @Content)
-  })
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "204", description = "Order payment confirmed."),
+        @ApiResponse(responseCode = "404", description = "Order not found.", content = @Content)
+      })
   @PutMapping("/{id}")
   @Secured("DESK_PAYMENTS")
   public ResponseEntity<Void> payNotPaidOrder(@PathVariable Long id) {
@@ -84,9 +85,9 @@ public class OrderController {
       responseCode = "200",
       description = "List of all orders that have not been paid yet.",
       content = {
-          @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = OrderClientResponseDTO.class))
+        @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = OrderClientResponseDTO.class))
       })
   @GetMapping("/notpaid")
   @Secured("DESK_PAYMENTS")
