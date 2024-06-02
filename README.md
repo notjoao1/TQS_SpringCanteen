@@ -62,8 +62,12 @@ https://springcanteen.atlassian.net/jira/software/projects/SCRUM/boards/1/backlo
 
 ### Project specification report
 
+You can find the pdf version of the final Project Specification Report [here](reports/TQS_G12_SpringCanteen%20Product%20Specification%20Report.pdf).
+
 https://uapt33090-my.sharepoint.com/:w:/g/personal/vitor_mtsantos_ua_pt/EUG5IsPt8vBOj96jJ5s9pnIBJ4QMXVGwoPZtpx56Rn2-Qg?e=tQFoO1
 
 ### Project QA Manual
+
+You can find the pdf version of the final Project QA Manual [here](reports/TQS_G12_SpringCanteen%20QA%20Manual.pdf).
 
 https://uapt33090-my.sharepoint.com/:w:/g/personal/vitor_mtsantos_ua_pt/EVt86ZoggC9Li2d0tWOtDv8BEoIh2DbAfDN6OF3PTO74zA?e=JjDXb5
