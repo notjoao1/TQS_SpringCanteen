@@ -132,15 +132,15 @@ export default function DigitalSignage() {
       <div className='grid-container orders'>
         <div className="grid-child">
           <div className='order-container'>
-            {preparingOrders.map((orderId) => (
-              <h2 key={orderId} className="order-child" id={orderId.toString() + "-prep"}>{orderId}</h2>
+            {preparingOrders.map((orderId, index) => (
+              <h2 key={orderId} className="order-child" id={"preparing-" + (index + 1)}>{orderId}</h2>
             ))}
           </div>
         </div>
         <div className="grid-child">
           <div className='order-container cyan'>
-            {readyOrders.map((orderId) => (
-              <h2 key={orderId} className="order-child" id={orderId.toString() + "-ready"}>{orderId}</h2>
+            {readyOrders.map((orderId, index) => (
+              <h2 key={orderId} className="order-child" id={"delivery-" + (index + 1)}>{orderId}</h2>
             ))}
           </div>
         </div>
