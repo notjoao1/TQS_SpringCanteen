@@ -56,6 +56,7 @@ public class IOrderManagementService implements OrderManagementService {
     boolean result;
     Queue<OrderEntry> newOrderQueue = order.isPriority() ? priorityIdleOrders : regularIdleOrders;
     order.setOrderStatus(OrderStatus.IDLE);
+    order.setPaid(true);
     result = newOrderQueue.offer(OrderEntry.fromOrderEntity(order));
     logger.info("newOrderQueue = regularIdleOrders {}", newOrderQueue == regularIdleOrders);
     if (result) {

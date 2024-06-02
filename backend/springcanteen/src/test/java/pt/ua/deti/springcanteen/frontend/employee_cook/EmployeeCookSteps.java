@@ -31,13 +31,14 @@ public class EmployeeCookSteps {
   private static JavascriptExecutor js;
   private static Wait<WebDriver> wait;
   private static Logger logger = LoggerFactory.getLogger(EmployeeCookSteps.class);
+  private static final String BASE_HOSTNAME = "localhost";
 
   // POST request to /api/auth/signup to create a cook employee
   static void createCookEmployee(RestTemplate restTemplate) {
     String postData =
         "{ \"username\": \"hellocook123\", \"password\": \"cook123\", \"email\":"
             + " \"testcook@gmail.com\", \"role\": \"COOK\"}";
-    String url = "http://localhost/api/auth/signup";
+    String url = String.format("http://%s/api/auth/signup", BASE_HOSTNAME);
     logger.info("Calling {} to create user...", url);
 
     HttpHeaders headers = new HttpHeaders();
@@ -87,7 +88,7 @@ public class EmployeeCookSteps {
             + "    ]"
             + "}";
 
-    String url = "http://localhost/api/orders";
+    String url = String.format("http://%s/api/orders", BASE_HOSTNAME);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);

@@ -60,9 +60,7 @@ export default function App() {
                     </Route>
 
                     <Route element={
-                      <WebSocketProvider>
                         <PrivateRoute requiredRole={EmployeeRole.DESK_PAYMENTS}/>
-                      </WebSocketProvider>
                     }>
                       <Route path="/employee/payments" Component={EmployeePayments}/>
                     </Route>

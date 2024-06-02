@@ -1,16 +1,14 @@
-package pt.ua.deti.springcanteen.frontend.employee_desk_orders;
+package pt.ua.deti.springcanteen.frontend.employee_desk_payments;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pt.ua.deti.springcanteen.integration.WebsocketUtils.connectAsyncWithHeaders;
 
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -21,14 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.And;
@@ -36,28 +27,20 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import pt.ua.deti.springcanteen.dto.JwtAuthenticationResponseDTO;
-import pt.ua.deti.springcanteen.dto.OrderUpdateRequestDTO;
-import pt.ua.deti.springcanteen.dto.response.clientresponse.OrderClientResponseDTO;
 
-public class DeskOrdersEmployeeSteps {
+public class DeskPaymentsEmployeeSteps {
   private static WebDriver driver;
   private static JavascriptExecutor js;
   private static Wait<WebDriver> wait;
-  private static Logger logger = LoggerFactory.getLogger(DeskOrdersEmployeeSteps.class);
+  private static Logger logger = LoggerFactory.getLogger(DeskPaymentsEmployeeSteps.class);
   private static final String BASE_HOSTNAME = "localhost";
+  private int numberNotPaidOrders = 0;
 
-  static void setupOrderAndEmployee(RestTemplate restTemplate) throws Exception {
-    String jwt = createDeskOrdersEmployee(restTemplate);
-    long orderId = createOrder(restTemplate);
-    updateOrderToReady(orderId, jwt);
-  }
-
-  // POST request to /api/auth/signup to create a desk orders employee
-  static String createDeskOrdersEmployee(RestTemplate restTemplate) {
+  // POST request to /api/auth/signup to create a desk payments employee
+  static void createDeskPaymentsEmployee(RestTemplate restTemplate) {
     String postData =
-        "{ \"username\": \"deskorders123\", \"password\": \"deskorders123\", \"email\":"
-            + " \"testdeskorders@gmail.com\", \"role\": \"DESK_ORDERS\"}";
+        "{ \"username\": \"payments123\", \"password\": \"payments123\", \"email\":"
+            + " \"testpayments@gmail.com\", \"role\": \"DESK_PAYMENTS\"}";
     String url = String.format("http://%s/api/auth/signup", BASE_HOSTNAME);
     logger.info("Calling {} to create user...", url);
 
@@ -66,19 +49,18 @@ public class DeskOrdersEmployeeSteps {
 
     HttpEntity<String> request = new HttpEntity<>(postData, headers);
     logger.info("{}", postData);
-    JwtAuthenticationResponseDTO res =
-        restTemplate.postForEntity(url, request, JwtAuthenticationResponseDTO.class).getBody();
+    restTemplate.postForEntity(url, request, String.class);
     logger.info(
-        "Successfully created a cook employee with credentials: email - testdeskorders@gmail.com;"
-            + " password - deskorders123");
-    return res.getToken();
+        "Successfully created a desk payments employee with credentials: email -"
+            + " testpayments@gmail.com; password - payments123");
   }
 
-  static long createOrder(RestTemplate restTemplate) throws Exception {
+  static void createOrder(RestTemplate restTemplate) {
+    // create not paid order
     String orderRequest =
         "{"
             + "    \"kioskId\": 1,"
-            + "    \"isPaid\": true,"
+            + "    \"isPaid\": false,"
             + "    \"isPriority\": true,"
             + "    \"nif\": \"123456789\","
             + "    \"orderMenus\": ["
@@ -118,44 +100,12 @@ public class DeskOrdersEmployeeSteps {
     HttpEntity<String> request = new HttpEntity<>(orderRequest, headers);
 
     logger.info("Calling {} to create order...", url);
-    OrderClientResponseDTO response =
-        restTemplate.postForEntity(url, request, OrderClientResponseDTO.class).getBody();
+    restTemplate.postForEntity(url, request, String.class);
     logger.info("Successfully created a paid priority order...");
-    return response.getId();
-  }
-
-  static void updateOrderToReady(long orderId, String jwt)
-      throws InterruptedException, ExecutionException, TimeoutException {
-
-    WebSocketClient client = new StandardWebSocketClient();
-    WebSocketStompClient stompClient = new WebSocketStompClient(client);
-    stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-
-    String url = String.format("ws://%s/websocket", BASE_HOSTNAME);
-    logger.info("Updating order status to READY...");
-
-    StompSessionHandlerAdapter sessionHandler =
-        new StompSessionHandlerAdapter() {
-          @Override
-          public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-            OrderUpdateRequestDTO payload = new OrderUpdateRequestDTO();
-            payload.setOrderId(orderId);
-            logger.info("Sending payload: {}", payload);
-            session.send("/app/order_updates", payload);
-            session.send("/app/order_updates", payload);
-            logger.info("Payload for updating orders sent...");
-          }
-        };
-
-    StompHeaders stompHeaders = new StompHeaders();
-    stompHeaders.set("Authorization", "Bearer " + jwt);
-
-    connectAsyncWithHeaders(url, stompClient, stompHeaders);
-    stompClient.connectAsync(url, sessionHandler).get(10, TimeUnit.SECONDS);
   }
 
   @BeforeAll
-  public static void setup() throws Exception {
+  public static void setup() {
     WebDriverManager.firefoxdriver().setup();
     FirefoxOptions options = new FirefoxOptions();
     options.addArguments("--headless");
@@ -169,7 +119,8 @@ public class DeskOrdersEmployeeSteps {
     wait = new WebDriverWait(driver, Duration.ofSeconds(3));
 
     RestTemplate restTemplate = new RestTemplate();
-    setupOrderAndEmployee(restTemplate);
+    createDeskPaymentsEmployee(restTemplate);
+    createOrder(restTemplate);
   }
 
   @Given("I have a clean local storage")
@@ -185,8 +136,8 @@ public class DeskOrdersEmployeeSteps {
 
   @When("I submit username and password")
   public void i_submit_username_and_password() {
-    driver.findElement(By.id("email")).sendKeys("testdeskorders@gmail.com");
-    driver.findElement(By.id("password")).sendKeys("deskorders123");
+    driver.findElement(By.id("email")).sendKeys("testpayments@gmail.com");
+    driver.findElement(By.id("password")).sendKeys("payments123");
   }
 
   @And("I click the sign in button")
@@ -198,29 +149,55 @@ public class DeskOrdersEmployeeSteps {
   public void i_should_be_logged_in() {
     String actualPageText = driver.findElement(By.id("welcome-back-text")).getText();
     assertThat(actualPageText)
-        .isEqualTo("Welcome back, deskorders123, get back to confirming ready orders,");
+        .isEqualTo("Welcome back, payments123, get back to handling Desk Payments,");
   }
 
-  @When("I navigate to the ready orders page")
-  public void i_navigate_to_the_ready_orders_page() {
-    driver.get("http://localhost/employee/ready_orders");
+  @When("I navigate to the Desk payments page")
+  public void i_navigate_to_the_desk_payments_page() {
+    driver.get("http://localhost/employee/payments");
   }
 
-  @Then("I should see the single existing priority ready order")
-  public void i_should_see_the_single_existing_priority_ready_order() {
-    assertThat(driver.findElement(By.id("priority-ready-order-1")).isDisplayed()).isTrue();
+  @Then("I should see the existing not yet paid orders")
+  public void i_should_see_the_existing_not_yet_paid_orders() {
+    // get children elements
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
+    assertThat(notPaidOrders.size()).isNotZero();
   }
 
-  @And("I click the Confirm pick up button for the first ready order")
-  public void i_click_the_confirm_pick_up_button_for_the_first_ready_order() {
-    driver.findElement(By.id("priority-ready-button-1")).click();
+  @And("I click the 'Request Payment' button for the first not yet paid order")
+  public void i_click_the_request_payment_button_for_the_first_not_yet_paid_order() {
+    // before paying, get number of unpaid orders for later
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
+    numberNotPaidOrders = notPaidOrders.size();
+    driver.findElement(By.id("not-paid-order-request-pay-1")).click();
+  }
+
+  @And("I click the 'Confirm' button")
+  public void i_click_the_confirm_button() {
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirm-payment-button")));
+    driver.findElement(By.id("confirm-payment-button")).click();
   }
 
   @Then("I should see the confirmation snackbar")
-  public void i_should_see_the_confirmation_snackbar() {
+  public void then_i_should_see_the_confirmation_snackbar() {
     wait.until(
         ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"notistack-snackbar\"]")));
     assertThat(driver.findElement(By.xpath("//*[@id=\"notistack-snackbar\"]")).isDisplayed())
         .isTrue();
+  }
+
+  @And("the desk payments table should have one less order to be paid")
+  public void the_desk_payments_table_should_have_one_less_order_to_be_paid() {
+    List<WebElement> notPaidOrders =
+        driver
+            .findElement(By.cssSelector(".MuiTableBody-root"))
+            .findElements(By.cssSelector(".MuiTableRow-root"));
+    assertThat(notPaidOrders).hasSize(numberNotPaidOrders - 1);
   }
 }
