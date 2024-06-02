@@ -211,6 +211,16 @@ public class DeskOrdersEmployeeSteps {
     assertThat(driver.findElement(By.id("priority-ready-order-1")).isDisplayed()).isTrue();
   }
 
+  @And("I click the Start Cooking button for the first idle order")
+  public void i_click_the_start_cooking_button_for_the_first_idle_order() {
+    driver.findElement(By.id("priority-idle-button-1")).click();
+  }
+
+  @And("I click the Ready to pick up button for the first preparing order")
+  public void i_click_the_ready_to_pick_up_button_for_the_first_preparing_order() {
+    driver.findElement(By.id("priority-preparing-button-1")).click();
+  }
+
   @And("I click the Confirm pick up button for the first ready order")
   public void i_click_the_confirm_pick_up_button_for_the_first_ready_order() {
     driver.findElement(By.id("priority-ready-button-1")).click();
