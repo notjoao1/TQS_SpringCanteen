@@ -37,7 +37,7 @@ public class SecurityConfiguration {
             request ->
                 request
                     .requestMatchers(
-                        "/api/auth/**", "/error", "docs/**", "/swagger-ui/**", "/websocket**")
+                        "/api/auth/**", "/error", "/websocket**", "/api/docs/**", "/api/swagger-ui/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/orders")
                     .permitAll()
