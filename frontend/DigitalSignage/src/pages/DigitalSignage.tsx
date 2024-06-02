@@ -11,8 +11,8 @@ export default function DigitalSignage() {
   const [regularReadyOrders, setRegularReadyOrders] = useState<CookOrder[]>([]);
   const [priorityReadyOrders, setPriorityReadyOrders] = useState<CookOrder[]>([]);
   
-  const [preparingOrders, setPreparingOrders] = useState<CookOrder[]>([]);
-  const [readyOrders, setReadyOrders] = useState<CookOrder[]>([]);
+  const [preparingOrderIds, setPreparingOrderIds] = useState<string[]>([]);
+  const [readyOrderIds, setReadyOrderIds] = useState<string[]>([]);
 
   const { websocketClient } = useWebSocket();
 
@@ -34,11 +34,11 @@ export default function DigitalSignage() {
     setRegularReadyOrders(existingOrders.regularReadyOrders);
     setPriorityReadyOrders(existingOrders.priorityReadyOrders);
     
-    const allPreparingOrders = [...existingOrders.regularPreparingOrders, ...existingOrders.priorityPreparingOrders];
-    const allReadyOrders = [...existingOrders.regularReadyOrders, ...existingOrders.priorityReadyOrders];
+    const allPreparingOrders: CookOrder[] = [...existingOrders.regularPreparingOrders, ...existingOrders.priorityPreparingOrders];
+    const allReadyOrders: CookOrder[] = [...existingOrders.regularReadyOrders, ...existingOrders.priorityReadyOrders];
 
-    setPreparingOrders(formatOrderIds(orderList(allPreparingOrders.map((order) => order.id))));
-    setReadyOrders(formatOrderIds(orderList(allReadyOrders.map((order) => order.id))));
+    setPreparingOrderIds(formatOrderIds(orderList(allPreparingOrders.map((order) => order.id))));
+    setReadyOrderIds(formatOrderIds(orderList(allReadyOrders.map((order) => order.id))));
   }
 
   const handleReceiveNewOrderOrOrderUpdate = (message: IMessage) => {
@@ -50,27 +50,27 @@ export default function DigitalSignage() {
     // update the queues based on the new status
     if (orderUpdate.newOrderStatus === OrderStatus.PREPARING) {
       // add the new id to the preparing orders
-      setPreparingOrders((prevState) => [...prevState, formatOrderId(orderUpdate.orderId)]);
+      setPreparingOrderIds((prevState: string[]) => [...prevState, formatOrderId(orderUpdate.orderId)]);
     } else if (orderUpdate.newOrderStatus === OrderStatus.READY) {
       // remove the id from the preparing orders
       const idToRemove = formatOrderId(orderUpdate.orderId);
-      setPreparingOrders((prevState) => prevState.filter((orderId) => orderId !== idToRemove));
+      setPreparingOrderIds((prevState: string[]) => prevState.filter((orderId) => orderId !== idToRemove));
 
       // add the id to the ready orders
-      setReadyOrders((prevState) => [...prevState, formatOrderId(orderUpdate.orderId)]);
+      setReadyOrderIds((prevState: string[]) => [...prevState, formatOrderId(orderUpdate.orderId)]);
     } else if (orderUpdate.newOrderStatus === OrderStatus.PICKED_UP) {
       // remove the id from the ready orders
       const idToRemove = formatOrderId(orderUpdate.orderId);
-      setReadyOrders((prevState) => prevState.filter((orderId) => orderId !== idToRemove));
+      setReadyOrderIds((prevState: string[]) => prevState.filter((orderId) => orderId !== idToRemove));
     }
 
 
-    const setOldQueue = getOldQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.priority);
-    const setNewQueue = getNewQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.priority);
+    const setOldQueue: React.Dispatch<React.SetStateAction<CookOrder[]>> | undefined = getOldQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.priority);
+    const setNewQueue: React.Dispatch<React.SetStateAction<CookOrder[]>> | undefined = getNewQueueSetterBasedOnNewStatusAndPriority(orderUpdate.newOrderStatus, orderUpdate.priority);
 
     let cookOrderToMove: CookOrder | undefined = undefined;
     if (setOldQueue) {
-      setOldQueue((prevState) => {
+      setOldQueue?.((prevState: CookOrder[]) => {
         const updatedQueue = prevState.filter((order) => {
           if (order.id === orderUpdate.orderId) {
             cookOrderToMove = order;
@@ -83,7 +83,7 @@ export default function DigitalSignage() {
     }
 
     if (cookOrderToMove && setNewQueue) {
-      setNewQueue((prevState) => [...prevState, cookOrderToMove!]);
+      setNewQueue((prevState: CookOrder[]) => [...prevState, cookOrderToMove!]);
     }
 
     if (cookOrderToMove) {
@@ -106,15 +106,15 @@ export default function DigitalSignage() {
     return undefined;
   }
 
-  const orderList = (orders: CookOrder[]) => {
-    return orders.sort((a, b) => a - b);
+  const orderList = (orderIds: number[]) => {
+    return orderIds.sort((a, b) => a - b);
   }
 
-  const formatOrderId = (orderId: number) => {
+  const formatOrderId = (orderId: number): string => {
     return orderId.toString().padStart(3, '0');
   }
 
-  const formatOrderIds = (orders: CookOrder[]) => {
+  const formatOrderIds = (orders: number[]): string[] => {
     return orders.map((orderId) => formatOrderId(orderId));
   }
 
@@ -132,14 +132,14 @@ export default function DigitalSignage() {
       <div className='grid-container orders'>
         <div className="grid-child">
           <div className='order-container'>
-            {preparingOrders.map((orderId, index) => (
+            {preparingOrderIds.map((orderId, index) => (
               <h2 key={orderId} className="order-child" id={"preparing-" + (index + 1)}>{orderId}</h2>
             ))}
           </div>
         </div>
         <div className="grid-child">
           <div className='order-container cyan'>
-            {readyOrders.map((orderId, index) => (
+            {readyOrderIds.map((orderId, index) => (
               <h2 key={orderId} className="order-child" id={"delivery-" + (index + 1)}>{orderId}</h2>
             ))}
           </div>
