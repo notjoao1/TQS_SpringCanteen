@@ -24,7 +24,7 @@ function App() {
       <CssBaseline />
         <AuthContextProvider>
           <SnackbarProvider>
-            <TopBar mode={mode} />
+            <TopBar />
             <BrowserRouter>
               <Routes>
                   {/* auth pages */}

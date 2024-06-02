@@ -33,7 +33,7 @@ export default function App() {
       <CssBaseline />
       <AuthContextProvider>
         <SnackbarProvider>
-          <TopBar mode={mode} />
+          <TopBar />
           <BrowserRouter>
               <NewOrderContextProvider>
                   <Routes>
